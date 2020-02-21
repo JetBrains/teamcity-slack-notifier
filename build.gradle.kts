@@ -15,13 +15,10 @@ allprojects {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation(project("slack_api_java"))
-}
-
-openApiGenerate {
-    generatorName.set("java")
-    inputSpec.set("$rootDir/openapi_spec/slack_web_openapi_v2.json")
-    outputDir.set("$rootDir/slack_api_java")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.3")
+    implementation("com.squareup.retrofit2:retrofit:2.7.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
 }
 
 tasks {
