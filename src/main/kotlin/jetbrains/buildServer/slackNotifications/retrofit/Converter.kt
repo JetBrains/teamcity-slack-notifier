@@ -1,4 +1,4 @@
-package retrofit
+package jetbrains.buildServer.slackNotifications.retrofit
 
 import com.fasterxml.jackson.databind.*
 import okhttp3.MediaType
@@ -32,7 +32,9 @@ class JacksonConverterFactory(
                 val javaType = readMapper.typeFactory.constructType(type)
                 // TODO: cache readers?
                 val reader = readMapper.readerFor(javaType)
-                JacksonResponseBodyConverter<Any>(reader)
+                JacksonResponseBodyConverter<Any>(
+                    reader
+                )
             }
         }
     }
@@ -43,7 +45,9 @@ class JacksonConverterFactory(
         methodAnnotations: Array<Annotation>,
         retrofit: Retrofit
     ): Converter<*, RequestBody> {
-        return JacksonRequestBodyConverter<Any>(objectWriter)
+        return JacksonRequestBodyConverter<Any>(
+            objectWriter
+        )
     }
 }
 
@@ -64,7 +68,6 @@ internal class JacksonResponseBodyConverter<T>(private val adapter: ObjectReader
     @Throws(IOException::class)
     override fun convert(value: ResponseBody): T {
         value.use {
-            // TODO: use readValues for arrays?
             return adapter.readValue(it.charStream())
         }
     }

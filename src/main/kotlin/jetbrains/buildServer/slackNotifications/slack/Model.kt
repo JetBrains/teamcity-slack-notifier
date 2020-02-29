@@ -1,4 +1,4 @@
-package slack
+package jetbrains.buildServer.slackNotifications.slack
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -269,8 +269,8 @@ data class Message(
     val channel: String,
     val text: String? = null,
     @JsonProperty("username")
-    val userName: String = "YouTrack",
-    val parse: String = "full",
+    val userName: String? = null,
+    val parse: String? = null,
     val attachments: List<MessageAttachment> = listOf(),
     @JsonProperty("mrkdwn")
     val markdown: Boolean = false
