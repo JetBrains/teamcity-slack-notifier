@@ -22,9 +22,9 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.7.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
 
-    provided("org.jetbrains.teamcity.internal:server:2019.2")
-    provided("org.jetbrains.teamcity.internal:web:2019.2")
-    provided("org.jetbrains.teamcity:oauth:2019.2")
+    provided("org.jetbrains.teamcity.internal:server:2020.1-SNAPSHOT")
+    provided("org.jetbrains.teamcity.internal:web:2020.1-SNAPSHOT")
+    provided("org.jetbrains.teamcity:oauth:2020.1-SNAPSHOT")
 }
 
 tasks {

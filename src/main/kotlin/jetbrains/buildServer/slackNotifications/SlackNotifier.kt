@@ -10,32 +10,34 @@ import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.mute.MuteInfo
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
-import jetbrains.buildServer.slackNotifications.slack.SlackWebApi
+import jetbrains.buildServer.slackNotifications.slack.SlackWebApiFactory
 import jetbrains.buildServer.tests.TestName
-import jetbrains.buildServer.users.PluginPropertyKey
 import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.VcsRoot
+import kotlinx.coroutines.runBlocking
+import retrofit2.await
 
 class SlackNotifier(
     notifierRegistry: NotificatorRegistry,
-    private val slackApi: SlackWebApi,
-    private val oauthManager: OAuthConnectionsManager
+    private val slackApiFactory: SlackWebApiFactory,
+    private val oauthManager: OAuthConnectionsManager,
+    private val descriptor: SlackNotifierDescriptor
 ) : Notificator {
-    private val channelPropertyName = "channel"
-    private val channelProperty = PluginPropertyKey(channelPropertyName)
+
+    private val slackApi = slackApiFactory.createSlackWebApi()
 
     init {
         notifierRegistry.register(
             this,
             listOf(
-                UserPropertyInfo(channelPropertyName, "#channel or @name")
+                UserPropertyInfo(SlackNotifierDescriptor.channelPropertyName, "#channel or @name")
             )
         )
     }
 
-    override fun getDisplayName(): String = "Slack Notifier"
+    override fun getDisplayName(): String = descriptor.displayName
 
-    override fun getNotificatorType(): String = "officialSlack"
+    override fun getNotificatorType(): String = descriptor.type
 
     override fun notifyTestsMuted(tests: Collection<STest>, muteInfo: MuteInfo, users: Set<SUser>) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -130,7 +132,8 @@ class SlackNotifier(
     }
 
     override fun notifyBuildStarted(build: SRunningBuild, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val project = build.buildType?.project ?: return
+        sendMessage(MessagePayload("Build #${build.buildNumber} started"), users, project)
     }
 
     override fun notifyResponsibleAssigned(buildType: SBuildType, users: Set<SUser>) {
@@ -173,19 +176,24 @@ class SlackNotifier(
     }
 
     private fun sendMessage(token: String, message: MessagePayload, user: SUser) {
-        val sendTo = user.getPropertyValue(channelProperty)
+        val sendTo = user.getPropertyValue(SlackNotifierDescriptor.channelProperty)
         if (sendTo == null) {
-            Loggers.SERVER.warn("Won't send Slack notification to user with id ${user.id} as it's missing $channelProperty property")
+            Loggers.SERVER.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackNotifierDescriptor.channelProperty} property")
             return
         }
 
-        slackApi.postMessage(token, message.toSlackMessage(sendTo))
+        val result = runBlocking { slackApi.postMessage("Bearer $token", message.toSlackMessage(sendTo)).await() }
+
+        if (!result.ok) {
+            Loggers.SERVER.warn("Error sending message to $sendTo: ${result.error}")
+        }
     }
 
     private fun getToken(project: SProject): String? {
         val connections = oauthManager.getAvailableConnectionsOfType(project, SlackConnection.type)
         for (connection in connections) {
-            val token = connection.parameters["token"]
+
+            val token = connection.parameters["secure:token"]
             if (token != null) {
                 return token
             }
@@ -194,3 +202,4 @@ class SlackNotifier(
         return null
     }
 }
+
