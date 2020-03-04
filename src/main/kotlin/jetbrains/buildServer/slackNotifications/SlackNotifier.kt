@@ -20,6 +20,9 @@ import retrofit2.await
 class SlackNotifier(
     notifierRegistry: NotificatorRegistry,
     private val slackApiFactory: SlackWebApiFactory,
+    private val messageBuilder: MessageBuilder,
+
+    private val projectManager: ProjectManager,
     private val oauthManager: OAuthConnectionsManager,
     private val descriptor: SlackNotifierDescriptor
 ) : Notificator {
@@ -40,7 +43,8 @@ class SlackNotifier(
     override fun getNotificatorType(): String = descriptor.type
 
     override fun notifyTestsMuted(tests: Collection<STest>, muteInfo: MuteInfo, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val project = muteInfo.project ?: return
+        sendMessage(messageBuilder.testsMuted(tests, muteInfo, users), users, project)
     }
 
     override fun notifyBuildProblemsUnmuted(
@@ -49,15 +53,16 @@ class SlackNotifier(
         user: SUser?,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val project = muteInfo.project ?: return
+        sendMessage(messageBuilder.buildProblemsUnmuted(buildProblems, muteInfo, user, users), users, project)
     }
 
     override fun notifyLabelingFailed(build: Build, root: VcsRoot, exception: Throwable, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.labelingFailed(build, root, exception, users), users, build)
     }
 
     override fun notifyResponsibleChanged(buildType: SBuildType, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.responsibleChanged(buildType, users), users, buildType.project)
     }
 
     override fun notifyResponsibleChanged(
@@ -66,7 +71,7 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.responsibleChanged(oldValue, newValue, project, users), users, project)
     }
 
     override fun notifyResponsibleChanged(
@@ -75,16 +80,16 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.responsibleChanged(testNames, entry, project, users), users, project)
     }
 
     override fun notifyBuildSuccessful(build: SRunningBuild, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.buildSuccessful(build, users), users, build)
     }
 
 
     override fun notifyBuildFailed(build: SRunningBuild, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.buildFailed(build, users), users, build)
     }
 
     override fun notifyBuildProblemResponsibleChanged(
@@ -93,7 +98,7 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.buildProblemResponsibleChanged(buildProblems, entry, project, users), users, project)
     }
 
     override fun notifyBuildProblemsMuted(
@@ -101,13 +106,13 @@ class SlackNotifier(
         muteInfo: MuteInfo,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val project = muteInfo.project ?: return
+        sendMessage(messageBuilder.buildProblemsMuted(buildProblems, muteInfo, users), users, project)
     }
 
     override fun notifyBuildFailedToStart(build: SRunningBuild, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.buildFailedToStart(build, users), users, build)
     }
-
 
     override fun notifyTestsUnmuted(
         tests: Collection<STest>,
@@ -115,11 +120,12 @@ class SlackNotifier(
         user: SUser?,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val project = muteInfo.project ?: return
+        sendMessage(messageBuilder.testsUnmuted(tests, muteInfo, user, users), users, project)
     }
 
     override fun notifyBuildProbablyHanging(build: SRunningBuild, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.buildProbablyHanging(build, users), users, build)
     }
 
     override fun notifyBuildProblemResponsibleAssigned(
@@ -128,16 +134,19 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(
+            messageBuilder.buildProblemResponsibleAssigned(buildProblems, entry, project, users),
+            users,
+            project
+        )
     }
 
     override fun notifyBuildStarted(build: SRunningBuild, users: Set<SUser>) {
-        val project = build.buildType?.project ?: return
-        sendMessage(MessagePayload("Build #${build.buildNumber} started"), users, project)
+        sendMessage(messageBuilder.buildStarted(build, users), users, build)
     }
 
     override fun notifyResponsibleAssigned(buildType: SBuildType, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.responsibleAssigned(buildType, users), users, buildType.project)
     }
 
     override fun notifyResponsibleAssigned(
@@ -146,7 +155,7 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.responsibleAssigned(oldValue, newValue, project, users), users, project)
     }
 
     override fun notifyResponsibleAssigned(
@@ -155,11 +164,16 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.responsibleAssigned(testNames, entry, project, users), users, project)
     }
 
     override fun notifyBuildFailing(build: SRunningBuild, users: Set<SUser>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        sendMessage(messageBuilder.buildFailing(build, users), users, build)
+    }
+
+    private fun sendMessage(message: MessagePayload, users: Set<SUser>, build: Build) {
+        val project = projectManager.findProjectByExternalId(build.buildType?.projectExternalId) ?: return
+        sendMessage(message, users, project)
     }
 
     private fun sendMessage(message: MessagePayload, users: Set<SUser>, project: SProject) {

@@ -6,4 +6,6 @@
     <bean class="jetbrains.buildServer.slackNotifications.SlackNotifier"/>
     <bean class="jetbrains.buildServer.slackNotifications.slack.SlackWebApiFactory"/>
     <bean class="jetbrains.buildServer.slackNotifications.SlackNotifierDescriptor"/>
+    <bean class="jetbrains.buildServer.slackNotifications.SlackMessageFormatter"/>
+    <bean class="jetbrains.buildServer.slackNotifications.SimpleMessageBuilder"/>
 </beans>

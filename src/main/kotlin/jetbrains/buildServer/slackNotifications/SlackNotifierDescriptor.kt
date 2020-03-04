@@ -26,7 +26,7 @@ class SlackNotifierDescriptor : BuildTypeNotifierDescriptor {
         )
     }
 
-    override fun getType(): String = "slack"
+    override fun getType(): String = "jbSlackNotifier"
     override fun getDisplayName(): String = "Slack Notifier"
 
     override fun getEditParametersUrl(): String? {
