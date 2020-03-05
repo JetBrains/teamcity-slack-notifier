@@ -172,7 +172,15 @@ class SlackNotifier(
     }
 
     private fun sendMessage(message: MessagePayload, users: Set<SUser>, build: Build) {
-        val project = projectManager.findProjectByExternalId(build.buildType?.projectExternalId) ?: return
+        val project = projectManager.findProjectByExternalId(build.buildType?.projectExternalId)
+        if (project == null) {
+            Loggers.SERVER.warn(
+                "Can't find project for build ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
+                        " by id ${build.buildType?.projectExternalId}." +
+                        " Will not send notification"
+            )
+            return
+        }
         sendMessage(message, users, project)
     }
 

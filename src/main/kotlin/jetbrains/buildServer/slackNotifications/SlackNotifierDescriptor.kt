@@ -35,6 +35,7 @@ class SlackNotifierDescriptor : BuildTypeNotifierDescriptor {
 
     companion object {
         const val channelPropertyName = "channel"
-        val channelProperty = PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, "slack", channelPropertyName)
+        val channelProperty =
+            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, "jbSlackNotifier", channelPropertyName)
     }
 }
