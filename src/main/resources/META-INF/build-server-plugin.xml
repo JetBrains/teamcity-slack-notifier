@@ -8,4 +8,6 @@
     <bean class="jetbrains.buildServer.slackNotifications.SlackNotifierDescriptor"/>
     <bean class="jetbrains.buildServer.slackNotifications.SlackMessageFormatter"/>
     <bean class="jetbrains.buildServer.slackNotifications.SimpleMessageBuilder"/>
+    <bean class="jetbrains.buildServer.slackNotifications.SlackNotifierConfigAdminPage"/>
+    <bean class="jetbrains.buildServer.slackNotifications.SlackNotifierConfigController"/>
 </beans>

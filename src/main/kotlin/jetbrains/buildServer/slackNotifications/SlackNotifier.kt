@@ -21,13 +21,15 @@ class SlackNotifier(
     notifierRegistry: NotificatorRegistry,
     private val slackApiFactory: SlackWebApiFactory,
     private val messageBuilder: MessageBuilder,
-
+    private val serverPaths: ServerPaths,
     private val projectManager: ProjectManager,
+
     private val oauthManager: OAuthConnectionsManager,
     private val descriptor: SlackNotifierDescriptor
 ) : Notificator {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
+    private val config = SlackNotifierConfig(serverPaths, descriptor, this)
 
     init {
         notifierRegistry.register(
@@ -185,10 +187,10 @@ class SlackNotifier(
     }
 
     private fun sendMessage(message: MessagePayload, users: Set<SUser>, project: SProject) {
-        val token = getToken(project)
+        val token = getToken()
 
         if (token == null) {
-            Loggers.SERVER.warn("Won't send Slack notification because no connection of type '${SlackConnection.type}' (${SlackConnection.name}) is found in project '${project.fullName}' and its parents")
+            Loggers.SERVER.warn("Won't send Slack notification because Slack notifier is not configured properly")
             return
         }
 
@@ -211,7 +213,14 @@ class SlackNotifier(
         }
     }
 
-    private fun getToken(project: SProject): String? {
+    private fun getToken(): String? {
+        return if (config.botToken.isNotEmpty()) {
+            config.botToken
+        } else {
+            null
+        }
+
+        /*
         val connections = oauthManager.getAvailableConnectionsOfType(project, SlackConnection.type)
         for (connection in connections) {
 
@@ -222,6 +231,15 @@ class SlackNotifier(
         }
 
         return null
+        */
+    }
+
+    fun getConfig(): SlackNotifierConfig {
+        return config
+    }
+
+    fun clearAllErrors() {
+
     }
 }
 

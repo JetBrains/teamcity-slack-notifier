@@ -26,7 +26,7 @@ class SlackNotifierDescriptor : BuildTypeNotifierDescriptor {
         )
     }
 
-    override fun getType(): String = "jbSlackNotifier"
+    override fun getType(): String = SlackNotifierDescriptor.type
     override fun getDisplayName(): String = "Slack Notifier"
 
     override fun getEditParametersUrl(): String? {
@@ -34,8 +34,10 @@ class SlackNotifierDescriptor : BuildTypeNotifierDescriptor {
     }
 
     companion object {
+        private const val type = "jbSlackNotifier"
+
         const val channelPropertyName = "channel"
         val channelProperty =
-            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, "jbSlackNotifier", channelPropertyName)
+            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, type, channelPropertyName)
     }
 }

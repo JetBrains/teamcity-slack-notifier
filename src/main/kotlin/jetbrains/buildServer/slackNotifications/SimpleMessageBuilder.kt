@@ -19,19 +19,19 @@ class SimpleMessageBuilder(
     private val maxTestsNumberToShow = 10
 
     override fun buildStarted(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("Build ${buildUrl(build)} started")
+        return MessagePayload("${buildUrl(build)} started")
     }
 
     override fun buildSuccessful(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("Build ${buildUrl(build)} is successful")
+        return MessagePayload("${buildUrl(build)} is successful")
     }
 
     override fun buildFailed(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("Build ${buildUrl(build)} failed")
+        return MessagePayload("${buildUrl(build)} failed")
     }
 
     override fun buildFailedToStart(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("Build ${buildUrl(build)} failed to start")
+        return MessagePayload("${buildUrl(build)} failed to start")
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable, users: Set<SUser?>): MessagePayload {
@@ -45,11 +45,11 @@ class SimpleMessageBuilder(
     }
 
     override fun buildFailing(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("Build ${buildUrl(build)} is failing")
+        return MessagePayload("${buildUrl(build)} is failing")
     }
 
     override fun buildProbablyHanging(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("Build ${buildUrl(build)} is probably hanging")
+        return MessagePayload("${buildUrl(build)} is probably hanging")
     }
 
     override fun responsibleChanged(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
@@ -144,9 +144,13 @@ class SimpleMessageBuilder(
     }
 
     override fun testsMuted(tests: Collection<STest?>, muteInfo: MuteInfo, users: Set<SUser?>): MessagePayload {
-        val user = muteInfo.mutingUser?.username ?: "Anonymous"
-        val project = muteInfo.project ?: "already deleted project"
-        return MessagePayload("$user muted ${tests.size} tests in $project.")
+        val user = userName(muteInfo)
+        val project = projectName(muteInfo)
+        return if (user == null) {
+            MessagePayload("${tests.size} tests were muted in $project")
+        } else {
+            MessagePayload("$user muted ${tests.size} tests in $project.")
+        }
     }
 
     override fun testsUnmuted(
@@ -155,7 +159,13 @@ class SimpleMessageBuilder(
         user: SUser?,
         users: Set<SUser?>
     ): MessagePayload {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val username = userName(muteInfo)
+        val project = projectName(muteInfo)
+        return if (username == null) {
+            MessagePayload("${tests.size} tests were unmuted in $project.")
+        } else {
+            MessagePayload("$username unmuted ${tests.size} tests in $project.")
+        }
     }
 
     override fun buildProblemsMuted(
@@ -163,7 +173,14 @@ class SimpleMessageBuilder(
         muteInfo: MuteInfo,
         users: Set<SUser?>
     ): MessagePayload {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val user = userName(muteInfo)
+        val project = projectName(muteInfo)
+
+        return if (user == null) {
+            MessagePayload("${buildProblems.size} problems were muted in $project")
+        } else {
+            MessagePayload("$user muted ${buildProblems.size} problems in $project")
+        }
     }
 
     override fun buildProblemsUnmuted(
@@ -172,7 +189,20 @@ class SimpleMessageBuilder(
         user: SUser?,
         users: Set<SUser?>
     ): MessagePayload {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val username = userName(muteInfo)
+        val project = projectName(muteInfo)
+        return if (username == null) {
+            MessagePayload("${buildProblems.size} problems were unmuted in $project.")
+        } else {
+            MessagePayload("$username unmuted ${buildProblems.size} problems in $project.")
+        }
+    }
+
+    private fun userName(muteInfo: MuteInfo) = muteInfo.mutingUser?.username
+    private fun projectName(muteInfo: MuteInfo): String {
+        val project = muteInfo.project ?: return "<deleted project>"
+        val url = links.getProjectPageUrl(project.externalId)
+        return format.url(url, project.fullName)
     }
 
     private fun buildUrl(build: Build): String {
