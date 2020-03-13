@@ -1,4 +1,4 @@
-<%@ taglib prefix="props" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ include file="/include-internal.jsp" %>
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
 

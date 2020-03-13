@@ -22,8 +22,8 @@
 %>
 <%@ taglib prefix="problems" tagdir="/WEB-INF/tags/problems"
 %>
-<%@ taglib prefix="props" tagdir="/WEB-INF/tags/props"
-%>
+<%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
+
 <%@ taglib prefix="util" uri="/WEB-INF/functions/util" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 

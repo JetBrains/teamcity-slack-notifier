@@ -35,7 +35,8 @@ class SlackNotifier(
         notifierRegistry.register(
             this,
             listOf(
-                UserPropertyInfo(descriptor.channelPropertyName, "#channel or user id")
+                UserPropertyInfo(descriptor.channelPropertyName, "#channel or user id"),
+                UserPropertyInfo(descriptor.connectionPropertyName, "Connection external id")
             )
         )
     }
