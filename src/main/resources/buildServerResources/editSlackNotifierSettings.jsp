@@ -62,13 +62,21 @@
                         <forms:passwordField name="botToken" encryptedPassword="${slackSettings.encryptedBotToken}"
                                              className="longField"/>
                         <span class="error" id="errorBotToken"></span>
+                        <span class="smallNote">
+                            Provide <a href="https://api.slack.com/docs/token-types#bot" target="_blank">bot token</a> to be used to connect to your Slack workspace.
+                            <br/>
+                            You can see your apps or create a new one on <a href="https://api.slack.com/apps"
+                                                                            target="_blank">Your Apps</a> page.
+                            <br/>
+                            This bot will need the following scopes: <i>channels:read, chat:write, im:read, im:write, users:read</i>
+                        </span>
                     </td>
                 </tr>
             </table>
 
             <div class="saveButtonsBlock" id="saveButtons">
                 <forms:submit label="Save"/>
-                <forms:submit id="testConnection" type="button" label="Test connection"/>
+                <forms:submit id="testConnection" type="button" label="Test connection" onclick=""/>
                 <input type="hidden" id="submitSettings" name="submitSettings" value="store"/>
                 <input type="hidden" name="testAddress" id="testAddress" value=""/>
                 <forms:saving/>
@@ -77,7 +85,7 @@
     </form>
 </div>
 
-<bs:dialog dialogId="testConnectionDialog" title="Test Connection" closeCommand="BS.TestConnectionDialog.close();"
+<bs:dialog dialogId="testConnectionDialog" title="Test Connection" closeCommand="SlackTestConnectionDialog.close();"
            closeAttrs="showdiscardchangesmessage='false'">
     <div id="testConnectionStatus"></div>
     <div id="testConnectionDetails" class="mono"></div>
@@ -115,5 +123,7 @@
         $j('#enable-btn').addClass("hidden");
         $j('#disable-btn').addClass("hidden");
         </c:if>
+
+
     });
 </script>

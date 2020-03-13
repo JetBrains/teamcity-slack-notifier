@@ -35,13 +35,12 @@ class SlackNotifier(
         notifierRegistry.register(
             this,
             listOf(
-                UserPropertyInfo(SlackNotifierDescriptor.channelPropertyName, "#channel or @name")
+                UserPropertyInfo(descriptor.channelPropertyName, "#channel or user id")
             )
         )
     }
 
     override fun getDisplayName(): String = descriptor.displayName
-
     override fun getNotificatorType(): String = descriptor.type
 
     override fun notifyTestsMuted(tests: Collection<STest>, muteInfo: MuteInfo, users: Set<SUser>) {
@@ -177,9 +176,9 @@ class SlackNotifier(
         val project = projectManager.findProjectByExternalId(build.buildType?.projectExternalId)
         if (project == null) {
             Loggers.SERVER.warn(
-                "Can't find project for build ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
-                        " by id ${build.buildType?.projectExternalId}." +
-                        " Will not send notification"
+                "Won't send notification because can't find project for build" +
+                        " ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
+                        " by external id ${build.buildType?.projectExternalId}."
             )
             return
         }
@@ -187,22 +186,31 @@ class SlackNotifier(
     }
 
     private fun sendMessage(message: MessagePayload, users: Set<SUser>, project: SProject) {
-        val token = getToken()
-
-        if (token == null) {
-            Loggers.SERVER.warn("Won't send Slack notification because Slack notifier is not configured properly")
-            return
-        }
-
         for (user in users) {
-            sendMessage(token, message, user)
+            sendMessage(message, user, project)
         }
     }
 
-    private fun sendMessage(token: String, message: MessagePayload, user: SUser) {
-        val sendTo = user.getPropertyValue(SlackNotifierDescriptor.channelProperty)
+    private fun sendMessage(message: MessagePayload, user: SUser, project: SProject) {
+        val sendTo = user.getPropertyValue(descriptor.channelProperty)
         if (sendTo == null) {
-            Loggers.SERVER.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackNotifierDescriptor.channelProperty} property")
+            Loggers.SERVER.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${descriptor.channelProperty} property")
+            return
+        }
+
+        val connectionId = user.getPropertyValue(descriptor.connectionProperty)
+        if (connectionId == null) {
+            Loggers.SERVER.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${descriptor.connectionProperty} property")
+            return
+        }
+
+        val token = getToken(project, connectionId)
+        if (token == null) {
+            Loggers.SERVER.warn(
+                "Won't send Slack notification to user with id ${user.id}" +
+                        " as no token for connection with id '${connectionId}'" +
+                        " in project with external id '${project.externalId}' was found"
+            )
             return
         }
 
@@ -213,25 +221,16 @@ class SlackNotifier(
         }
     }
 
-    private fun getToken(): String? {
-        return if (config.botToken.isNotEmpty()) {
-            config.botToken
-        } else {
-            null
-        }
+    private fun getToken(project: SProject, connectionId: String): String? {
+        val connection = oauthManager.getAvailableConnectionsOfType(project, SlackConnection.type)
+            .find { it.parameters["externalId"] == connectionId } ?: return null
 
-        /*
-        val connections = oauthManager.getAvailableConnectionsOfType(project, SlackConnection.type)
-        for (connection in connections) {
-
-            val token = connection.parameters["secure:token"]
-            if (token != null) {
-                return token
-            }
+        val token = connection.parameters["secure:token"]
+        if (token != null) {
+            return token
         }
 
         return null
-        */
     }
 
     fun getConfig(): SlackNotifierConfig {

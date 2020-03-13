@@ -4,6 +4,7 @@ import jetbrains.buildServer.controllers.admin.AdminPage
 import jetbrains.buildServer.web.openapi.Groupable
 import jetbrains.buildServer.web.openapi.PagePlaces
 import jetbrains.buildServer.web.openapi.PluginDescriptor
+import jetbrains.buildServer.web.openapi.PositionConstraint
 import javax.servlet.http.HttpServletRequest
 
 class SlackNotifierConfigAdminPage(
@@ -20,6 +21,8 @@ class SlackNotifierConfigAdminPage(
         pluginName = slackNotifierDescriptor.type
         tabTitle = "Slack Notifier"
 
+        setPosition(PositionConstraint.after("email"))
+        setPosition(PositionConstraint.before("jabber"))
         register()
     }
 

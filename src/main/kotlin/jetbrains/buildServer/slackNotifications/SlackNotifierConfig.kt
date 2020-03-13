@@ -87,31 +87,10 @@ class SlackNotifierConfig(
     @Synchronized
     private fun reloadConfiguration() {
         logger.info("Loading configuration file: " + configFile.absolutePath)
-        var document = parseFile(configFile)
-        if (document == null) {
-            val defaultConfig = loadDefaultConfiguration()
-            document = defaultConfig ?: return
-        }
+        val document = parseFile(configFile) ?: return
         val rootElement = document.rootElement
         isPaused = rootElement.getAttributeValue(isPausedProperty)?.toBoolean() ?: false
         botToken = rootElement.getAttributeValue(botTokenProperty) ?: ""
-    }
-
-    @Synchronized
-    private fun loadDefaultConfiguration(): Document? {
-        val resourceAsStream =
-            javaClass.getResourceAsStream("defaultConfig.xml")
-        if (resourceAsStream != null) {
-            try {
-                return JDOMUtil.loadDocument(resourceAsStream)
-            } catch (e: JDOMException) {
-                reportError("Failed to parse default plugin configuration", e)
-            } catch (e: IOException) {
-                reportError("I/O error occurred on attempt to parse default plugin configuration", e)
-            }
-        }
-        logger.error("Failed to load default email notifier settings")
-        return null
     }
 
     private fun parseFile(configFile: File): Document? {
