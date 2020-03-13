@@ -16,7 +16,7 @@ class SimpleMessageBuilder(
 
     private val projectManager: ProjectManager
 ) : MessageBuilder {
-    private val maxTestsNumberToShow = 10
+    private val maxBuildProblemsToShow = 10
 
     override fun buildStarted(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
         return MessagePayload("${buildUrl(build)} started")
@@ -53,7 +53,13 @@ class SimpleMessageBuilder(
     }
 
     override fun responsibleChanged(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return MessagePayload(
+            "Investigation of ${format.url(
+                links.getConfigurationHomePageUrl(
+                    buildType
+                ), buildType.fullName
+            )} failure changed"
+        )
     }
 
     override fun responsibleChanged(
@@ -62,7 +68,14 @@ class SimpleMessageBuilder(
         project: SProject,
         users: Set<SUser?>
     ): MessagePayload {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return MessagePayload(
+            "Investigation of" +
+                    " ${format.url(
+                        links.getTestDetailsUrl(project.externalId, newValue.testNameId),
+                        newValue.testName.asString
+                    )} test failure chagned in" +
+                    " ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}"
+        )
     }
 
     override fun responsibleChanged(
@@ -71,7 +84,16 @@ class SimpleMessageBuilder(
         project: SProject,
         users: Set<SUser?>
     ): MessagePayload {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val testNamesNotNull = testNames.asSequence().filterNotNull().toList()
+        val testNamesFormatted = formatProblems(testNamesNotNull) {
+            format.listElement(it.asString)
+        }
+
+        return MessagePayload(
+            "Investigation of ${testNamesNotNull.size} tests changed " +
+                    "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
+                    testNamesFormatted
+        )
     }
 
     override fun responsibleAssigned(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
@@ -107,16 +129,9 @@ class SimpleMessageBuilder(
         users: Set<SUser?>
     ): MessagePayload {
         val testNamesNotNull = testNames.asSequence().filterNotNull().toList()
-        val firstTestNames = testNamesNotNull.asSequence().take(maxTestsNumberToShow).toList()
-        val postfix = if (testNamesNotNull.size > firstTestNames.size) {
-            "\n" + format.listElement("...")
-        } else {
-            ""
-        }
-
-        val testNamesFormatted = firstTestNames.joinToString("\n") {
+        val testNamesFormatted = formatProblems(testNamesNotNull) {
             format.listElement(it.asString)
-        } + postfix
+        }
 
         return MessagePayload(
             "You are assigned for investigation of ${testNamesNotNull.size} tests " +
@@ -131,7 +146,27 @@ class SimpleMessageBuilder(
         project: SProject,
         users: Set<SUser?>
     ): MessagePayload {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val buildProblemsNotNull = buildProblems.asSequence().filterNotNull().toList()
+        val buildProblemsFormatted = formatProblems(buildProblemsNotNull) {
+            format.listElement(it.buildProblemDescription ?: it.toString())
+        }
+
+        return MessagePayload(
+            "You are assigned for investigation of ${buildProblemsNotNull.size} build problems " +
+                    "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
+                    buildProblemsFormatted
+        )
+    }
+
+    private fun <T> formatProblems(problems: Collection<T>, formatter: (T) -> String): String {
+        val firstBuildProblems = problems.asSequence().take(maxBuildProblemsToShow).toList()
+        val postfix = if (problems.size > firstBuildProblems.size) {
+            "\n" + format.listElement("...")
+        } else {
+            ""
+        }
+
+        return firstBuildProblems.joinToString("\n") { formatter(it) } + postfix
     }
 
     override fun buildProblemResponsibleChanged(
@@ -140,7 +175,16 @@ class SimpleMessageBuilder(
         project: SProject,
         users: Set<SUser?>
     ): MessagePayload {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val buildProblemsNotNull = buildProblems.asSequence().filterNotNull().toList()
+        val buildProblemsFormatted = formatProblems(buildProblemsNotNull) {
+            format.listElement(it.buildProblemDescription ?: it.toString())
+        }
+
+        return MessagePayload(
+            "Investigation for ${buildProblemsNotNull.size} build problems changed " +
+                    "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
+                    buildProblemsFormatted
+        )
     }
 
     override fun testsMuted(tests: Collection<STest?>, muteInfo: MuteInfo, users: Set<SUser?>): MessagePayload {
