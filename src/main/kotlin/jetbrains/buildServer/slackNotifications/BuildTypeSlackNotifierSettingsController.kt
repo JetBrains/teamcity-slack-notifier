@@ -50,9 +50,8 @@ class BuildTypeSlackNotifierSettingsController(
         mv.model["availableConnections"] = availableConnections
 
         val feature = buildType.findBuildFeatureById(featureId)
-            ?: throw Exception("Can't find build feature with id '${featureId}' in build type with id '${buildTypeId}'")
 
-        mv.model["propertiesBean"] = BasePropertiesBean(feature.parameters)
+        mv.model["propertiesBean"] = BasePropertiesBean(feature?.parameters)
         mv.model["descriptor"] = slackNotifierDescriptor
 
         return mv
