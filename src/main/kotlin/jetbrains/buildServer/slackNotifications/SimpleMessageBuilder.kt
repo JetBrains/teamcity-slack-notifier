@@ -252,7 +252,11 @@ class SimpleMessageBuilder(
     private fun buildUrl(build: Build): String {
         val projectName =
             projectManager.findProjectByExternalId(build.projectExternalId)?.fullName ?: "<deleted project>"
-        val buildName = "Build ${number(build)}"
+
+        val buildType = build.buildType
+        val buildTypeName = buildType?.name ?: ""
+
+        val buildName = "$buildTypeName ${number(build)}"
         return "$projectName / ${format.url(links.getViewResultsUrl(build), buildName)}"
     }
 
