@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.jetbrains.teamcity"
-version = "1.0-SNAPSHOT"
+version = "${if (project.hasProperty("PluginVersion")) project.property("PluginVersion") else "SNAPSHOT"}"
 
 allprojects {
     repositories {
