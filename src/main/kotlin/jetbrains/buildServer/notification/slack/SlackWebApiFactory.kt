@@ -1,11 +1,11 @@
-package jetbrains.buildServer.slackNotifications.slack
+package jetbrains.buildServer.notification.slack
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import jetbrains.buildServer.slackNotifications.retrofit.IncomingObjectMapper
-import jetbrains.buildServer.slackNotifications.retrofit.JacksonConverterFactory
-import jetbrains.buildServer.slackNotifications.retrofit.OutboundObjectWriter
+import jetbrains.buildServer.notification.retrofit.IncomingObjectMapper
+import jetbrains.buildServer.notification.retrofit.JacksonConverterFactory
+import jetbrains.buildServer.notification.retrofit.OutboundObjectWriter
 import retrofit2.Retrofit
 import retrofit2.create
 

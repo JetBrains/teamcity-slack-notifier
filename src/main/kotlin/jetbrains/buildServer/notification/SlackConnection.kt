@@ -1,6 +1,5 @@
-package jetbrains.buildServer.slackNotifications
+package jetbrains.buildServer.notification
 
-import jetbrains.buildServer.log.Loggers
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
@@ -10,10 +9,6 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor
 class SlackConnection(
     private val pluginDescriptor: PluginDescriptor
 ) : OAuthProvider() {
-    init {
-        Loggers.SERVER.info("Loaded slack connection")
-    }
-
     override fun getType(): String =
         Companion.type
 
@@ -40,6 +35,7 @@ class SlackConnection(
         val errors = mutableListOf<InvalidProperty>()
 
         // TODO: Check that this id is unique
+        // TODO: Check for incorrect symbols
         val externalId = it["externalId"]
         if (externalId.isNullOrEmpty()) {
             errors.add(InvalidProperty("externalId", "External id should not be empty"))

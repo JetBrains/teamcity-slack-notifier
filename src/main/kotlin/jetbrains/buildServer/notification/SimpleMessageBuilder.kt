@@ -1,4 +1,4 @@
-package jetbrains.buildServer.slackNotifications
+package jetbrains.buildServer.notification
 
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.responsibility.ResponsibilityEntry

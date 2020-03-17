@@ -1,7 +1,6 @@
-package jetbrains.buildServer.slackNotifications
+package jetbrains.buildServer.notification
 
 import jetbrains.buildServer.PluginTypes
-import jetbrains.buildServer.notification.BuildTypeNotifierDescriptor
 import jetbrains.buildServer.serverSide.ControlDescription
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.Parameter

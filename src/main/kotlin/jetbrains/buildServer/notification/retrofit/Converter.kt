@@ -1,4 +1,4 @@
-package jetbrains.buildServer.slackNotifications.retrofit
+package jetbrains.buildServer.notification.retrofit
 
 import com.fasterxml.jackson.databind.*
 import okhttp3.MediaType

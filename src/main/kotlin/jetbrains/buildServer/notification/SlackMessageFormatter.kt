@@ -1,4 +1,4 @@
-package jetbrains.buildServer.slackNotifications
+package jetbrains.buildServer.notification
 
 class SlackMessageFormatter {
     fun url(url: String, text: String = ""): String {

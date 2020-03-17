@@ -2,11 +2,11 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans default-autowire="constructor">
-    <bean class="jetbrains.buildServer.slackNotifications.SlackConnection"/>
-    <bean class="jetbrains.buildServer.slackNotifications.SlackNotifier"/>
-    <bean class="jetbrains.buildServer.slackNotifications.slack.SlackWebApiFactory"/>
-    <bean class="jetbrains.buildServer.slackNotifications.SlackNotifierDescriptor"/>
-    <bean class="jetbrains.buildServer.slackNotifications.BuildTypeSlackNotifierSettingsController"/>
-    <bean class="jetbrains.buildServer.slackNotifications.SlackMessageFormatter"/>
-    <bean class="jetbrains.buildServer.slackNotifications.SimpleMessageBuilder"/>
+    <bean class="jetbrains.buildServer.notification.SlackConnection"/>
+    <bean class="jetbrains.buildServer.notification.SlackNotifier"/>
+    <bean class="jetbrains.buildServer.notification.slack.SlackWebApiFactory"/>
+    <bean class="jetbrains.buildServer.notification.SlackNotifierDescriptor"/>
+    <bean class="jetbrains.buildServer.notification.BuildTypeSlackNotifierSettingsController"/>
+    <bean class="jetbrains.buildServer.notification.SlackMessageFormatter"/>
+    <bean class="jetbrains.buildServer.notification.SimpleMessageBuilder"/>
 </beans>

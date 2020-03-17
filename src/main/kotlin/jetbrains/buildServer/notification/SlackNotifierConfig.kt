@@ -1,12 +1,11 @@
-package jetbrains.buildServer.slackNotifications
+package jetbrains.buildServer.notification
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.JDOMUtil
 import jetbrains.buildServer.configuration.ChangeListener
 import jetbrains.buildServer.configuration.FileWatcher
-import jetbrains.buildServer.log.Loggers
+import jetbrains.buildServer.notification.teamcity.FilePersisterUtil
 import jetbrains.buildServer.serverSide.ServerPaths
-import jetbrains.buildServer.slackNotifications.teamcity.FilePersisterUtil
 import jetbrains.buildServer.util.FileUtil
 import org.jdom.Document
 import org.jdom.Element
@@ -112,7 +111,7 @@ class SlackNotifierConfig(
     private fun reportError(message: String, e: Throwable) {
         logger.error(message)
         logger.debug(message, e)
-        Loggers.SERVER.error(message)
-        Loggers.SERVER.debug(message, e)
+        logger.error(message)
+        logger.debug(message, e)
     }
 }

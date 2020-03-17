@@ -1,4 +1,4 @@
-package jetbrains.buildServer.slackNotifications
+package jetbrains.buildServer.notification
 
 import jetbrains.buildServer.controllers.admin.AdminPage
 import jetbrains.buildServer.web.openapi.Groupable

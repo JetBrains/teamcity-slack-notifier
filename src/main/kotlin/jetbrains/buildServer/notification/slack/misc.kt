@@ -1,4 +1,4 @@
-package jetbrains.buildServer.slackNotifications.slack
+package jetbrains.buildServer.notification.slack
 
 internal val noCursorMeta = CursorMetaData("")
 

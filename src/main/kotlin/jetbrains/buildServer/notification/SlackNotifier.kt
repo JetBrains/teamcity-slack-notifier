@@ -1,16 +1,14 @@
-package jetbrains.buildServer.slackNotifications
+package jetbrains.buildServer.notification
 
+import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
-import jetbrains.buildServer.log.Loggers
-import jetbrains.buildServer.notification.Notificator
-import jetbrains.buildServer.notification.NotificatorRegistry
+import jetbrains.buildServer.notification.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
 import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.mute.MuteInfo
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
-import jetbrains.buildServer.slackNotifications.slack.SlackWebApiFactory
 import jetbrains.buildServer.tests.TestName
 import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.VcsRoot
@@ -19,17 +17,19 @@ import retrofit2.await
 
 class SlackNotifier(
     notifierRegistry: NotificatorRegistry,
-    private val slackApiFactory: SlackWebApiFactory,
+    slackApiFactory: SlackWebApiFactory,
     private val messageBuilder: MessageBuilder,
-    private val serverPaths: ServerPaths,
+    serverPaths: ServerPaths,
     private val projectManager: ProjectManager,
 
     private val oauthManager: OAuthConnectionsManager,
     private val descriptor: SlackNotifierDescriptor
-) : Notificator {
+) : NotificatorAdapter() {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
     private val config = SlackNotifierConfig(serverPaths, descriptor, this)
+
+    private val logger = Logger.getInstance(SlackNotifier::class.java.name)
 
     init {
         notifierRegistry.register(
@@ -176,7 +176,7 @@ class SlackNotifier(
     private fun sendMessage(message: MessagePayload, users: Set<SUser>, build: Build) {
         val project = projectManager.findProjectByExternalId(build.buildType?.projectExternalId)
         if (project == null) {
-            Loggers.SERVER.warn(
+            logger.error(
                 "Won't send notification because can't find project for build" +
                         " ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
                         " by external id ${build.buildType?.projectExternalId}."
@@ -195,19 +195,19 @@ class SlackNotifier(
     private fun sendMessage(message: MessagePayload, user: SUser, project: SProject) {
         val sendTo = user.getPropertyValue(descriptor.channelProperty)
         if (sendTo == null) {
-            Loggers.SERVER.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${descriptor.channelProperty} property")
+            logger.error("Won't send Slack notification to user with id ${user.id} as it's missing ${descriptor.channelProperty} property")
             return
         }
 
         val connectionId = user.getPropertyValue(descriptor.connectionProperty)
         if (connectionId == null) {
-            Loggers.SERVER.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${descriptor.connectionProperty} property")
+            logger.error("Won't send Slack notification to user with id ${user.id} as it's missing ${descriptor.connectionProperty} property")
             return
         }
 
         val token = getToken(project, connectionId)
         if (token == null) {
-            Loggers.SERVER.warn(
+            logger.error(
                 "Won't send Slack notification to user with id ${user.id}" +
                         " as no token for connection with id '${connectionId}'" +
                         " in project with external id '${project.externalId}' was found"
@@ -218,7 +218,7 @@ class SlackNotifier(
         val result = runBlocking { slackApi.postMessage("Bearer $token", message.toSlackMessage(sendTo)).await() }
 
         if (!result.ok) {
-            Loggers.SERVER.warn("Error sending message to $sendTo: ${result.error}")
+            logger.error("Error sending message to $sendTo: ${result.error}")
         }
     }
 

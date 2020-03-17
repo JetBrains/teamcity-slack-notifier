@@ -30,7 +30,7 @@
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
 <jsp:useBean id="availableConnections"
              type="java.util.List<jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor>" scope="request"/>
-<jsp:useBean id="descriptor" type="jetbrains.buildServer.slackNotifications.SlackNotifierDescriptor" scope="request"/>
+<jsp:useBean id="descriptor" type="jetbrains.buildServer.notification.SlackNotifierDescriptor" scope="request"/>
 
 <tr>
     <th>

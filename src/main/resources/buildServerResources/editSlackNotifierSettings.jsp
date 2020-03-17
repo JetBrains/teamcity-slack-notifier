@@ -21,7 +21,7 @@
 <%@ taglib prefix="util" uri="/WEB-INF/functions/util"
 %>
 
-<jsp:useBean id="slackSettings" scope="request" type="jetbrains.buildServer.slackNotifications.SlackSettingsBean"/>
+<jsp:useBean id="slackSettings" scope="request" type="jetbrains.buildServer.notification.SlackSettingsBean"/>
 
 <bs:linkScript>
     /js/bs/testConnection.js
