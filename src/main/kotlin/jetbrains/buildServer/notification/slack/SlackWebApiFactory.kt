@@ -10,6 +10,7 @@ import retrofit2.Retrofit
 import retrofit2.create
 
 class SlackWebApiFactory {
+    // TODO: Set up proper proxy, see HTTPRequestBuilder:577
     fun createSlackWebApi(): SlackWebApi {
         val mapper = ObjectMapper()
             .registerModule(KotlinModule())

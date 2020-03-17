@@ -20,6 +20,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.3")
     implementation("com.squareup.retrofit2:retrofit:2.7.1")
+    implementation("com.squareup.okhttp3:okhttp:4.4.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
 
     provided("org.jetbrains.teamcity.internal:plugins:2020.1-SNAPSHOT")
