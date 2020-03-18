@@ -3,6 +3,7 @@ package jetbrains.buildServer.notification
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.notification.slack.SlackWebApiFactory
+import jetbrains.buildServer.notification.slack.SlackWebApiFactoryImpl
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
 import jetbrains.buildServer.serverSide.*

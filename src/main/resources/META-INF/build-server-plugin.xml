@@ -4,7 +4,7 @@
 <beans default-autowire="constructor">
     <bean class="jetbrains.buildServer.notification.SlackConnection"/>
     <bean class="jetbrains.buildServer.notification.SlackNotifier"/>
-    <bean class="jetbrains.buildServer.notification.slack.SlackWebApiFactory"/>
+    <bean class="jetbrains.buildServer.notification.slack.SlackWebApiFactoryImpl"/>
     <bean class="jetbrains.buildServer.notification.SlackNotifierDescriptor"/>
     <bean class="jetbrains.buildServer.notification.BuildTypeSlackNotifierSettingsController"/>
     <bean class="jetbrains.buildServer.notification.SlackMessageFormatter"/>

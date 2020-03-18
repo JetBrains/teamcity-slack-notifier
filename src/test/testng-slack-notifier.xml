@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Tests for Slack Notifier">
+    <test name="Tests for Slack Notifier">
+        <classes>
+            <class name="jetbrains.buildServer.notification.SlackConnectionTest"/>
+            <class name="jetbrains.buildServer.notification.SlackNotifierTest"/>
+        </classes>
+    </test>
+</suite>
