@@ -1,8 +1,9 @@
 package jetbrains.buildServer.notification.retrofit
 
 import com.fasterxml.jackson.databind.*
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -55,11 +56,12 @@ internal class JacksonRequestBodyConverter<T>(private val adapter: ObjectWriter)
 
     @Throws(IOException::class)
     override fun convert(value: T): RequestBody {
-        return RequestBody.create(MEDIA_TYPE, adapter.writeValueAsBytes(value))
+        val content = adapter.writeValueAsBytes(value)
+        return content.toRequestBody(MEDIA_TYPE, 0, content.size)
     }
 
     companion object {
-        private val MEDIA_TYPE = MediaType.parse("application/json; charset=UTF-8")
+        private val MEDIA_TYPE = "application/json; charset=UTF-8".toMediaTypeOrNull()
     }
 }
 
