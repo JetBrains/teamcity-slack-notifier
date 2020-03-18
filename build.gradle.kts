@@ -16,12 +16,12 @@ val teamcityVersion =
 val teamcityLibs =
     if (project.hasProperty("TeamCityLibs")) {
         project.property("TeamCityLibs")
-    } else "../../../.idea_artifacts/web-deployment/WEB-INF/lib"
+    } else "../../.idea_artifacts/web-deployment/WEB-INF/lib"
 
 val teamcityTestLibs =
     if (project.hasProperty("TeamCityTestLibs")) {
         project.property("TeamCityTestLibs")
-    } else "../../../.idea_artifacts/dist_openapi_integration/tests"
+    } else "../../.idea_artifacts/dist_openapi_integration/tests"
 
 
 allprojects {
@@ -41,12 +41,11 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.4.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
 
+    provided(fileTree(mapOf("dir" to teamcityLibs, "include" to arrayOf("*.jar"))))
     provided("org.jetbrains.teamcity:server-api:2020.1-SNAPSHOT")
-    provided("org.jetbrains.teamcity.internal:plugins:2020.1-SNAPSHOT")
-    provided("org.jetbrains.teamcity.internal:server:2020.1-SNAPSHOT")
-    provided("org.jetbrains.teamcity.internal:web:2020.1-SNAPSHOT")
     provided("org.jetbrains.teamcity:oauth:2020.1-SNAPSHOT")
 
+    testImplementation(fileTree(mapOf("dir" to teamcityTestLibs, "include" to arrayOf("*.jar"))))
     testImplementation("org.jetbrains.teamcity:tests-support:2020.1-SNAPSHOT")
     testImplementation("org.assertj:assertj-core:1.7.1")
     testImplementation("org.testng:testng:6.8")
@@ -59,6 +58,11 @@ tasks {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
+}
+
+java {
+    sourceSets.getByName("main").java.srcDir("src/main/kotlin")
+    sourceSets.getByName("test").java.srcDir("src/test/kotlin")
 }
 
 teamcity {

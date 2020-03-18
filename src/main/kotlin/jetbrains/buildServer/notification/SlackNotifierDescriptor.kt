@@ -27,7 +27,7 @@ class SlackNotifierDescriptor(
     }
 
     override fun getType(): String = "jbSlackNotifier"
-    override fun getDisplayName(): String = "Slack Notifier"
+    override fun getDisplayName(): String = "Experimental Slack Notifier"
 
     override fun getEditParametersUrl(): String =
         pluginDescriptor.getPluginResourcesPath("editBuildTypeSlackNotifierSettings.html")
