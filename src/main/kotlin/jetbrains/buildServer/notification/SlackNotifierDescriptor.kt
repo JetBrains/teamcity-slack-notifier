@@ -12,14 +12,23 @@ class SlackNotifierDescriptor(
 ) : BuildTypeNotifierDescriptor {
     val channelPropertyName = "channel"
     val channelProperty =
-        PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, type, channelPropertyName)
+            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, type, channelPropertyName)
 
     val connectionPropertyName = "connection"
     val connectionProperty =
-        PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, type, connectionPropertyName)
+            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, type, connectionPropertyName)
 
     override fun validate(parameteres: Map<String, Parameter>): MutableCollection<InvalidProperty> {
         return mutableListOf()
+    }
+
+    override fun describeParameters(parameters: MutableMap<String, String>): String {
+        val to = parameters[channelProperty.key]
+        if (to != null) {
+            return "To: $to"
+        }
+
+        return ""
     }
 
     override fun getParameters(): MutableMap<String, ControlDescription> {
@@ -30,5 +39,5 @@ class SlackNotifierDescriptor(
     override fun getDisplayName(): String = "Experimental Slack Notifier"
 
     override fun getEditParametersUrl(): String =
-        pluginDescriptor.getPluginResourcesPath("editBuildTypeSlackNotifierSettings.html")
+            pluginDescriptor.getPluginResourcesPath("editBuildTypeSlackNotifierSettings.html")
 }
