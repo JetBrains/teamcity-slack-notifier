@@ -80,7 +80,7 @@ teamcity {
             description = "Official plugin to send notifications to Slack"
             downloadUrl = "download url"
             email = ""
-            vendorUrl = "jetbrains.com"
+            vendorUrl = "http://www.jetbrains.com"
 
             useSeparateClassloader = true
             allowRuntimeReload = true
