@@ -1,14 +1,16 @@
-package jetbrains.buildServer.notification.slack
+package jetbrains.buildServer.notification.slackNotifier.slack
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import jetbrains.buildServer.notification.retrofit.IncomingObjectMapper
-import jetbrains.buildServer.notification.retrofit.JacksonConverterFactory
-import jetbrains.buildServer.notification.retrofit.OutboundObjectWriter
+import jetbrains.buildServer.notification.slackNotifier.retrofit.IncomingObjectMapper
+import jetbrains.buildServer.notification.slackNotifier.retrofit.JacksonConverterFactory
+import jetbrains.buildServer.notification.slackNotifier.retrofit.OutboundObjectWriter
+import org.springframework.stereotype.Service
 import retrofit2.Retrofit
 import retrofit2.create
 
+@Service
 class SlackWebApiFactoryImpl : SlackWebApiFactory {
     // TODO: Set up proper proxy, see HTTPRequestBuilder:577
     override fun createSlackWebApi(): SlackWebApi {

@@ -1,9 +1,9 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
-import jetbrains.buildServer.notification.slack.SlackWebApiFactory
-import jetbrains.buildServer.notification.slack.SlackWebApiFactoryImpl
+import jetbrains.buildServer.notification.*
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
 import jetbrains.buildServer.serverSide.*
@@ -14,8 +14,12 @@ import jetbrains.buildServer.tests.TestName
 import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.VcsRoot
 import kotlinx.coroutines.runBlocking
+import org.springframework.context.annotation.Conditional
+import org.springframework.stereotype.Service
 import retrofit2.await
 
+@Service
+@Conditional(SlackNotifierEnabled::class)
 class SlackNotifier(
     notifierRegistry: NotificatorRegistry,
     slackApiFactory: SlackWebApiFactory,
@@ -28,7 +32,12 @@ class SlackNotifier(
 ) : NotificatorAdapter() {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
-    private val config = SlackNotifierConfig(serverPaths, descriptor, this)
+    private val config =
+        SlackNotifierConfig(
+            serverPaths,
+            descriptor,
+            this
+        )
 
     private val logger = Logger.getInstance(SlackNotifier::class.java.name)
 
@@ -224,7 +233,9 @@ class SlackNotifier(
     }
 
     private fun getToken(project: SProject, connectionId: String): String? {
-        val connection = oauthManager.getAvailableConnectionsOfType(project, SlackConnection.type)
+        val connection = oauthManager.getAvailableConnectionsOfType(project,
+                SlackConnection.type
+            )
             .find { it.parameters["externalId"] == connectionId } ?: return null
 
         val token = connection.parameters["secure:token"]

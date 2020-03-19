@@ -1,7 +1,6 @@
 package jetbrains.buildServer.notification
 
-import jetbrains.buildServer.notification.slack.SlackWebApi
-import jetbrains.buildServer.notification.slack.SlackWebApiFactory
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 
 class MockSlackWebApiFactory : SlackWebApiFactory {
     private val slackWebApi = MockSlackWebApi()

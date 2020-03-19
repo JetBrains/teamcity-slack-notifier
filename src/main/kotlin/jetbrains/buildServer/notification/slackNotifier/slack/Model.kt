@@ -1,4 +1,4 @@
-package jetbrains.buildServer.notification.slack
+package jetbrains.buildServer.notification.slackNotifier.slack
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty

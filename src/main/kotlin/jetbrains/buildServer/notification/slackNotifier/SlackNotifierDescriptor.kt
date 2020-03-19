@@ -1,12 +1,18 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.PluginTypes
+import jetbrains.buildServer.notification.BuildTypeNotifierDescriptor
 import jetbrains.buildServer.serverSide.ControlDescription
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.Parameter
+import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.users.PluginPropertyKey
 import jetbrains.buildServer.web.openapi.PluginDescriptor
+import org.springframework.context.annotation.Conditional
+import org.springframework.stereotype.Service
 
+@Service
+@Conditional(SlackNotifierEnabled::class)
 class SlackNotifierDescriptor(
     private val pluginDescriptor: PluginDescriptor
 ) : BuildTypeNotifierDescriptor {
@@ -36,7 +42,13 @@ class SlackNotifierDescriptor(
     }
 
     override fun getType(): String = "jbSlackNotifier"
-    override fun getDisplayName(): String = "Experimental Slack Notifier"
+    override fun getDisplayName(): String {
+        if (TeamCityProperties.getBoolean(SlackNotifierProperties.enable)) {
+            return "Experimental Slack Notifier"
+        }
+
+        return "(Not Implemented Yet)"
+    }
 
     override fun getEditParametersUrl(): String =
             pluginDescriptor.getPluginResourcesPath("editBuildTypeSlackNotifierSettings.html")

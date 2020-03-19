@@ -1,10 +1,10 @@
 package jetbrains.buildServer.notification
 
+import jetbrains.buildServer.notification.slackNotifier.SlackConnection
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.impl.BaseServerTestCase
-import jetbrains.buildServer.web.openapi.PluginDescriptor
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 
@@ -16,7 +16,9 @@ class SlackConnectionTest : BaseServerTestCase() {
     override fun setUp() {
         super.setUp()
         
-        connection = SlackConnection(MockServerPluginDescriptior())
+        connection = SlackConnection(
+            MockServerPluginDescriptior()
+        )
         processor = connection.propertiesProcessor
     }
 

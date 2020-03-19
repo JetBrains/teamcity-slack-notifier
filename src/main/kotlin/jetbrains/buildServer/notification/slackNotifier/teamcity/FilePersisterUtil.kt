@@ -1,4 +1,4 @@
-package jetbrains.buildServer.notification.teamcity
+package jetbrains.buildServer.notification.slackNotifier.teamcity
 
 import jetbrains.buildServer.util.FileUtil
 import jetbrains.buildServer.util.XmlUtil

@@ -1,6 +1,9 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.controllers.admin.AdminPage
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifier
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptor
+import jetbrains.buildServer.notification.slackNotifier.SlackSettingsBean
 import jetbrains.buildServer.web.openapi.Groupable
 import jetbrains.buildServer.web.openapi.PagePlaces
 import jetbrains.buildServer.web.openapi.PluginDescriptor
@@ -31,7 +34,10 @@ class SlackNotifierConfigAdminPage(
 
     override fun fillModel(model: MutableMap<String, Any>, request: HttpServletRequest) {
         super.fillModel(model, request)
-        model["slackSettings"] = SlackSettingsBean(config.isPaused, config.botToken)
+        model["slackSettings"] = SlackSettingsBean(
+            config.isPaused,
+            config.botToken
+        )
     }
 
     override fun getGroup(): String =

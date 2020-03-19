@@ -1,5 +1,8 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
+import org.springframework.stereotype.Service
+
+@Service
 class SlackMessageFormatter {
     fun url(url: String, text: String = ""): String {
         return "<${url}|${text}>"

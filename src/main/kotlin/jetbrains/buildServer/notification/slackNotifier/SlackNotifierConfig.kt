@@ -1,10 +1,10 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.JDOMUtil
 import jetbrains.buildServer.configuration.ChangeListener
 import jetbrains.buildServer.configuration.FileWatcher
-import jetbrains.buildServer.notification.teamcity.FilePersisterUtil
+import jetbrains.buildServer.notification.slackNotifier.teamcity.FilePersisterUtil
 import jetbrains.buildServer.serverSide.ServerPaths
 import jetbrains.buildServer.util.FileUtil
 import org.jdom.Document

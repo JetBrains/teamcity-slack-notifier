@@ -13,11 +13,12 @@
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="util" uri="/WEB-INF/functions/util" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
 <jsp:useBean id="availableConnections"
              type="java.util.List<jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor>" scope="request"/>
-<jsp:useBean id="descriptor" type="jetbrains.buildServer.notification.SlackNotifierDescriptor" scope="request"/>
+<jsp:useBean id="descriptor" type="jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptor" scope="request"/>
 
 <tr>
     <th>

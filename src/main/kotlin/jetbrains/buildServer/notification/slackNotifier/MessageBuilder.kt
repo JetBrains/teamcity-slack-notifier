@@ -1,6 +1,7 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.Build
+import jetbrains.buildServer.notification.slackNotifier.MessagePayload
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
 import jetbrains.buildServer.serverSide.SBuildType

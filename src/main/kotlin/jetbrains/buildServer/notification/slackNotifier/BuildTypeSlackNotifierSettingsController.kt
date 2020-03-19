@@ -1,17 +1,22 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.BasePropertiesBean
 import jetbrains.buildServer.serverSide.BuildTypeNotFoundException
 import jetbrains.buildServer.serverSide.BuildTypeSettings
 import jetbrains.buildServer.serverSide.ProjectManager
+import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
+import org.springframework.context.annotation.Conditional
+import org.springframework.stereotype.Service
 import org.springframework.web.servlet.ModelAndView
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+@Service
+@Conditional(SlackNotifierEnabled::class)
 class BuildTypeSlackNotifierSettingsController(
     private val pluginDescriptor: PluginDescriptor,
     private val projectManager: ProjectManager,

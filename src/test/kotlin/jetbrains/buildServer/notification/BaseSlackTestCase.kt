@@ -3,13 +3,13 @@ package jetbrains.buildServer.notification
 import jetbrains.buildServer.BuildProblemData
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.messages.DefaultMessagesInfo
+import jetbrains.buildServer.notification.slackNotifier.*
 import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.SBuild
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.users.SUser
 import org.testng.annotations.BeforeMethod
-import java.util.*
 import java.util.function.BooleanSupplier
 
 open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
@@ -32,7 +32,9 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         val slackApiFactory = MockSlackWebApiFactory()
         mySlackApi = slackApiFactory.createSlackWebApi()
 
-        myDescriptor = SlackNotifierDescriptor(MockServerPluginDescriptior())
+        myDescriptor = SlackNotifierDescriptor(
+            MockServerPluginDescriptior()
+        )
         myNotifier = SlackNotifier(
             myFixture.notificatorRegistry,
             slackApiFactory,

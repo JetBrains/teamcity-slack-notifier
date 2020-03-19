@@ -1,11 +1,16 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
+import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider
 import jetbrains.buildServer.web.openapi.PluginDescriptor
+import org.springframework.context.annotation.Conditional
+import org.springframework.stereotype.Service
 
+@Service
+@Conditional(SlackNotifierEnabled::class)
 class SlackConnection(
     private val pluginDescriptor: PluginDescriptor
 ) : OAuthProvider() {
@@ -52,6 +57,13 @@ class SlackConnection(
 
     companion object {
         const val type = "slackConnection"
-        const val name = "Slack Connection"
+        val name: String
+            get() {
+                return if (TeamCityProperties.getBoolean(SlackNotifierProperties.enable)) {
+                    "Slack Connection"
+                } else {
+                    "Not Implemented Yet"
+                }
+            }
     }
 }

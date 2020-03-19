@@ -1,4 +1,4 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
@@ -9,7 +9,9 @@ import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
 import jetbrains.buildServer.tests.TestName
 import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.VcsRoot
+import org.springframework.stereotype.Service
 
+@Service
 class SimpleMessageBuilder(
     private val format: SlackMessageFormatter,
     private val links: RelativeWebLinks,

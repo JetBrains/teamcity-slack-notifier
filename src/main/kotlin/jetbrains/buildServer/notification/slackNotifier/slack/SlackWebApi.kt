@@ -1,4 +1,4 @@
-package jetbrains.buildServer.notification.slack
+package jetbrains.buildServer.notification.slackNotifier.slack
 
 import retrofit2.Call
 import retrofit2.http.Body

@@ -1,7 +1,7 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
-import jetbrains.buildServer.notification.slack.Message
-import jetbrains.buildServer.notification.slack.MessageAttachment
+import jetbrains.buildServer.notification.slackNotifier.slack.Message
+import jetbrains.buildServer.notification.slackNotifier.slack.MessageAttachment
 
 data class MessagePayload(
     val text: String,

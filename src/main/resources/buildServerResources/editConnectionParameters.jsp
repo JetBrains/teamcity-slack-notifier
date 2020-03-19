@@ -1,5 +1,6 @@
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ include file="/include-internal.jsp" %>
+<%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
 
 <tr>

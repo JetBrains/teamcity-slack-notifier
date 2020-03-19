@@ -1,7 +1,9 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.FormUtil
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifier
+import jetbrains.buildServer.notification.slackNotifier.SlackSettingsBean
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.view.RedirectView
@@ -20,7 +22,10 @@ class SlackNotifierConfigController(
     }
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
-        val bean = SlackSettingsBean(slackNotifierConfig.isPaused, slackNotifierConfig.botToken)
+        val bean = SlackSettingsBean(
+            slackNotifierConfig.isPaused,
+            slackNotifierConfig.botToken
+        )
         FormUtil.bindFromRequest(request, bean)
         slackNotifierConfig.isPaused = bean.isPaused
         slackNotifierConfig.botToken = bean.botToken

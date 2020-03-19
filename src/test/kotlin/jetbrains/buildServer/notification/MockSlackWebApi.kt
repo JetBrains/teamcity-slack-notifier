@@ -1,8 +1,8 @@
 package jetbrains.buildServer.notification
 
-import jetbrains.buildServer.notification.slack.MaybeMessage
-import jetbrains.buildServer.notification.slack.Message
-import jetbrains.buildServer.notification.slack.SlackWebApi
+import jetbrains.buildServer.notification.slackNotifier.slack.MaybeMessage
+import jetbrains.buildServer.notification.slackNotifier.slack.Message
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApi
 import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
