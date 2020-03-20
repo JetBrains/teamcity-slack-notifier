@@ -14,6 +14,7 @@
 <%@ taglib prefix="util" uri="/WEB-INF/functions/util" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
+<%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
 <jsp:useBean id="availableConnections"
@@ -22,16 +23,17 @@
 
 <tr>
     <th>
-        #channel or user id:
+        #channel or user id:<l:star/>
     </th>
     <td>
         <props:textProperty name="${descriptor.channelProperty.key}" className="longField"/>
+        <span class="error" id="error_${descriptor.channelProperty.key}"></span>
     </td>
 </tr>
 
 <tr>
     <th>
-        Connection to use:
+        Connection to use:<l:star/>
     </th>
     <td>
         <c:choose>
@@ -49,5 +51,6 @@
             </c:otherwise>
         </c:choose>
 
+        <span class="error" id="error_${descriptor.connectionProperty.key}"></span>
     </td>
 </tr>

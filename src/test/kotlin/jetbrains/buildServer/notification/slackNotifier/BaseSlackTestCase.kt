@@ -1,9 +1,10 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.BuildProblemData
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.messages.DefaultMessagesInfo
-import jetbrains.buildServer.notification.slackNotifier.*
+import jetbrains.buildServer.notification.*
+import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.SBuild
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
@@ -29,17 +30,18 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
         val connectionManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
 
-        val slackApiFactory = MockSlackWebApiFactory()
+        val slackApiFactory =
+                MockSlackWebApiFactory()
         mySlackApi = slackApiFactory.createSlackWebApi()
 
         myDescriptor = SlackNotifierDescriptor(
-            MockServerPluginDescriptior()
+                MockServerPluginDescriptior()
         )
         myNotifier = SlackNotifier(
-            myFixture.notificatorRegistry,
-            slackApiFactory,
-            SimpleMessageBuilder(
-                SlackMessageFormatter(),
+                myFixture.notificatorRegistry,
+                slackApiFactory,
+                SimpleMessageBuilder(
+                        SlackMessageFormatter(),
                 myFixture.webLinks,
                 myProjectManager
             ),
@@ -182,4 +184,6 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     private fun <T> Iterable<T>.last(): T {
         return reversed().first()
     }
+
+    fun invalidProperty(name: String): InvalidProperty = InvalidProperty(name, "")
 }

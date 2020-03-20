@@ -46,7 +46,7 @@ dependencies {
     provided("org.jetbrains.teamcity:oauth:2020.1-SNAPSHOT")
 
     testImplementation(fileTree(mapOf("dir" to teamcityTestLibs, "include" to arrayOf("*.jar"))))
-    testImplementation("org.jetbrains.teamcity:tests-support:2020.1-SNAPSHOT")
+    //testImplementation("org.jetbrains.teamcity:tests-support:2020.1-SNAPSHOT")
     testImplementation("org.assertj:assertj-core:1.7.1")
     testImplementation("org.testng:testng:6.8")
 }

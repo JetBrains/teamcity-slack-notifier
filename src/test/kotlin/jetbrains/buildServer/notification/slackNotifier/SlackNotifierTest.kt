@@ -1,4 +1,4 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 
 import org.testng.annotations.Test

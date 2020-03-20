@@ -1,4 +1,4 @@
-package jetbrains.buildServer.notification
+package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.notification.slackNotifier.slack.MaybeMessage
 import jetbrains.buildServer.notification.slackNotifier.slack.Message

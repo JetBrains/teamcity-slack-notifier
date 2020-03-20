@@ -24,8 +24,20 @@ class SlackNotifierDescriptor(
     val connectionProperty =
             PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, type, connectionPropertyName)
 
-    override fun validate(parameteres: Map<String, Parameter>): MutableCollection<InvalidProperty> {
-        return mutableListOf()
+    override fun validate(properties: Map<String, String>): MutableCollection<InvalidProperty> {
+        val invalidProperties = mutableListOf<InvalidProperty>()
+
+        val channel = properties[channelProperty.key]
+        if (channel.isNullOrEmpty()) {
+            invalidProperties.add(InvalidProperty(channelProperty.key, "Channel or user id must not be empty"))
+        }
+
+        val connection = properties[connectionProperty.key]
+        if (connection.isNullOrEmpty()) {
+            invalidProperties.add(InvalidProperty(connectionProperty.key, "Connection must be selected"))
+        }
+
+        return invalidProperties
     }
 
     override fun describeParameters(parameters: MutableMap<String, String>): String {
@@ -43,11 +55,7 @@ class SlackNotifierDescriptor(
 
     override fun getType(): String = "jbSlackNotifier"
     override fun getDisplayName(): String {
-        if (TeamCityProperties.getBoolean(SlackNotifierProperties.enable)) {
-            return "Experimental Slack Notifier"
-        }
-
-        return "(Not Implemented Yet)"
+        return "Experimental Slack Notifier"
     }
 
     override fun getEditParametersUrl(): String =
