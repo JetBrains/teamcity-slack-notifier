@@ -13,15 +13,6 @@
 </tr>
 
 <tr>
-    <td><label for="displayName">External id:</label><l:star/></td>
-    <td>
-        <props:textProperty name="externalId" className="longField"/>
-        <span class="smallNote">Provide external id to be used in DSL</span>
-        <span class="error" id="error_externalId"></span>
-    </td>
-</tr>
-
-<tr>
     <td><label for="secure:token">Slack bot token:</label><l:star/></td>
     <td>
         <props:passwordProperty name="secure:token" className="longField"/>

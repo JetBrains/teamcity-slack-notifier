@@ -8,6 +8,7 @@ import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.SBuild
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
+import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.users.SUser
 import org.testng.annotations.BeforeMethod
@@ -19,6 +20,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     private lateinit var myNotifier: SlackNotifier
     private lateinit var myUser: SUser
     private lateinit var myAssignerUser: SUser
+
+    private lateinit var myConnection: OAuthConnectionDescriptor
 
     @BeforeMethod(alwaysRun = true)
     override fun setUp() {
@@ -54,15 +57,15 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myFixture.addService(myDescriptor)
         myFixture.addService(myNotifier)
 
-        connectionManager.addConnection(
+        myConnection = connectionManager.addConnection(
             myProject,
             SlackConnection.type,
-            mapOf("externalId" to "test_connection", "secure:token" to "test_token")
+            mapOf("secure:token" to "test_token")
         )
 
         myUser = createUser("test_user")
         myUser.setUserProperty(myDescriptor.channelProperty, "#test_channel")
-        myUser.setUserProperty(myDescriptor.connectionProperty, "test_connection")
+        myUser.setUserProperty(myDescriptor.connectionProperty, myConnection.id)
         makeProjectAccessible(myUser, myProject.projectId)
 
         myAssignerUser = createUser("investigation_assigner")
@@ -79,7 +82,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
             mapOf(
                 "notifier" to myNotifier.notificatorType,
                 myDescriptor.channelProperty.key to "#test_channel",
-                myDescriptor.connectionProperty.key to "test_connection",
+                myDescriptor.connectionProperty.key to myConnection.id,
                 *(events.map { NotificationRulesConstants.getName(it) to "true" }).toTypedArray()
             )
         )

@@ -29,22 +29,11 @@ class SlackConnection(
             return "Connection to a single Slack workspace"
         }
 
-        val connectionId = connection.parameters["externalId"]
-
-        val externalId = "External id: $connectionId"
-
-        return "${displayName}\n${externalId}"
+        return displayName
     }
 
     override fun getPropertiesProcessor(): PropertiesProcessor = PropertiesProcessor {
         val errors = mutableListOf<InvalidProperty>()
-
-        // TODO: Check that this id is unique
-        // TODO: Check for incorrect symbols
-        val externalId = it["externalId"]
-        if (externalId.isNullOrEmpty()) {
-            errors.add(InvalidProperty("externalId", "External id should not be empty"))
-        }
 
         // TODO: Add check that token is valid
         val botToken = it["secure:token"]

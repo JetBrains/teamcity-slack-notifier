@@ -44,7 +44,7 @@
                 <props:selectProperty name="${descriptor.connectionProperty.key}" className="longField">
                     <props:option value="">-- Choose Slack connection --</props:option>
                     <c:forEach var="connection" items="${availableConnections}">
-                        <props:option value="${connection.parameters['externalId']}"><c:out
+                        <props:option value="${connection.id}"><c:out
                             value="${connection.connectionDisplayName}"/></props:option>
                     </c:forEach>
                 </props:selectProperty>

@@ -20,23 +20,6 @@ class SlackConnectionTest : BaseSlackTestCase() {
     }
 
     @Test
-    fun `test properties processor should check for externalId`() {
-        assertContains(
-            processor.process(emptyMap()),
-                invalidProperty("externalId")
-        )
-        assertContains(
-            processor.process(mapOf("externalId" to "")),
-                invalidProperty("externalId")
-        )
-
-        assertNotContains(
-            processor.process(mapOf("externalId" to "jetbrains.slack.com")),
-                invalidProperty("externalId")
-        )
-    }
-
-    @Test
     fun `test properties processor should check for token`() {
         assertContains(
             processor.process(emptyMap()),

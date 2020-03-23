@@ -43,11 +43,12 @@ class SlackNotifier(
 
     init {
         notifierRegistry.register(
-            this,
+            this/*,
             listOf(
                 UserPropertyInfo(descriptor.channelPropertyName, "#channel or user id"),
-                UserPropertyInfo(descriptor.connectionPropertyName, "Connection external id")
+                UserPropertyInfo(descriptor.connectionPropertyName, "Connection id")
             )
+            */
         )
     }
 
@@ -236,7 +237,7 @@ class SlackNotifier(
         val connection = oauthManager.getAvailableConnectionsOfType(project,
                 SlackConnection.type
             )
-            .find { it.parameters["externalId"] == connectionId } ?: return null
+            .find { it.id == connectionId } ?: return null
 
         val token = connection.parameters["secure:token"]
         if (token != null) {
