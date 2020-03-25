@@ -35,7 +35,6 @@ allprojects {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    implementation("com.squareup.okhttp3:okhttp:4.4.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
 
     provided(fileTree(mapOf("dir" to teamcityLibs, "include" to arrayOf("*.jar"))))
