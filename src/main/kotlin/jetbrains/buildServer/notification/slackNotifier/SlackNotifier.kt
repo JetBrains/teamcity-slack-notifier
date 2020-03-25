@@ -2,7 +2,8 @@ package jetbrains.buildServer.notification.slackNotifier
 
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
-import jetbrains.buildServer.notification.*
+import jetbrains.buildServer.notification.NotificatorAdapter
+import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
@@ -13,10 +14,8 @@ import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
 import jetbrains.buildServer.tests.TestName
 import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.VcsRoot
-import kotlinx.coroutines.runBlocking
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
-import retrofit2.await
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
@@ -226,7 +225,7 @@ class SlackNotifier(
             return
         }
 
-        val result = runBlocking { slackApi.postMessage("Bearer $token", message.toSlackMessage(sendTo)).await() }
+        val result = slackApi.postMessage(token, message.toSlackMessage(sendTo))
 
         if (!result.ok) {
             logger.error("Error sending message to $sendTo: ${result.error}")

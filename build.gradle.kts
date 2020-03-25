@@ -35,9 +35,6 @@ allprojects {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.3")
-    implementation("com.squareup.retrofit2:retrofit:2.7.1")
     implementation("com.squareup.okhttp3:okhttp:4.4.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
 
@@ -46,7 +43,6 @@ dependencies {
     provided("org.jetbrains.teamcity:oauth:2020.1-SNAPSHOT")
 
     testImplementation(fileTree(mapOf("dir" to teamcityTestLibs, "include" to arrayOf("*.jar"))))
-    //testImplementation("org.jetbrains.teamcity:tests-support:2020.1-SNAPSHOT")
     testImplementation("org.assertj:assertj-core:1.7.1")
     testImplementation("org.testng:testng:6.8")
 }
