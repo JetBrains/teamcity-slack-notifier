@@ -64,7 +64,7 @@ class SlackNotifierDescriptor(
                 ),
 
                 connectionProperty.key to ParametersUtil.createControlDescription(
-                        "select",
+                        "selection",
                         mapOf(
                                 WellknownParameterArguments.ARGUMENT_DESCRIPTION.name to "Connection",
                                 WellknownParameterArguments.REQUIRED.name to "true",
