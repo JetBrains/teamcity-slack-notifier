@@ -42,12 +42,7 @@ class SlackNotifier(
 
     init {
         notifierRegistry.register(
-            this/*,
-            listOf(
-                UserPropertyInfo(descriptor.channelPropertyName, "#channel or user id"),
-                UserPropertyInfo(descriptor.connectionPropertyName, "Connection id")
-            )
-            */
+            this
         )
     }
 
