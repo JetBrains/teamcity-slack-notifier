@@ -21,7 +21,13 @@ class SimpleMessageBuilder(
     private val maxBuildProblemsToShow = 10
 
     override fun buildStarted(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("${buildUrl(build)} started")
+        val triggeredBy = build.triggeredBy
+        val prefix = if (triggeredBy.isTriggeredByUser) {
+            ". Triggered manually by ${triggeredBy.user!!.descriptiveName}"
+        } else {
+            ""
+        }
+        return MessagePayload("${buildUrl(build)} started${prefix}")
     }
 
     override fun buildSuccessful(build: SRunningBuild, users: Set<SUser?>): MessagePayload {

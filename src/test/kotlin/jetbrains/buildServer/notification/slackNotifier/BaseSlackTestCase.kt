@@ -91,13 +91,19 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     }
 
     fun `when build starts`(): SBuild = startBuild()
+    fun `when build is triggered manually`(): SBuild {
+        return build().`in`(myBuildType).by(createUser("user_who_triggered_the_build")).run()
+    }
+
     fun `when build finishes`(): SBuild {
         startBuild()
         return finishBuild()
     }
+
     fun `when build fails`(): SBuild {
         return createFailedBuild()
     }
+
     fun `when build newly fails`(): SBuild {
         startBuild()
         finishBuild()

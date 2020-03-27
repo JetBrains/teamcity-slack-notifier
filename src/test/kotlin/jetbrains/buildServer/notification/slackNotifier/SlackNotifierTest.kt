@@ -1,8 +1,8 @@
 package jetbrains.buildServer.notification.slackNotifier
 
 
-import org.testng.annotations.Test
 import jetbrains.buildServer.notification.NotificationRule.Event.*
+import org.testng.annotations.Test
 
 
 class SlackNotifierTest : BaseSlackTestCase() {
@@ -104,5 +104,12 @@ class SlackNotifierTest : BaseSlackTestCase() {
         `given build feature is subscribed to`(NEW_BUILD_PROBLEM_OCCURRED, BUILD_FINISHED_FAILURE)
         val build = `when build problem occurs`()
         `then message should contain`("fail", build.buildNumber)
+    }
+
+    @Test
+    fun `test notification about manual build start should contain user who triggered it`() {
+        `given user is subscribed to`(BUILD_STARTED)
+        val build = `when build is triggered manually`()
+        `then message should contain`(build.triggeredBy.user!!.descriptiveName)
     }
 }
