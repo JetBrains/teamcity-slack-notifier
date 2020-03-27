@@ -23,7 +23,7 @@ class SimpleMessageBuilder(
     override fun buildStarted(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
         val triggeredBy = build.triggeredBy
         val prefix = if (triggeredBy.isTriggeredByUser) {
-            ". Triggered manually by ${triggeredBy.user!!.descriptiveName}"
+            " by ${triggeredBy.user!!.descriptiveName}"
         } else {
             ""
         }
