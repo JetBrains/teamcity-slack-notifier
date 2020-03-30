@@ -5,6 +5,7 @@
             <class name="jetbrains.buildServer.notification.slackNotifier.SlackConnectionTest"/>
             <class name="jetbrains.buildServer.notification.slackNotifier.SlackNotifierTest"/>
             <class name="jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptorTest"/>
+            <class name="jetbrains.buildServer.notification.slackNotifier.SlackNotifierChannelCompletionControllerTest"/>
         </classes>
     </test>
 </suite>

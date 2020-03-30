@@ -178,13 +178,6 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         assertEmpty(mySlackApi.messages)
     }
 
-    infix fun <T> T.And(other: T): List<T> {
-        return listOf(this, other)
-    }
-
-    infix fun <T> List<T>.And(other: T): List<T> {
-        return this + other
-    }
 
     fun Int.`messages should be sent`() {
         waitForAssert(BooleanSupplier {

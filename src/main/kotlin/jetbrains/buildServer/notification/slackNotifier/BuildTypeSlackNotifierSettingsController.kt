@@ -2,10 +2,9 @@ package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.BasePropertiesBean
+import jetbrains.buildServer.notification.slackNotifier.teamcity.findBuildTypeSettingsByExternalId
 import jetbrains.buildServer.serverSide.BuildTypeNotFoundException
-import jetbrains.buildServer.serverSide.BuildTypeSettings
 import jetbrains.buildServer.serverSide.ProjectManager
-import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
@@ -35,19 +34,8 @@ class BuildTypeSlackNotifierSettingsController(
         val buildTypeId = request.getParameter("buildTypeId")
         val featureId = request.getParameter("featureId")
 
-        var buildType: BuildTypeSettings? = null
-        when {
-            buildTypeId.startsWith("buildType:") -> {
-                buildType = projectManager.findBuildTypeByExternalId(buildTypeId.substring("buildType:".length))
-            }
-            buildTypeId.startsWith("template:") -> {
-                buildType = projectManager.findBuildTypeTemplateByExternalId(buildTypeId.substring("template:".length))
-            }
-        }
-
-        if (buildType == null) {
-            throw BuildTypeNotFoundException("Can't find build type or build template with id '${buildTypeId}'")
-        }
+        val buildType = projectManager.findBuildTypeSettingsByExternalId(buildTypeId)
+            ?: throw BuildTypeNotFoundException("Can't find build type or build template with id '${buildTypeId}'")
 
         val project = buildType.project
 
@@ -58,6 +46,7 @@ class BuildTypeSlackNotifierSettingsController(
 
         mv.model["propertiesBean"] = BasePropertiesBean(feature?.parameters)
         mv.model["descriptor"] = slackNotifierDescriptor
+        mv.model["buildTypeId"] = buildTypeId
 
         return mv
     }

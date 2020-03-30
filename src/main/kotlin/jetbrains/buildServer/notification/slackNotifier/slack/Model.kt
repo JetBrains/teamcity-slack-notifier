@@ -39,10 +39,10 @@ interface UserInfoAware {
 data class User(
     override val id: String,
     @JsonProperty("team_id")
-    val teamId: String,
-    override val deleted: Boolean,
-    val profile: UserProfile,
-    val name: String
+    val teamId: String = "",
+    override val deleted: Boolean = false,
+    val profile: UserProfile = UserProfile(),
+    val name: String = ""
     /*val color: String,
     val tz: String,
     val tz_label: String,
@@ -89,9 +89,9 @@ data class MaybePresence(
 
 data class UserProfile(
     @JsonProperty("real_name")
-    val realName: String,
+    val realName: String = "",
     @JsonProperty("display_name")
-    val displayName: String,
+    val displayName: String = "",
     val email: String = "", // for some reason I can't get it even with 'users:read.email' permission granted
     @JsonProperty("status_text")
     val statusText: String = "",
@@ -122,7 +122,13 @@ data class UsersList(
     val members: List<User> = emptyList(),
     @JsonProperty("cache_ts") val timestamp: Long = Long.MIN_VALUE,
     @JsonProperty("response_metadata") val meta: CursorMetaData = noCursorMeta
-) : MaybeError
+) : MaybeError, SlackList<User> {
+    override val nextCursor: String
+        get() = meta.nextCursor
+
+    override val data: List<User>
+        get() = members
+}
 
 // https://api.slack.com/events/url_verification
 data class URLVerificationResponse(val challenge: String)
@@ -314,6 +320,26 @@ data class MaybeChannel(
     val channel: Channel = noChannel
 ) : MaybeError
 
+interface SlackList<T> {
+    val nextCursor: String
+    val data: List<T>
+}
+
+// https://api.slack.com/methods/channels.list
+data class ChannelsList(
+    override val ok: Boolean = false,
+    override val error: String = "",
+    override val needed: String = "",
+    val channels: List<Channel> = emptyList(),
+    @JsonProperty("response_metadata") val meta: CursorMetaData = noCursorMeta
+) : MaybeError, SlackList<Channel> {
+    override val nextCursor: String
+        get() = meta.nextCursor
+
+    override val data: List<Channel>
+        get() = channels
+}
+
 // https://api.slack.com/methods/chat.postMessage
 data class PostedMessage(
     val type: String = "",
@@ -372,7 +398,13 @@ data class IMTarget(
 )
 
 data class Channel(
-    val id: String = ""
+    val id: String = "",
+    val name: String = "",
+    val purpose: ChannelPurpose? = noPurpose
+)
+
+data class ChannelPurpose(
+    val value: String = ""
 )
 
 data class EphemeralMessage(

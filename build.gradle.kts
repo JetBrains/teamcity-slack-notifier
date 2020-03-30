@@ -36,6 +36,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
+    implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
 
     provided(fileTree(mapOf("dir" to teamcityLibs, "include" to arrayOf("*.jar"))))
     provided("org.jetbrains.teamcity:server-api:2020.1-SNAPSHOT")

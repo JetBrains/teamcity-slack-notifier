@@ -16,13 +16,6 @@
     /js/bs/testConnection.js
 </bs:linkScript>
 
-<script type="text/javascript">
-    $j(function () {
-        Email.SettingsForm.setupEventHandlers();
-        $('hostname').focus();
-    });
-</script>
-
 <c:url value="/admin/jbSlackNotifier/notifierSettings.html" var="url"/>
 
 <div id="settingsContainer">
@@ -107,7 +100,6 @@
 <script type="text/javascript">
     $j(function () {
         <c:if test="${not afn:permissionGrantedGlobally('CHANGE_SERVER_SETTINGS')}">
-        //Email.SettingsForm.setReadOnly();
         $j('#saveButtons').addClass("hidden");
         $j('#enable-btn').addClass("hidden");
         $j('#disable-btn').addClass("hidden");

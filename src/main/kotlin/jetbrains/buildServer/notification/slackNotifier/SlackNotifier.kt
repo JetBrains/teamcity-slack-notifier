@@ -228,10 +228,7 @@ class SlackNotifier(
     }
 
     private fun getToken(project: SProject, connectionId: String): String? {
-        val connection = oauthManager.getAvailableConnectionsOfType(project,
-                SlackConnection.type
-            )
-            .find { it.id == connectionId } ?: return null
+        val connection = oauthManager.findConnectionById(project, connectionId) ?: return null
 
         val token = connection.parameters["secure:token"]
         if (token != null) {
