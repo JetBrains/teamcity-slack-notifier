@@ -21,11 +21,12 @@ import javax.servlet.http.HttpServletRequest
 
 @Service
 class SlackNotifierChannelCompletionController(
-    securityContext: SecurityContext,
-    webControllerManager: WebControllerManager,
-    private val projectManager: ProjectManager,
-    private val oAuthConnectionsManager: OAuthConnectionsManager,
-    slackWebApiFactory: SlackWebApiFactory
+        securityContext: SecurityContext,
+        webControllerManager: WebControllerManager,
+        private val projectManager: ProjectManager,
+        private val oAuthConnectionsManager: OAuthConnectionsManager,
+        slackWebApiFactory: SlackWebApiFactory,
+        private val descriptor: SlackNotifierDescriptor
 ) : BaseAutocompletionController(securityContext) {
     private val slackApi = slackWebApiFactory.createSlackWebApi()
 
@@ -44,9 +45,9 @@ class SlackNotifierChannelCompletionController(
             TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
             TimeUnit.SECONDS
         )
-        .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumUsersToCache, 50_000))
-        .weigher { _: String, users: List<User> -> users.size }
-        .build<String, List<User>>()
+            .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumUsersToCache, 50_000))
+            .weigher { _: String, users: List<User> -> users.size }
+            .build<String, List<User>>()
 
     // Don't move this magic constant to properties as it's optimized for good looking in autocomplete UI
     // Making it too big might mess with UI
@@ -54,24 +55,25 @@ class SlackNotifierChannelCompletionController(
 
     private val log = Logger.getInstance(SlackNotifierChannelCompletionController::class.java.name)
 
+    companion object {
+        const val url = "/admin/notifications/jbSlackNotifier/autocompleteUserId.html"
+    }
+
     init {
-        webControllerManager.registerController("/admin/notifications/jbSlackNotifier/autocompleteUserId.html", this)
+        webControllerManager.registerController(url, this)
     }
 
     override fun getCompletionData(request: HttpServletRequest): List<Completion> {
         val term = getParameter(request, "term") ?: return mutableListOf()
-        val connectionId = getParameter(request, "connectionId") ?: return mutableListOf()
-        val buildTypeId = getParameter(request, "buildTypeId") ?: return mutableListOf()
+        val connectionId = getParameter(request, descriptor.connectionProperty.key) ?: return mutableListOf()
 
-        val buildType = projectManager.findBuildTypeSettingsByExternalId(buildTypeId)
-            ?: throw BuildTypeNotFoundException("Can't find build type or build template with id '${buildTypeId}'")
+        val connection = projectManager.projects.asSequence().mapNotNull { project ->
+            oAuthConnectionsManager.findConnectionById(project, connectionId)
+        }.firstOrNull()
 
-        val project = buildType.project
-        val connection = oAuthConnectionsManager.findConnectionById(project, connectionId)
         if (connection == null) {
             log.warn(
-                "Can't compute autocompletion because no connection with id '${connectionId}'" +
-                        " found in project with id ${project.externalId}"
+                    "Can't compute autocompletion because no connection with id '${connectionId}' found"
             )
             return mutableListOf()
         }

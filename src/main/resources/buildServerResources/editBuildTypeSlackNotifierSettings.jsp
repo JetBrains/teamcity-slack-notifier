@@ -40,8 +40,8 @@
                 }
 
                 var url = '${autocompletionUrl}' + '?term=' + encodeURIComponent(term) +
-                    '&connectionId=' + encodeURIComponent(connectionId) +
-                    '&buildTypeId=${buildTypeId}';
+                    '&' + encodeURIComponent('plugin:notificator:jbSlackNotifier:connection') +
+                    '=' + encodeURIComponent(connectionId);
 
                 $j.getJSON(window["base_uri"] + url, function (data) {
                     response(data);

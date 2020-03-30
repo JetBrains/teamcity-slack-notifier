@@ -55,20 +55,20 @@ class SlackNotifierDescriptor(
 
     override fun getParameters(): MutableMap<String, ControlDescription> {
         return mutableMapOf(
-                channelProperty.key to ParametersUtil.createControlDescription(
-                        TextParameter.KEY,
-                        mapOf(
-                                WellknownParameterArguments.ARGUMENT_DESCRIPTION.name to "#channel or user id",
-                                WellknownParameterArguments.REQUIRED.name to "true"
-                        )
-                ),
-
                 connectionProperty.key to ParametersUtil.createControlDescription(
                         "selection",
                         mapOf(
                                 WellknownParameterArguments.ARGUMENT_DESCRIPTION.name to "Connection",
                                 WellknownParameterArguments.REQUIRED.name to "true",
                                 "selectOptionsProviderId" to connectionOptionsSelectProvider.id
+                        )
+                ),
+                channelProperty.key to ParametersUtil.createControlDescription(
+                        TextParameter.KEY,
+                        mapOf(
+                                WellknownParameterArguments.ARGUMENT_DESCRIPTION.name to "#channel or user id",
+                                WellknownParameterArguments.REQUIRED.name to "true",
+                                "hintUrl" to SlackNotifierChannelCompletionController.url
                         )
                 )
         )
