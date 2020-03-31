@@ -8,18 +8,18 @@ import jetbrains.buildServer.notification.slackNotifier.slack.Channel
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackList
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.notification.slackNotifier.slack.User
-import jetbrains.buildServer.notification.slackNotifier.teamcity.findBuildTypeSettingsByExternalId
-import jetbrains.buildServer.serverSide.BuildTypeNotFoundException
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.serverSide.auth.SecurityContext
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.web.openapi.WebControllerManager
+import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 import javax.servlet.http.HttpServletRequest
 
 @Service
+@Conditional(SlackNotifierEnabled::class)
 class SlackNotifierChannelCompletionController(
         securityContext: SecurityContext,
         webControllerManager: WebControllerManager,
