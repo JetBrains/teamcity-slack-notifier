@@ -14,6 +14,7 @@ import org.testng.annotations.Test
 class SlackNotifierChannelCompletionControllerTest :
     BaseControllerTestCase<SlackNotifierChannelCompletionController>() {
     lateinit var myConnection: OAuthConnectionDescriptor
+    lateinit var myDescriptor: SlackNotifierDescriptor
 
     lateinit var myCompletions: Array<Completion>
 
@@ -21,6 +22,10 @@ class SlackNotifierChannelCompletionControllerTest :
 
         val oauthManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
         myConnection = oauthManager.addConnection(myProject, "test_type", mapOf("secure:token" to "test_token"))
+        myDescriptor = SlackNotifierDescriptor(
+            MockServerPluginDescriptior(),
+            SlackConnectionSelectOptionsProvider(myFixture.projectManager, oauthManager)
+        )
 
         return SlackNotifierChannelCompletionController(
             myFixture.securityContext,
@@ -28,10 +33,7 @@ class SlackNotifierChannelCompletionControllerTest :
             myFixture.projectManager,
             OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java)),
             MockSlackWebApiFactory(),
-            SlackNotifierDescriptor(
-                MockServerPluginDescriptior(),
-                SlackConnectionSelectOptionsProvider(myFixture.projectManager, oauthManager)
-            )
+            myDescriptor
         )
     }
 
@@ -104,8 +106,7 @@ class SlackNotifierChannelCompletionControllerTest :
     private fun `given search is`(term: String) {
         doGet(
             "term", term,
-            "connectionId", myConnection.id,
-            "buildTypeId", "buildType:" + myBuildType.externalId
+            myDescriptor.connectionProperty.key, myConnection.id
         )
     }
 
