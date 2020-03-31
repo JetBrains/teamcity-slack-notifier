@@ -44,6 +44,6 @@ class SlackConnection(
 
     companion object {
         const val type = "slackConnection"
-        const val name = "Slack Connection"
+        const val name = "Slack"
     }
 }
