@@ -81,7 +81,7 @@ class SimpleMessageBuilder(
                     " ${format.url(
                         links.getTestDetailsUrl(project.externalId, newValue.testNameId),
                         newValue.testName.asString
-                    )} test failure chagned in" +
+                    )} test failure changed in" +
                     " ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}"
         )
     }
