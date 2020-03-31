@@ -97,5 +97,5 @@ tasks.getByName<Test>("test") {
 tasks.register<Copy>("renameDist") {
     from("build/distributions/teamcity-slack-plugin-${version}.zip")
     into("build/distributions")
-    rename("teamcity-slack-plugin-${version}.zip", "teamcity-slack-notifier.zip")
+    rename("teamcity-slack-plugin-${version}.zip", "slack.zip")
 }
