@@ -6,11 +6,19 @@ class MockSlackWebApi : SlackWebApi {
     val messages = mutableListOf<Message>()
 
     override fun postMessage(token: String, payload: Message): MaybeMessage {
+        if (incorrectToken(token)) {
+            return MaybeMessage(ok = false)
+        }
+
         messages.add(payload)
         return MaybeMessage(ok = true)
     }
 
     override fun channelsList(token: String, cursor: String?): ChannelsList {
+        if (incorrectToken(token)) {
+            return ChannelsList(ok = false)
+        }
+
         return ChannelsList(
             ok = true,
             channels = listOf(
@@ -21,6 +29,10 @@ class MockSlackWebApi : SlackWebApi {
     }
 
     override fun usersList(token: String, cursor: String?): UsersList {
+        if (incorrectToken(token)) {
+            return UsersList(ok = false)
+        }
+
         return UsersList(
             ok = true,
             members = listOf(
@@ -37,4 +49,14 @@ class MockSlackWebApi : SlackWebApi {
             )
         )
     }
+
+    override fun authTest(token: String): MaybeResponse {
+        if (incorrectToken(token)) {
+            return MaybeResponse(ok = false)
+        }
+
+        return MaybeResponse(ok = true)
+    }
+
+    private fun incorrectToken(token: String) = token != "test_token"
 }

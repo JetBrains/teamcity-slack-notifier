@@ -137,11 +137,18 @@ data class URLVerificationResponse(val challenge: String)
 data class CursorMetaData(@JsonProperty("next_cursor") val nextCursor: String)
 
 // https://api.slack.com/methods/apps.permissions.info
-data class PerimssionsList(
+data class PermissionsList(
     override val ok: Boolean = false,
     override val error: String = "",
     override val needed: String = "",
     val info: PermissionsInfo = noPermissionsInfo
+) : MaybeError
+
+data class PermissionsScopes(
+    override val ok: Boolean = false,
+    override val error: String = "",
+    override val needed: String = "",
+    val scopes: PermissionsInfo = noPermissionsInfo
 ) : MaybeError
 
 // https://api.slack.com/methods/apps.permissions.info

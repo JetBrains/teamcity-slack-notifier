@@ -17,3 +17,4 @@ internal val noMessage = PostedMessage()
 internal val noChannel = Channel()
 
 internal val noPurpose = ChannelPurpose()
+

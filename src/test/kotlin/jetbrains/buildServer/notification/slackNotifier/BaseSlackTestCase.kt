@@ -23,7 +23,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     private lateinit var myUser: SUser
     private lateinit var myAssignerUser: SUser
 
-    private lateinit var myConnection: OAuthConnectionDescriptor
+    protected lateinit var myConnectionManager: OAuthConnectionsManager
+    protected lateinit var myConnection: OAuthConnectionDescriptor
 
     @BeforeMethod(alwaysRun = true)
     override fun setUp() {
@@ -33,7 +34,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myFixture.notificationProcessor.setBuildFailingDelay(700)
         myFixture.notificationProcessor.setCheckHangedBuildsInterval(50)
 
-        val connectionManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
+        myConnectionManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
 
         val slackApiFactory =
                 MockSlackWebApiFactory()
@@ -41,25 +42,25 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
         myDescriptor = SlackNotifierDescriptor(
             MockServerPluginDescriptior(),
-            SlackConnectionSelectOptionsProvider(myFixture.projectManager, connectionManager)
+            SlackConnectionSelectOptionsProvider(myFixture.projectManager, myConnectionManager)
         )
         myNotifier = SlackNotifier(
-                myFixture.notificatorRegistry,
-                slackApiFactory,
-                SimpleMessageBuilder(
-                        SlackMessageFormatter(),
+            myFixture.notificatorRegistry,
+            slackApiFactory,
+            SimpleMessageBuilder(
+                SlackMessageFormatter(),
                 myFixture.webLinks,
                 myProjectManager
             ),
             myFixture.serverPaths,
             myProjectManager,
-            connectionManager,
+            myConnectionManager,
             myDescriptor
         )
 
         myFixture.addService(myNotifier)
 
-        myConnection = connectionManager.addConnection(
+        myConnection = myConnectionManager.addConnection(
             myProject,
             SlackConnection.type,
             mapOf("secure:token" to "test_token")

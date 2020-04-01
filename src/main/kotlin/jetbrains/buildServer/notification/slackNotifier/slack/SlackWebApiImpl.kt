@@ -67,6 +67,16 @@ class SlackWebApiImpl(
         return mapper.readValue(response.message, UsersList::class.java)
     }
 
+    override fun authTest(token: String): MaybeResponse {
+        val response = request("auth.test", token)
+
+        if (response.isException || response.message == null) {
+            return MaybeResponse(ok = false, error = unknownError)
+        }
+
+        return mapper.readValue(response.message, MaybeResponse::class.java)
+    }
+
     private fun request(
         path: String,
         token: String,
