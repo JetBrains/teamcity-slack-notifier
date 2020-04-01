@@ -73,7 +73,8 @@ class SlackConnectionHealthReportTest : BaseSlackTestCase() {
     private fun `then report should contain error about missing token`() {
         assertNotNull(
             result.find {
-                it.category == SlackConnectionHealthReport.missingTokenCategory
+                it.category == SlackConnectionHealthReport.invalidConnectionCategory &&
+                        (it.additionalData["reason"] as String).contains("missing")
             }
         )
     }
@@ -81,7 +82,8 @@ class SlackConnectionHealthReportTest : BaseSlackTestCase() {
     private fun `then report should contain error about invalid token`() {
         assertNotNull(
             result.find {
-                it.category == SlackConnectionHealthReport.invalidTokenCategory
+                it.category == SlackConnectionHealthReport.invalidConnectionCategory &&
+                        (it.additionalData["reason"] as String).contains("invalid")
             }
         )
     }

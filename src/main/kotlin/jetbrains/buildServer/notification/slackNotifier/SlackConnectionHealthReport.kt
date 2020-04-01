@@ -17,10 +17,8 @@ class SlackConnectionHealthReport(
 
     companion object {
         const val type = "slackConnection"
-        val invalidTokenCategory =
-            ItemCategory("slackConnectionInvalidToken", "Slack connection token is invalid", ItemSeverity.ERROR)
-        val missingTokenCategory =
-            ItemCategory("slackConnectionMissingToken", "Slack connection token is missing", ItemSeverity.ERROR)
+        val invalidConnectionCategory =
+            ItemCategory("slackConnectionIsInvalid", "Slack connection is invalid", ItemSeverity.ERROR)
     }
 
     override fun report(scope: HealthStatusScope, consumer: HealthStatusItemConsumer) {
@@ -43,8 +41,11 @@ class SlackConnectionHealthReport(
                 connection.project,
                 HealthStatusItem(
                     "missingToken_" + connection.id,
-                    missingTokenCategory,
-                    mapOf("tokenProperty" to "secure:token", "connection" to connection)
+                    invalidConnectionCategory,
+                    mapOf(
+                        "reason" to "Connection is missing Slack bot token ('secure:token') property.",
+                        "connection" to connection
+                    )
                 )
             )
 
@@ -54,12 +55,18 @@ class SlackConnectionHealthReport(
         val permissions = api.authTest(token)
         if (!permissions.ok) {
             val error = permissions.error
+            val reason = if (error == "not_authed" || error == "invalid_auth") {
+                "Provided token is invalid or expired."
+            } else {
+                "Unknown error: $error."
+            }
+
             consumer.consumeForProject(
                 connection.project,
                 HealthStatusItem(
                     "invalidToken_" + connection.id,
-                    invalidTokenCategory,
-                    mapOf("error" to error, "connection" to connection)
+                    invalidConnectionCategory,
+                    mapOf("reason" to reason, "connection" to connection)
                 )
             )
             return
@@ -68,6 +75,6 @@ class SlackConnectionHealthReport(
 
     override fun getType(): String = Companion.type
     override fun getDisplayName(): String = "Report Slack incorrectly configured connection"
-    override fun getCategories(): Collection<ItemCategory> = listOf(invalidTokenCategory, missingTokenCategory)
+    override fun getCategories(): Collection<ItemCategory> = listOf(invalidConnectionCategory)
     override fun canReportItemsFor(scope: HealthStatusScope): Boolean = true
 }

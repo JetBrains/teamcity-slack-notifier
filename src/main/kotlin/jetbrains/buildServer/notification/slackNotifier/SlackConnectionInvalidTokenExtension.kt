@@ -13,7 +13,7 @@ class SlackConnectionInvalidTokenExtension(
     private val pluginDescriptor: PluginDescriptor
 ) : HealthStatusItemPageExtension(SlackConnectionHealthReport.type, pagePlaces) {
     init {
-        includeUrl = pluginDescriptor.getPluginResourcesPath("/healthReport/invalidToken.jsp")
+        includeUrl = pluginDescriptor.getPluginResourcesPath("/healthReport/invalidConnection.jsp")
         isVisibleOutsideAdminArea = false
         register()
     }
@@ -22,15 +22,9 @@ class SlackConnectionInvalidTokenExtension(
         super.fillModel(model, request)
 
         val statusItem = getStatusItem(request)
-        model["category"] = statusItem.category.id
 
         val data = statusItem.additionalData
         model["connection"] = data["connection"] as OAuthConnectionDescriptor
-
-        if (statusItem.category == SlackConnectionHealthReport.invalidTokenCategory) {
-            model["error"] = data["error"] as String
-        } else if (statusItem.category == SlackConnectionHealthReport.missingTokenCategory) {
-            model["tokenProperty"] = data["tokenProperty"] as String
-        }
+        model["reason"] = data["reason"] as String
     }
 }

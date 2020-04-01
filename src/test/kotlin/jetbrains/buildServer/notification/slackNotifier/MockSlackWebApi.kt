@@ -52,7 +52,7 @@ class MockSlackWebApi : SlackWebApi {
 
     override fun authTest(token: String): MaybeResponse {
         if (incorrectToken(token)) {
-            return MaybeResponse(ok = false)
+            return MaybeResponse(ok = false, error = "not_authed")
         }
 
         return MaybeResponse(ok = true)
