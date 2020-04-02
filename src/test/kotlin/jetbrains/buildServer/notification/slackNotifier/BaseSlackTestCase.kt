@@ -17,8 +17,9 @@ import org.testng.annotations.BeforeMethod
 import java.util.function.BooleanSupplier
 
 open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
+    protected lateinit var mySlackApiFactory: MockSlackWebApiFactory
     private lateinit var mySlackApi: MockSlackWebApi
-    private lateinit var myDescriptor: SlackNotifierDescriptor
+    protected lateinit var myDescriptor: SlackNotifierDescriptor
     private lateinit var myNotifier: SlackNotifier
     private lateinit var myUser: SUser
     private lateinit var myAssignerUser: SUser
@@ -36,9 +37,9 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
         myConnectionManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
 
-        val slackApiFactory =
-                MockSlackWebApiFactory()
-        mySlackApi = slackApiFactory.createSlackWebApi()
+        mySlackApiFactory =
+            MockSlackWebApiFactory()
+        mySlackApi = mySlackApiFactory.createSlackWebApi()
 
         myDescriptor = SlackNotifierDescriptor(
             MockServerPluginDescriptior(),
@@ -46,7 +47,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         )
         myNotifier = SlackNotifier(
             myFixture.notificatorRegistry,
-            slackApiFactory,
+            mySlackApiFactory,
             SimpleMessageBuilder(
                 SlackMessageFormatter(),
                 myFixture.webLinks,

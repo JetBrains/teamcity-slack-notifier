@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.controllers.BaseControllerTestCase
 import jetbrains.buildServer.controllers.Completion
+import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
@@ -32,8 +33,8 @@ class SlackNotifierChannelCompletionControllerTest :
             myFixture.getSingletonService(WebControllerManager::class.java),
             myFixture.projectManager,
             OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java)),
-            MockSlackWebApiFactory(),
-            myDescriptor
+            myDescriptor,
+            AggregatedSlackApi(MockSlackWebApiFactory())
         )
     }
 
