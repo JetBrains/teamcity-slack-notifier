@@ -7,7 +7,7 @@
 
 <div>
     Slack connection
-    <admin:editProjectLink projectId="${connection.project.projectId}" addToUrl="&tab=oauthConnections">
+    <admin:editProjectLink projectId="${connection.project.externalId}" addToUrl="&tab=oauthConnections">
         <bs:out value="${connection.connectionDisplayName}"/>
     </admin:editProjectLink>
     is invalid.
