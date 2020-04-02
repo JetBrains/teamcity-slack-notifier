@@ -31,20 +31,20 @@ class SimpleMessageBuilder(
     }
 
     override fun buildSuccessful(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("${buildUrl(build)} is successful")
+        return MessagePayload(":heavy_check_mark: ${buildUrl(build)} is successful")
     }
 
     override fun buildFailed(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("${buildUrl(build)} failed")
+        return MessagePayload(":x: ${buildUrl(build)} failed")
     }
 
     override fun buildFailedToStart(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("${buildUrl(build)} failed to start")
+        return MessagePayload(":x: ${buildUrl(build)} failed to start")
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable, users: Set<SUser?>): MessagePayload {
         return MessagePayload(
-            "Labeling failed for root ${root.name}. More details on ${format.url(
+            ":x: Labeling failed for root ${root.name}. More details on ${format.url(
                 links.getViewResultsUrl(
                     build
                 ), "build result page"
@@ -53,11 +53,11 @@ class SimpleMessageBuilder(
     }
 
     override fun buildFailing(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("${buildUrl(build)} is failing")
+        return MessagePayload(":x: ${buildUrl(build)} is failing")
     }
 
     override fun buildProbablyHanging(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload("${buildUrl(build)} is probably hanging")
+        return MessagePayload(":heavy_exclamation_mark: ${buildUrl(build)} is probably hanging")
     }
 
     override fun responsibleChanged(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
