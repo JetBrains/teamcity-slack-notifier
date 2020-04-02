@@ -67,14 +67,34 @@ class SlackWebApiImpl(
         return mapper.readValue(response.message, UsersList::class.java)
     }
 
-    override fun authTest(token: String): MaybeResponse {
+    override fun authTest(token: String): AuthTestResult {
         val response = request("auth.test", token)
 
         if (response.isException || response.message == null) {
-            return MaybeResponse(ok = false, error = unknownError)
+            return AuthTestResult(ok = false, error = unknownError)
         }
 
-        return mapper.readValue(response.message, MaybeResponse::class.java)
+        return mapper.readValue(response.message, AuthTestResult::class.java)
+    }
+
+    override fun botsInfo(token: String, botId: String): MaybeBot {
+        val response = request("bots.info", token, parameters = listOf(Pair("bot", botId)))
+
+        if (response.isException || response.message == null) {
+            return MaybeBot(ok = false, error = unknownError)
+        }
+
+        return mapper.readValue(response.message, MaybeBot::class.java)
+    }
+
+    override fun conversationsMembers(token: String, channelId: String): ConversationMembers {
+        val response = request("conversations.members", token, parameters = listOf(Pair("channel", channelId)))
+
+        if (response.isException || response.message == null) {
+            return ConversationMembers(ok = false, error = unknownError)
+        }
+
+        return mapper.readValue(response.message, ConversationMembers::class.java)
     }
 
     private fun request(

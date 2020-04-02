@@ -103,6 +103,7 @@ data class AuthTestResult(
     override val ok: Boolean = false,
     @JsonProperty("user") val user: String = "",
     @JsonProperty("user_id") val userId: String = "",
+    @JsonProperty("bot_id") val botId: String = "",
     override val error: String = "",
     override val needed: String = ""
 ) : MaybeError
@@ -225,6 +226,18 @@ data class OauthAccessToken(
 data class BotToken(
     @JsonProperty("bot_user_id") val botUserId: String,
     @JsonProperty("bot_access_token") val botToken: String
+)
+
+data class MaybeBot(
+    override val ok: Boolean = false,
+    override val error: String = "",
+    override val needed: String = "",
+    val bot: Bot = Bot()
+) : MaybeError
+
+data class Bot(
+    val id: String = "",
+    val name: String = ""
 )
 
 data class ResourcePermission(
@@ -407,7 +420,8 @@ data class IMTarget(
 data class Channel(
     val id: String = "",
     val name: String = "",
-    val purpose: ChannelPurpose? = noPurpose
+    val purpose: ChannelPurpose? = noPurpose,
+    val members: List<String> = emptyList()
 )
 
 data class ChannelPurpose(
@@ -427,4 +441,11 @@ data class EmojiList(
     override val error: String = "",
     override val needed: String = "",
     val emoji: Map<String, String>
+) : MaybeError
+
+data class ConversationMembers(
+    override val ok: Boolean = false,
+    override val error: String = "",
+    override val needed: String = "",
+    val members: List<String> = emptyList()
 ) : MaybeError

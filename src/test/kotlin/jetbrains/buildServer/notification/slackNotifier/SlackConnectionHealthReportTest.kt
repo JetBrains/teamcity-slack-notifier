@@ -1,5 +1,6 @@
 package jetbrains.buildServer.notification.slackNotifier
 
+import jetbrains.buildServer.notification.slackNotifier.healthReport.SlackConnectionHealthReport
 import jetbrains.buildServer.serverSide.healthStatus.HealthStatusItem
 import jetbrains.buildServer.serverSide.healthStatus.HealthStatusScope
 import jetbrains.buildServer.serverSide.healthStatus.impl.ScopeBuilder
@@ -17,7 +18,11 @@ class SlackConnectionHealthReportTest : BaseSlackTestCase() {
     override fun setUp() {
         super.setUp()
 
-        healthReport = SlackConnectionHealthReport(myConnectionManager, MockSlackWebApiFactory())
+        healthReport =
+            SlackConnectionHealthReport(
+                myConnectionManager,
+                MockSlackWebApiFactory()
+            )
     }
 
     @Test

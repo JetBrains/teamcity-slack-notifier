@@ -1,53 +1,27 @@
 package jetbrains.buildServer.notification.slackNotifier
 
-import com.google.common.cache.CacheBuilder
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.controllers.BaseAutocompletionController
 import jetbrains.buildServer.controllers.Completion
-import jetbrains.buildServer.notification.slackNotifier.slack.Channel
-import jetbrains.buildServer.notification.slackNotifier.slack.SlackList
-import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
-import jetbrains.buildServer.notification.slackNotifier.slack.User
+import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.serverSide.ProjectManager
-import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.serverSide.auth.SecurityContext
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
-import java.util.concurrent.TimeUnit
 import javax.servlet.http.HttpServletRequest
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
 class SlackNotifierChannelCompletionController(
-        securityContext: SecurityContext,
-        webControllerManager: WebControllerManager,
-        private val projectManager: ProjectManager,
-        private val oAuthConnectionsManager: OAuthConnectionsManager,
-        slackWebApiFactory: SlackWebApiFactory,
-        private val descriptor: SlackNotifierDescriptor
+    securityContext: SecurityContext,
+    webControllerManager: WebControllerManager,
+    private val projectManager: ProjectManager,
+    private val oAuthConnectionsManager: OAuthConnectionsManager,
+    private val descriptor: SlackNotifierDescriptor,
+    private val aggregatedSlackApi: AggregatedSlackApi
 ) : BaseAutocompletionController(securityContext) {
-    private val slackApi = slackWebApiFactory.createSlackWebApi()
-
-    // Minor copy-paste here, but de-duplicating it takes twice as much lines
-    private val myChannelsCache = CacheBuilder.newBuilder()
-        .expireAfterWrite(
-            TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
-            TimeUnit.SECONDS
-        )
-        .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumChannelsToCache, 50_000))
-        .weigher { _: String, channels: List<Channel> -> channels.size }
-        .build<String, List<Channel>>()
-
-    private val myUsersCache = CacheBuilder.newBuilder()
-        .expireAfterWrite(
-            TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
-            TimeUnit.SECONDS
-        )
-            .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumUsersToCache, 50_000))
-            .weigher { _: String, users: List<User> -> users.size }
-            .build<String, List<User>>()
 
     // Don't move this magic constant to properties as it's optimized for good looking in autocomplete UI
     // Making it too big might mess with UI
@@ -109,7 +83,7 @@ class SlackNotifierChannelCompletionController(
     }
 
     private fun getChannelsCompletion(term: String, token: String): List<Completion> {
-        val channelsList = getChannelsList(token)
+        val channelsList = aggregatedSlackApi.getChannelsList(token)
         val lowercaseTerm = term.toLowerCase()
 
         return channelsList.filter {
@@ -140,7 +114,7 @@ class SlackNotifierChannelCompletionController(
     }
 
     private fun getUsersCompletion(term: String, token: String): List<Completion> {
-        val usersList = getUsersList(token)
+        val usersList = aggregatedSlackApi.getUsersList(token)
         val lowercaseTerm = term.toLowerCase()
 
         return usersList.filter {
@@ -151,36 +125,5 @@ class SlackNotifierChannelCompletionController(
         }.map {
             Completion(it.id, it.realName, "@${it.name}")
         }.sortedBy { it.label }
-    }
-
-    private fun getChannelsList(token: String): List<Channel> {
-        return myChannelsCache.get(token) {
-            getList { cursor ->
-                slackApi.channelsList(token, cursor)
-            }
-        }
-    }
-
-    private fun getUsersList(token: String): List<User> {
-        return myUsersCache.get(token) {
-            getList { cursor ->
-                slackApi.usersList(token, cursor)
-            }
-        }
-    }
-
-    private fun <T> getList(dataProvider: (String?) -> SlackList<T>): List<T> {
-        val result = mutableListOf<T>()
-        var cursor: String? = null
-        var prevCursor: String?
-
-        do {
-            val data = dataProvider(cursor)
-            prevCursor = cursor
-            cursor = data.nextCursor
-            result.addAll(data.data)
-        } while (cursor != "" && cursor != null && cursor != prevCursor)
-
-        return result
     }
 }

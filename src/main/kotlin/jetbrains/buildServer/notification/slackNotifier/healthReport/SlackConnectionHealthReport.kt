@@ -1,5 +1,7 @@
-package jetbrains.buildServer.notification.slackNotifier
+package jetbrains.buildServer.notification.slackNotifier.healthReport
 
+import jetbrains.buildServer.notification.slackNotifier.SlackConnection
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.healthStatus.*
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
@@ -23,7 +25,10 @@ class SlackConnectionHealthReport(
 
     override fun report(scope: HealthStatusScope, consumer: HealthStatusItemConsumer) {
         for (project in scope.projects) {
-            val connections = oAuthConnectionsManager.getAvailableConnectionsOfType(project, SlackConnection.type)
+            val connections = oAuthConnectionsManager.getAvailableConnectionsOfType(
+                project,
+                SlackConnection.type
+            )
             for (connection in connections) {
                 if (connection.project != project) {
                     continue
@@ -73,7 +78,9 @@ class SlackConnectionHealthReport(
         }
     }
 
-    override fun getType(): String = Companion.type
+    override fun getType(): String =
+        Companion.type
+
     override fun getDisplayName(): String = "Report Slack incorrectly configured connection"
     override fun getCategories(): Collection<ItemCategory> = listOf(invalidConnectionCategory)
     override fun canReportItemsFor(scope: HealthStatusScope): Boolean = true

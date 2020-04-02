@@ -11,6 +11,12 @@ interface SlackWebApi {
     fun usersList(token: String, cursor: String? = null): UsersList
 
     // https://api.slack.com/methods/auth.test
-    fun authTest(token: String): MaybeResponse
+    fun authTest(token: String): AuthTestResult
+
+    // https://api.slack.com/methods/bots.info
+    fun botsInfo(token: String, botId: String): MaybeBot
+
+    // https://api.slack.com/methods/conversations.members
+    fun conversationsMembers(token: String, channelId: String): ConversationMembers
 }
 

@@ -1,4 +1,4 @@
-package jetbrains.buildServer.notification.slackNotifier
+package jetbrains.buildServer.notification.slackNotifier.healthReport
 
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.web.openapi.PagePlaces
@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service
 import javax.servlet.http.HttpServletRequest
 
 @Service
-class SlackConnectionInvalidTokenExtension(
-    private val pagePlaces: PagePlaces,
-    private val pluginDescriptor: PluginDescriptor
+class SlackInvalidConnectionExtension(
+    pagePlaces: PagePlaces,
+    pluginDescriptor: PluginDescriptor
 ) : HealthStatusItemPageExtension(SlackConnectionHealthReport.type, pagePlaces) {
     init {
         includeUrl = pluginDescriptor.getPluginResourcesPath("/healthReport/invalidConnection.jsp")
