@@ -5,6 +5,7 @@ import jetbrains.buildServer.controllers.BasePropertiesBean
 import jetbrains.buildServer.notification.slackNotifier.teamcity.findBuildTypeSettingsByExternalId
 import jetbrains.buildServer.serverSide.BuildTypeNotFoundException
 import jetbrains.buildServer.serverSide.ProjectManager
+import jetbrains.buildServer.serverSide.WebLinks
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
@@ -21,7 +22,8 @@ class BuildTypeSlackNotifierSettingsController(
     private val projectManager: ProjectManager,
     private val oAuthConnectionsManager: OAuthConnectionsManager,
     private val webControllerManager: WebControllerManager,
-    private val slackNotifierDescriptor: SlackNotifierDescriptor
+    private val slackNotifierDescriptor: SlackNotifierDescriptor,
+    private val webLinks: WebLinks
 ) : BaseController() {
 
     init {
@@ -47,6 +49,8 @@ class BuildTypeSlackNotifierSettingsController(
         mv.model["propertiesBean"] = BasePropertiesBean(feature?.parameters)
         mv.model["descriptor"] = slackNotifierDescriptor
         mv.model["buildTypeId"] = buildTypeId
+        mv.model["createConnectionUrl"] =
+            webLinks.getEditProjectPageUrl(buildType.project.externalId) + "&tab=oauthConnections"
 
         return mv
     }

@@ -24,6 +24,7 @@
 <jsp:useBean id="descriptor" type="jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptor"
              scope="request"/>
 <jsp:useBean id="buildTypeId" type="java.lang.String" scope="request"/>
+<jsp:useBean id="createConnectionUrl" type="java.lang.String" scope="request"/>
 
 <c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
 
@@ -65,7 +66,8 @@
     <td>
         <c:choose>
             <c:when test="${empty availableConnections}">
-                No suitable connections found. Please create one
+                No suitable Slack connections found. You can create one at the <a href="${createConnectionUrl}">Connections
+                tab</a>
             </c:when>
             <c:otherwise>
                 <props:selectProperty
