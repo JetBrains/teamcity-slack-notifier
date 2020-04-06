@@ -39,7 +39,7 @@ class SimpleMessageBuilder(
     }
 
     override fun buildFailedToStart(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload(":x: ${buildUrl(build)} failed to start")
+        return MessagePayload(":exclamation: ${buildUrl(build)} failed to start")
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable, users: Set<SUser?>): MessagePayload {
@@ -57,7 +57,7 @@ class SimpleMessageBuilder(
     }
 
     override fun buildProbablyHanging(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload(":heavy_exclamation_mark: ${buildUrl(build)} is probably hanging")
+        return MessagePayload(":warning: ${buildUrl(build)} is probably hanging")
     }
 
     override fun responsibleChanged(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
