@@ -117,7 +117,7 @@ class SlackBuildFeatureHealthReport(
                     feature,
                     type,
                     buildType,
-                    "Can't get members of  channel $receiverName." +
+                    "Can't get members of channel $receiverName." +
                             " Error: ${members.error}"
                 )
             }
