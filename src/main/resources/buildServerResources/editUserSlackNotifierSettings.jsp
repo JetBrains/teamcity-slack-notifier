@@ -22,57 +22,26 @@
 <jsp:useBean id="availableConnections"
              type="java.util.List<jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor>" scope="request"/>
 <jsp:useBean id="properties" type="jetbrains.buildServer.notification.slackNotifier.SlackProperties" scope="request"/>
-<jsp:useBean id="buildTypeId" type="java.lang.String" scope="request"/>
-<jsp:useBean id="createConnectionUrl" type="java.lang.String" scope="request"/>
 
 <c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
 
-<script type="text/javascript">
-    BS.SlackNotifierSettings = {
-        createFindUserFunction: function () {
-            return function (request, response) {
-                var term = request.term;
-                var connectionId = $j("#${properties.connectionKey.replace(':', '-')} option:selected").val();
-
-                if (!connectionId) {
-                    response([]);
-                    return;
-                }
-
-                var url = '${autocompletionUrl}' + '?term=' + encodeURIComponent(term) +
-                    '&' + encodeURIComponent('plugin:notificator:jbSlackNotifier:connection') +
-                    '=' + encodeURIComponent(connectionId);
-
-                $j.getJSON(window["base_uri"] + url, function (data) {
-                    response(data);
-                    $j("#channel-autocomplete-loader").hide();
-                });
-            };
-        },
-
-        createSearchUserFunction: function () {
-            return function () {
-                $j("#channel-autocomplete-loader").show();
-            };
-        }
-    };
-</script>
-
 <tr>
-    <th>
-        Connection to use:<l:star/>
-    </th>
+    <td>
+        <label class="notifierSettingControls__label">
+            Connection to use:<l:star/>
+        </label>
+    </td>
     <td>
         <c:choose>
             <c:when test="${empty availableConnections}">
-                No suitable Slack connections found. You can create one at the <a href="${createConnectionUrl}">Connections
-                tab</a>
+                No suitable Slack connections found.
             </c:when>
             <c:otherwise>
                 <props:selectProperty
                         name="${properties.connectionKey}"
                         id="${properties.connectionKey.replace(':', '-')}"
                         className="longField"
+                        style="width: 28em;"
                 >
                     <props:option value="">-- Choose Slack connection --</props:option>
                     <c:forEach var="connection" items="${availableConnections}">
@@ -90,26 +59,19 @@
 </tr>
 
 <tr>
-    <th>
-        #channel or user id:<l:star/>
-    </th>
+    <td>
+        <label class="notifierSettingControls__label">
+            User id:<l:star/>
+        </label>
+    </td>
     <td>
         <props:textProperty
                 name="${properties.channelKey}"
                 id="${properties.channelKey}"
                 value="${propertiesBean.properties[properties.channelKey]}"
                 className="longField"
+                style="width: 28em;"
         />
         <forms:saving id="channel-autocomplete-loader" style="display: none;" savingTitle="Fetching autocomplete data"/>
         <span class="error" id="error_${properties.channelKey}"></span>
     </td>
-</tr>
-
-<script>
-    $j(document.getElementById("${properties.channelKey}")).autocomplete({
-        source: BS.SlackNotifierSettings.createFindUserFunction(),
-        search: BS.SlackNotifierSettings.createSearchUserFunction()
-    });
-
-    $j(document.getElementById("${properties.channelKey}")).placeholder();
-</script>

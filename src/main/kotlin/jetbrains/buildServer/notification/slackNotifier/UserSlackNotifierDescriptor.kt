@@ -1,0 +1,24 @@
+package jetbrains.buildServer.notification.slackNotifier
+
+import jetbrains.buildServer.notification.UserNotifierDescriptor
+import jetbrains.buildServer.serverSide.ControlDescription
+import jetbrains.buildServer.serverSide.InvalidProperty
+import jetbrains.buildServer.web.openapi.PluginDescriptor
+import org.springframework.context.annotation.Conditional
+import org.springframework.stereotype.Service
+
+@Service
+@Conditional(SlackNotifierEnabled::class)
+class UserSlackNotifierDescriptor(
+    private val descriptor: SlackNotifierDescriptor,
+    private val pluginDescriptor: PluginDescriptor
+) : UserNotifierDescriptor {
+    override fun validate(properties: MutableMap<String, String>): MutableCollection<InvalidProperty> =
+        descriptor.validate(properties)
+
+    override fun getParameters(): Map<String, ControlDescription> = emptyMap()
+    override fun getType(): String = descriptor.getType()
+    override fun getDisplayName(): String = descriptor.getDisplayName()
+    override fun getEditParametersUrl(): String =
+        pluginDescriptor.getPluginResourcesPath("editUserSlackNotifierSettings.html")
+}

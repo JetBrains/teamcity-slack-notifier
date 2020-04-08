@@ -2,6 +2,7 @@ package jetbrains.buildServer.notification.slackNotifier.healthReport
 
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptor
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
+import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.*
@@ -61,7 +62,7 @@ class SlackBuildFeatureHealthReport(
     private fun getFeatures(buildTypeSettings: BuildTypeSettings): List<SBuildFeatureDescriptor> {
         return buildTypeSettings.getBuildFeaturesOfType(NotificationRulesBuildFeature.FEATURE_TYPE)
             .filter {
-                it.parameters["notifier"] == descriptor.type
+                it.parameters["notifier"] == descriptor.getType()
             }
     }
 
@@ -72,7 +73,7 @@ class SlackBuildFeatureHealthReport(
     ): HealthStatusItem?
             where T : BuildTypeSettings,
                   T : BuildTypeIdentity {
-        val connectionId = feature.parameters[descriptor.connectionProperty.key]
+        val connectionId = feature.parameters[SlackProperties.connectionProperty.key]
             ?: return generateHealthStatus(feature, type, buildType, "Slack connection is not selected")
 
         val buildTypeSettings: BuildTypeSettings = buildType
@@ -88,7 +89,7 @@ class SlackBuildFeatureHealthReport(
                 "Can't find Slack connection with id '${connectionId}' in project ${buildTypeSettings.project.fullName}"
             )
 
-        val receiverName = feature.parameters[descriptor.channelProperty.key]
+        val receiverName = feature.parameters[SlackProperties.channelProperty.key]
             ?: return generateHealthStatus(feature, type, buildType, "Channel or user id is missing")
 
         // Missing token is reported by [SlackConnectionHealthReport]

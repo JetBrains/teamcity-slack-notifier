@@ -27,7 +27,7 @@ class SlackNotifierConfig(
 
     private val configDir = File(
         serverPaths.configDir,
-        "_notifications/${slackNotifierDescriptor.type}"
+        "_notifications/${slackNotifierDescriptor.getType()}"
     )
     private val configFile = File(configDir, configFilename)
     private val myChangeObserver = FileWatcher(configFile).also {

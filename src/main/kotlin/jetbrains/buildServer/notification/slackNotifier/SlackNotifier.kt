@@ -46,8 +46,8 @@ class SlackNotifier(
         )
     }
 
-    override fun getDisplayName(): String = descriptor.displayName
-    override fun getNotificatorType(): String = descriptor.type
+    override fun getDisplayName(): String = descriptor.getDisplayName()
+    override fun getNotificatorType(): String = descriptor.getType()
 
     override fun notifyTestsMuted(tests: Collection<STest>, muteInfo: MuteInfo, users: Set<SUser>) {
         val project = muteInfo.project ?: return
@@ -198,15 +198,15 @@ class SlackNotifier(
     }
 
     private fun sendMessage(message: MessagePayload, user: SUser, project: SProject) {
-        val sendTo = user.getPropertyValue(descriptor.channelProperty)
+        val sendTo = user.getPropertyValue(SlackProperties.channelProperty)
         if (sendTo == null) {
-            logger.error("Won't send Slack notification to user with id ${user.id} as it's missing ${descriptor.channelProperty} property")
+            logger.error("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.channelProperty} property")
             return
         }
 
-        val connectionId = user.getPropertyValue(descriptor.connectionProperty)
+        val connectionId = user.getPropertyValue(SlackProperties.connectionProperty)
         if (connectionId == null) {
-            logger.error("Won't send Slack notification to user with id ${user.id} as it's missing ${descriptor.connectionProperty} property")
+            logger.error("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.connectionProperty} property")
             return
         }
 

@@ -39,7 +39,7 @@ class SlackNotifierChannelCompletionController(
 
     override fun getCompletionData(request: HttpServletRequest): List<Completion> {
         val term = getParameter(request, "term") ?: return mutableListOf()
-        val connectionId = getParameter(request, descriptor.connectionProperty.key) ?: return mutableListOf()
+        val connectionId = getParameter(request, SlackProperties.connectionProperty.key) ?: return mutableListOf()
 
         val connection = projectManager.projects.asSequence().mapNotNull { project ->
             oAuthConnectionsManager.findConnectionById(project, connectionId)
