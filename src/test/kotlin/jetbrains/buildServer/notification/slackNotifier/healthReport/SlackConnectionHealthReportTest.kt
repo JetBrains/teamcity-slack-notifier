@@ -57,7 +57,12 @@ class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectio
         myConnection =
             myConnectionManager.addConnection(
                 myProject,
-                SlackConnection.type, mapOf("secure:token" to "test_token")
+                SlackConnection.type,
+                mapOf(
+                    "secure:token" to "test_token",
+                    "clientId" to "test_clientId",
+                    "secure:clientSecret" to "test_clientSecret"
+                )
             )
     }
 
