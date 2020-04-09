@@ -39,6 +39,16 @@ class SlackConnection(
             errors.add(InvalidProperty("secure:token", "Slack bot token must not be empty"))
         }
 
+        val clientId = it["clientId"]
+        if (clientId.isNullOrEmpty()) {
+            errors.add(InvalidProperty("clientId", "Client ID must be specified"))
+        }
+
+        val clientSecret = it["secure:clientSecret"]
+        if (clientSecret.isNullOrEmpty()) {
+            errors.add(InvalidProperty("secure:clientSecret", "Client secret must be specified"))
+        }
+
         errors
     }
 

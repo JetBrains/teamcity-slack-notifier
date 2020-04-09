@@ -20,7 +20,7 @@ class BuildTypeSlackNotifierDescriptor(
     override fun validate(properties: MutableMap<String, String>): MutableCollection<InvalidProperty> =
         descriptor.validate(properties)
 
-    override fun describeParameters(p0: MutableMap<String, String>): String {
+    override fun describeParameters(parameters: MutableMap<String, String>): String {
         val to = parameters[SlackProperties.channelProperty.key]
         if (to != null) {
             return "To: $to"

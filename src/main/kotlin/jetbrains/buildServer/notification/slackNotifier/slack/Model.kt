@@ -213,11 +213,11 @@ data class OauthAccessToken(
     override val error: String = "",
     override val needed: String = "",
     @JsonProperty("access_token")
-    val accessToken: String,
+    val accessToken: String = "",
     @JsonProperty("team_name")
-    val teamName: String,
+    val teamName: String = "",
     @JsonProperty("team_id")
-    val teamId: String,
+    val teamId: String = "",
     @JsonProperty("bot")
     val botToken: BotToken? = null
 ) : MaybeError

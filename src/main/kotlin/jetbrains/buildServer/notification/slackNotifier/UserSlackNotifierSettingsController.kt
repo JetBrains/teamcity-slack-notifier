@@ -2,6 +2,7 @@ package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.BasePropertiesBean
+import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.auth.Permission
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
@@ -22,9 +23,9 @@ class UserSlackNotifierSettingsController(
     private val oAuthConnectionsManager: OAuthConnectionsManager,
     webControllerManager: WebControllerManager,
     descriptor: UserSlackNotifierDescriptor,
-    private val userModel: UserModel
+    private val userModel: UserModel,
+    private val aggregatedSlackApi: AggregatedSlackApi
 ) : BaseController() {
-
     init {
         webControllerManager.registerController(descriptor.editParametersUrl, this)
     }
@@ -44,6 +45,9 @@ class UserSlackNotifierSettingsController(
             return null
         }
 
+        val slackUserId = user.getPropertyValue(SlackProperties.channelProperty)
+        val selectedConnectionId = user.getPropertyValue(SlackProperties.connectionProperty)
+
         val availableConnections = projectManager.projects.filter {
             user.isPermissionGrantedForProject(it.projectId, Permission.VIEW_PROJECT)
         }.flatMap { project ->
@@ -52,12 +56,24 @@ class UserSlackNotifierSettingsController(
             }
         }
 
-        mv.model["availableConnections"] = availableConnections
+        val selectedConnection = availableConnections.find { it.id == selectedConnectionId }
 
+        val slackUsername = selectedConnection?.let { connection ->
+            connection.parameters["secure:token"]?.let { token ->
+                aggregatedSlackApi.getUsersList(token).find {
+                    it.id == slackUserId
+                }?.displayName
+            }
+        }
+
+
+        mv.model["availableConnections"] = availableConnections
         mv.model["propertiesBean"] = BasePropertiesBean(user.properties.map {
             it.key.key to it.value
         }.toMap())
         mv.model["properties"] = SlackProperties()
+        mv.model["user"] = user
+        mv.model["slackUsername"] = slackUsername ?: ""
 
         return mv
     }

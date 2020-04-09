@@ -22,6 +22,8 @@
 <jsp:useBean id="availableConnections"
              type="java.util.List<jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor>" scope="request"/>
 <jsp:useBean id="properties" type="jetbrains.buildServer.notification.slackNotifier.SlackProperties" scope="request"/>
+<jsp:useBean id="user" type="jetbrains.buildServer.users.SUser" scope="request"/>
+<jsp:useBean id="slackUsername" type="java.lang.String" scope="request"/>
 
 <c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
 
@@ -41,7 +43,6 @@
                         name="${properties.connectionKey}"
                         id="${properties.connectionKey.replace(':', '-')}"
                         className="longField"
-                        style="width: 28em;"
                 >
                     <props:option value="">-- Choose Slack connection --</props:option>
                     <c:forEach var="connection" items="${availableConnections}">
@@ -61,17 +62,57 @@
 <tr>
     <td>
         <label class="notifierSettingControls__label">
-            User id:<l:star/>
+            User:
         </label>
     </td>
+
     <td>
-        <props:textProperty
-                name="${properties.channelKey}"
-                id="${properties.channelKey}"
-                value="${propertiesBean.properties[properties.channelKey]}"
-                className="longField"
-                style="width: 28em;"
-        />
-        <forms:saving id="channel-autocomplete-loader" style="display: none;" savingTitle="Fetching autocomplete data"/>
-        <span class="error" id="error_${properties.channelKey}"></span>
+        <c:choose>
+            <c:when test="${not empty slackUsername}">
+                You are signed in as <bs:out value="${slackUsername}"/>.
+                <a id="signInWithSlack">
+                    Sign in again
+                </a>
+            </c:when>
+            <c:otherwise>
+                <a id="signInWithSlack">
+                    Sign in
+                </a>
+                to receive Slack notifications
+            </c:otherwise>
+        </c:choose>
     </td>
+
+</tr>
+
+<script type="text/javascript">
+    var connectionId = "#${properties.connectionKey.replace(':', '-')}";
+    var signInWithSlack = $j("#signInWithSlack");
+
+    BS.UserSlackNotifierSettings = {
+        updateSignInUrl: function (selectedConnection) {
+            var state = encodeURIComponent(JSON.stringify({
+                userId: "${user.id}",
+                connectionId: selectedConnection
+            }));
+
+            var redirectUrl = window["base_uri"] + "/admin/slack/oauth.html";
+
+            signInWithSlack.attr("href",
+                "https://slack.com/oauth/authorize?scope=identity.basic,identity.team&client_id=2280447103.946465054946&state=" + state +
+                "&redirect_uri=" + redirectUrl
+            );
+
+            if (selectedConnection) {
+                signInWithSlack.show();
+            } else {
+                signInWithSlack.hide();
+            }
+        }
+    };
+
+    BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
+    $j(connectionId).on("change", function () {
+        BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
+    });
+</script>
