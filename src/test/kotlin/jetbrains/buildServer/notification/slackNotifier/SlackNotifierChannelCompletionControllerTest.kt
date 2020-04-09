@@ -107,7 +107,7 @@ class SlackNotifierChannelCompletionControllerTest :
     private fun `given search is`(term: String) {
         doGet(
             "term", term,
-            myDescriptor.connectionProperty.key, myConnection.id
+            SlackProperties.connectionProperty.key, myConnection.id
         )
     }
 

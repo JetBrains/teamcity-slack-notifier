@@ -25,15 +25,15 @@ class SlackNotifierDescriptorTest : BaseSlackTestCase() {
     fun `test should check for channel property`() {
         assertContains(
                 descriptor.validate(emptyMap()),
-                invalidProperty(descriptor.channelProperty.key)
+                invalidProperty(SlackProperties.channelProperty.key)
         )
         assertContains(
-                descriptor.validate(mapOf(descriptor.channelProperty.key to "")),
-                invalidProperty(descriptor.channelProperty.key)
+            descriptor.validate(mapOf(SlackProperties.channelProperty.key to "")),
+            invalidProperty(SlackProperties.channelProperty.key)
         )
         assertNotContains(
-                descriptor.validate(mapOf(descriptor.channelProperty.key to "#some-channel")),
-                invalidProperty(descriptor.channelProperty.key)
+            descriptor.validate(mapOf(SlackProperties.channelProperty.key to "#some-channel")),
+            invalidProperty(SlackProperties.channelProperty.key)
         )
     }
 
@@ -41,15 +41,15 @@ class SlackNotifierDescriptorTest : BaseSlackTestCase() {
     fun `test should check for connection property`() {
         assertContains(
                 descriptor.validate(emptyMap()),
-                invalidProperty(descriptor.connectionProperty.key)
+            invalidProperty(SlackProperties.connectionProperty.key)
         )
         assertContains(
-                descriptor.validate(mapOf(descriptor.connectionProperty.key to "")),
-                invalidProperty(descriptor.channelProperty.key)
+            descriptor.validate(mapOf(SlackProperties.connectionProperty.key to "")),
+            invalidProperty(SlackProperties.channelProperty.key)
         )
         assertNotContains(
-                descriptor.validate(mapOf(descriptor.connectionProperty.key to "test_connection")),
-                invalidProperty(descriptor.connectionProperty.key)
+            descriptor.validate(mapOf(SlackProperties.connectionProperty.key to "test_connection")),
+            invalidProperty(SlackProperties.connectionProperty.key)
         )
     }
 }

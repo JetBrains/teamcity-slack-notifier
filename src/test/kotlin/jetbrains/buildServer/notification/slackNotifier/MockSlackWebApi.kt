@@ -86,5 +86,22 @@ class MockSlackWebApi : SlackWebApi {
         return ConversationMembers(ok = false, error = "no_channel_found")
     }
 
+    override fun oauthAccess(
+        clientId: String,
+        clientSecret: String,
+        code: String,
+        redirectUrl: String
+    ): OauthAccessToken {
+        return OauthAccessToken(ok = true)
+    }
+
+    override fun usersIdentity(token: String): UserIdentity {
+        return UserIdentity(ok = true)
+    }
+
+    override fun usersInfo(token: String, userId: String): MaybeUser {
+        return MaybeUser(ok = true)
+    }
+
     private fun incorrectToken(token: String) = token != "test_token"
 }

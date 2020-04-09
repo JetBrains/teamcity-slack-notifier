@@ -68,8 +68,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         )
 
         myUser = createUser("test_user")
-        myUser.setUserProperty(myDescriptor.channelProperty, "#test_channel")
-        myUser.setUserProperty(myDescriptor.connectionProperty, myConnection.id)
+        myUser.setUserProperty(SlackProperties.channelProperty, "#test_channel")
+        myUser.setUserProperty(SlackProperties.connectionProperty, myConnection.id)
         makeProjectAccessible(myUser, myProject.projectId)
 
         myAssignerUser = createUser("investigation_assigner")
@@ -85,8 +85,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
             FeatureProviderNotificationRulesHolder.FEATURE_NAME,
             mapOf(
                 "notifier" to myNotifier.notificatorType,
-                myDescriptor.channelProperty.key to "#test_channel",
-                myDescriptor.connectionProperty.key to myConnection.id,
+                SlackProperties.channelProperty.key to "#test_channel",
+                SlackProperties.connectionProperty.key to myConnection.id,
                 *(events.map { NotificationRulesConstants.getName(it) to "true" }).toTypedArray()
             )
         )

@@ -2,6 +2,7 @@ package jetbrains.buildServer.notification.slackNotifier.healthReport
 
 import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
 import jetbrains.buildServer.notification.slackNotifier.And
+import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.serverSide.impl.NotificationRulesBuildFeature
 import org.testng.annotations.Test
@@ -61,14 +62,14 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
     }
 
     private fun `given build feature has invalid connection`() {
-        addBuildFeature(mapOf(myDescriptor.connectionProperty.key to "invalid_connection"))
+        addBuildFeature(mapOf(SlackProperties.connectionProperty.key to "invalid_connection"))
     }
 
     private fun `given build feature has invalid channel`() {
         addBuildFeature(
             mapOf(
-                myDescriptor.connectionProperty.key to myConnection.id,
-                myDescriptor.channelProperty.key to "#invalid_channel"
+                SlackProperties.connectionProperty.key to myConnection.id,
+                SlackProperties.channelProperty.key to "#invalid_channel"
             )
         )
     }
@@ -76,8 +77,8 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
     private fun `given build feature has channel that bot is not added to`() {
         addBuildFeature(
             mapOf(
-                myDescriptor.connectionProperty.key to myConnection.id,
-                myDescriptor.channelProperty.key to "#anotherChannel"
+                SlackProperties.connectionProperty.key to myConnection.id,
+                SlackProperties.channelProperty.key to "#anotherChannel"
             )
         )
     }
@@ -85,8 +86,8 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
     private fun `given build features is configured correctly`() {
         addBuildFeature(
             mapOf(
-                myDescriptor.connectionProperty.key to myConnection.id,
-                myDescriptor.channelProperty.key to "#test_channel"
+                SlackProperties.connectionProperty.key to myConnection.id,
+                SlackProperties.channelProperty.key to "#test_channel"
             )
         )
     }
@@ -94,7 +95,7 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
     private fun addBuildFeature(parameters: Map<String, String> = emptyMap()) {
         myBuildType.addBuildFeature(
             NotificationRulesBuildFeature.FEATURE_TYPE,
-            mapOf(FeatureProviderNotificationRulesHolder.NOTIFIER to myDescriptor.type) + parameters
+            mapOf(FeatureProviderNotificationRulesHolder.NOTIFIER to myDescriptor.getType()) + parameters
         )
     }
 
