@@ -53,7 +53,6 @@ class SlackConnectionHealthReport(
                     )
                 )
             )
-
             return
         }
 
@@ -72,6 +71,37 @@ class SlackConnectionHealthReport(
                     "invalidToken_" + connection.id,
                     invalidConnectionCategory,
                     mapOf("reason" to reason, "connection" to connection)
+                )
+            )
+        }
+
+        val clientId = connection.parameters["clientId"]
+        if (clientId.isNullOrEmpty()) {
+            consumer.consumeForProject(
+                connection.project,
+                HealthStatusItem(
+                    "missingClientId_" + connection.id,
+                    invalidConnectionCategory,
+                    mapOf(
+                        "reason" to "Connection is missing Slack client id ('clientId') property.",
+                        "connection" to connection
+                    )
+                )
+            )
+            return
+        }
+
+        val clientSecret = connection.parameters["secure:clientSecret"]
+        if (clientSecret.isNullOrEmpty()) {
+            consumer.consumeForProject(
+                connection.project,
+                HealthStatusItem(
+                    "missingClientSecret_" + connection.id,
+                    invalidConnectionCategory,
+                    mapOf(
+                        "reason" to "Connection is missing Slack client secret ('secure:clientSecret') property.",
+                        "connection" to connection
+                    )
                 )
             )
             return
