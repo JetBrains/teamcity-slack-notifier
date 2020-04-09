@@ -236,8 +236,10 @@ data class MaybeBot(
 ) : MaybeError
 
 data class Bot(
-    val id: String = "",
-    val name: String = ""
+        val id: String = "",
+        val name: String = "",
+        @JsonProperty("user_id")
+        val userId: String = ""
 )
 
 data class ResourcePermission(

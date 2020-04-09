@@ -16,14 +16,17 @@
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
+<%@ taglib prefix="util" uri="/WEB-INF/functions/util" %>
 
 
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
-<jsp:useBean id="availableConnections"
-             type="java.util.List<jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor>" scope="request"/>
+<jsp:useBean id="connectionsBean"
+             type="jetbrains.buildServer.notification.slackNotifier.SlackConnectionsBean" scope="request"/>
+
 <jsp:useBean id="properties" type="jetbrains.buildServer.notification.slackNotifier.SlackProperties" scope="request"/>
 <jsp:useBean id="user" type="jetbrains.buildServer.users.SUser" scope="request"/>
 <jsp:useBean id="slackUsername" type="java.lang.String" scope="request"/>
+<jsp:useBean id="selectedConnection" type="java.lang.String" scope="request"/>
 
 <c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
 
@@ -35,7 +38,7 @@
     </td>
     <td>
         <c:choose>
-            <c:when test="${empty availableConnections}">
+            <c:when test="${empty connectionsBean.connections}">
                 No suitable Slack connections found.
             </c:when>
             <c:otherwise>
@@ -45,10 +48,9 @@
                         className="longField"
                 >
                     <props:option value="">-- Choose Slack connection --</props:option>
-                    <c:forEach var="connection" items="${availableConnections}">
+                    <c:forEach var="connection" items="${connectionsBean.connections}">
                         <props:option value="${connection.id}">
-                            <c:out
-                                    value="${connection.connectionDisplayName}"/>
+                            <c:out value="${connection.connectionDisplayName}"/>
                         </props:option>
                     </c:forEach>
                 </props:selectProperty>
@@ -59,7 +61,7 @@
     </td>
 </tr>
 
-<tr>
+<tr id="userSection" style="vertical-align: top">
     <td>
         <label class="notifierSettingControls__label">
             User:
@@ -67,20 +69,12 @@
     </td>
 
     <td>
-        <c:choose>
-            <c:when test="${not empty slackUsername}">
-                You are signed in as <bs:out value="${slackUsername}"/>.
-                <a id="signInWithSlack">
-                    Sign in again
-                </a>
-            </c:when>
-            <c:otherwise>
-                <a id="signInWithSlack">
-                    Sign in
-                </a>
-                to receive Slack notifications
-            </c:otherwise>
-        </c:choose>
+        <span id="signedInUserNote">
+        </span>
+        <br/>
+        <a id="signInWithSlack">
+            Sign in with Slack
+        </a>
     </td>
 
 </tr>
@@ -90,26 +84,47 @@
     var signInWithSlack = $j("#signInWithSlack");
 
     BS.UserSlackNotifierSettings = {
-        updateSignInUrl: function (selectedConnection) {
+        connections: {},
+
+        updateSignInUrl: function (selectedConnectionId) {
+            var connection = this.connections[selectedConnectionId];
+            if (!connection) {
+                $j("#userSection").hide();
+                return;
+            } else {
+                $j("#userSection").show();
+                if (selectedConnectionId === "${selectedConnection}") {
+                    $j("#signedInUserNote").text('You are signed in as ${util:forJS(slackUsername, true, false)}.');
+                } else {
+                    $j("#signedInUserNote").text("You are not signed in.");
+                }
+            }
+
+            var team = connection.team;
             var state = encodeURIComponent(JSON.stringify({
                 userId: "${user.id}",
-                connectionId: selectedConnection
+                connectionId: selectedConnectionId
             }));
 
-            var redirectUrl = window["base_uri"] + "/admin/slack/oauth.html";
+            var redirectUrl = encodeURIComponent(window["base_uri"] + "/admin/slack/oauth.html");
+            var clientId = connection.clientId;
 
             signInWithSlack.attr("href",
-                "https://slack.com/oauth/authorize?scope=identity.basic,identity.team&client_id=2280447103.946465054946&state=" + state +
-                "&redirect_uri=" + redirectUrl
+                "https://slack.com/oauth/authorize?scope=identity.basic,identity.team" +
+                "&client_id=" + clientId +
+                "&state=" + state +
+                "&redirect_uri=" + redirectUrl +
+                "&team=" + team
             );
-
-            if (selectedConnection) {
-                signInWithSlack.show();
-            } else {
-                signInWithSlack.hide();
-            }
         }
     };
+
+    <c:forEach items="${connectionsBean.connections}" var="connection">
+    BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
+        clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
+        team: "${connectionsBean.getTeamForConnection(connection)}"
+    };
+    </c:forEach>
 
     BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
     $j(connectionId).on("change", function () {

@@ -93,8 +93,7 @@ class SlackOauthController(
 
         val slackUserId = userIdentity.user.id
         user.setUserProperty(SlackProperties.channelProperty, slackUserId)
-
-        val team = userIdentity.team.id
+        user.setUserProperty(SlackProperties.connectionProperty, connectionId)
 
         return ModelAndView(RedirectView(request.contextPath + "/profile.html?notificatorType=jbSlackNotifier&item=userNotifications"))
     }

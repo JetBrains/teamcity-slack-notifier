@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
 import jetbrains.buildServer.serverSide.TeamCityProperties
 import org.springframework.stereotype.Service
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -23,13 +24,17 @@ class AggregatedSlackApi(
         .build<String, List<Channel>>()
 
     private val myUsersCache = CacheBuilder.newBuilder()
-        .expireAfterWrite(
-            TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
-            TimeUnit.SECONDS
-        )
-        .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumUsersToCache, 50_000))
-        .weigher { _: String, users: List<User> -> users.size }
-        .build<String, List<User>>()
+            .expireAfterWrite(
+                    TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
+                    TimeUnit.SECONDS
+            )
+            .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumUsersToCache, 50_000))
+            .weigher { _: String, users: List<User> -> users.size }
+            .build<String, List<User>>()
+
+    // Main bot info (like id or team id) doesn't change over time, so it's safe to cache them indefinitely
+    // If some changing info (like display name) should be cached, Guava expirable cache should be used instead
+    private val myBotCache: MutableMap<String, AggregatedBot> = Collections.synchronizedMap(WeakHashMap())
 
     fun getChannelsList(token: String): List<Channel> {
         return myChannelsCache.get(token) {
@@ -44,6 +49,15 @@ class AggregatedSlackApi(
             getList { cursor ->
                 slackApi.usersList(token, cursor)
             }
+        }
+    }
+
+    fun getBot(token: String): AggregatedBot {
+        return myBotCache.getOrPut(token) {
+            val bot = slackApi.authTest(token)
+            val botInfo = slackApi.botsInfo(token, bot.botId)
+            val userInfo = slackApi.usersInfo(token, botInfo.bot.userId)
+            AggregatedBot(id = bot.botId, teamId = userInfo.user?.teamId)
         }
     }
 
@@ -62,3 +76,8 @@ class AggregatedSlackApi(
         return result
     }
 }
+
+data class AggregatedBot(
+        val id: String,
+        val teamId: String?
+)

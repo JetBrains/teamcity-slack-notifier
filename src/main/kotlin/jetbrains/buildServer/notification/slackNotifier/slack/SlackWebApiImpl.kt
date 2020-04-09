@@ -106,15 +106,23 @@ class SlackWebApiImpl(
         return mapper.readValue(response.message, UserIdentity::class.java)
     }
 
+    override fun usersInfo(token: String, userId: String): MaybeUser {
+        val response = request("users.info", token, listOf(Pair("user", userId)))
+        if (response.isException || response.message == null) {
+            return MaybeUser(ok = false, error = unknownError)
+        }
+        return mapper.readValue(response.message, MaybeUser::class.java)
+    }
+
     override fun oauthAccess(
-        clientId: String,
-        clientSecret: String,
-        code: String,
-        redirectUrl: String
+            clientId: String,
+            clientSecret: String,
+            code: String,
+            redirectUrl: String
     ): OauthAccessToken {
         val response = request(
-            "oauth.access",
-            "",
+                "oauth.access",
+                "",
             parameters = listOf(
                 Pair("client_id", clientId),
                 Pair("client_secret", clientSecret),

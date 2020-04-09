@@ -3,6 +3,7 @@ package jetbrains.buildServer.notification.slackNotifier
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.BasePropertiesBean
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.auth.Permission
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
@@ -67,13 +68,14 @@ class UserSlackNotifierSettingsController(
         }
 
 
-        mv.model["availableConnections"] = availableConnections
+        mv.model["connectionsBean"] = SlackConnectionsBean(availableConnections, aggregatedSlackApi)
         mv.model["propertiesBean"] = BasePropertiesBean(user.properties.map {
             it.key.key to it.value
         }.toMap())
         mv.model["properties"] = SlackProperties()
         mv.model["user"] = user
         mv.model["slackUsername"] = slackUsername ?: ""
+        mv.model["selectedConnection"] = selectedConnectionId
 
         return mv
     }

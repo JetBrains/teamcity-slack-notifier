@@ -16,6 +16,9 @@ interface SlackWebApi {
     // https://api.slack.com/methods/bots.info
     fun botsInfo(token: String, botId: String): MaybeBot
 
+    // https://api.slack.com/methods/users.info
+    fun usersInfo(token: String, userId: String): MaybeUser
+
     // https://api.slack.com/methods/conversations.members
     fun conversationsMembers(token: String, channelId: String): ConversationMembers
 
