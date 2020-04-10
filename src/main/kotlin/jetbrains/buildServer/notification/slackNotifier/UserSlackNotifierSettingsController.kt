@@ -82,9 +82,15 @@ class UserSlackNotifierSettingsController(
 
         val slackUsername = selectedConnection?.let { connection ->
             connection.parameters["secure:token"]?.let { token ->
-                aggregatedSlackApi.getUsersList(token).find {
+                val slackUser = aggregatedSlackApi.getUsersList(token).find {
                     it.id == slackUserId
-                }?.displayName
+                }
+
+                if (slackUser == null && slackUserId != null) {
+                    user.getPropertyValue(SlackProperties.displayNameProperty)
+                } else {
+                    slackUser?.displayName
+                }
             }
         }
 

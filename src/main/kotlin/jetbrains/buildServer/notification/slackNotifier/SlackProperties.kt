@@ -12,6 +12,10 @@ class SlackProperties {
         val connectionPropertyName = "connection"
         val connectionProperty =
             PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, connectionPropertyName)
+
+        val displayName = "displayName"
+        val displayNameProperty =
+            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, displayName)
     }
 
     val channelKey = channelProperty.key

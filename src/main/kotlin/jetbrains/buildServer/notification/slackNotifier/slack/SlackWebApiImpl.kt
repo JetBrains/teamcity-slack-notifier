@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Pair
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
+import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.util.HTTPRequestBuilder
 import java.nio.charset.Charset
 
@@ -20,6 +22,8 @@ class SlackWebApiImpl(
         .registerModule(KotlinModule())
         .configure(SerializationFeature.INDENT_OUTPUT, true)
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
+    private val requestTimeout = TeamCityProperties.getInteger(SlackNotifierProperties.requestTimeout, 3000)
 
     override fun postMessage(token: String, payload: Message): MaybeMessage {
         val response = request(
@@ -158,6 +162,7 @@ class SlackWebApiImpl(
                 )
                 .withHeader("Authorization", "Bearer $token")
                 .withHeader("Content-Type", "application/json")
+                .withTimeout(requestTimeout)
                 .addParameters(parameters)
                 .onErrorResponse(HTTPRequestBuilder.ResponseConsumer {
                     response = it.bodyAsString

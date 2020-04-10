@@ -104,11 +104,12 @@ class SlackOauthController(
         val slackUserId = userIdentity.user.id
         user.setUserProperty(SlackProperties.channelProperty, slackUserId)
         user.setUserProperty(SlackProperties.connectionProperty, connectionId)
+        user.setUserProperty(SlackProperties.displayNameProperty, userIdentity.user.displayName)
 
         return ModelAndView(RedirectView(request.contextPath + "/profile.html?notificatorType=jbSlackNotifier&item=userNotifications"))
     }
 
-    fun getCurrentUser(): SUser? {
+    private fun getCurrentUser(): SUser? {
         val associatedUser: User =
             securityContext.authorityHolder.associatedUser ?: return null
         return if (SUser::class.java.isAssignableFrom(associatedUser.javaClass)) {
