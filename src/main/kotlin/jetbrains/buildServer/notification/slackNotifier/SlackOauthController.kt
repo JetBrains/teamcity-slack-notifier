@@ -5,7 +5,10 @@ import com.google.gson.Gson
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.ProjectManager
+import jetbrains.buildServer.serverSide.auth.SecurityContext
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
+import jetbrains.buildServer.users.SUser
+import jetbrains.buildServer.users.User
 import jetbrains.buildServer.users.UserModel
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import org.springframework.context.annotation.Conditional
@@ -22,7 +25,8 @@ class SlackOauthController(
     private val userModel: UserModel,
     private val projectManager: ProjectManager,
     private val oAuthConnectionsManager: OAuthConnectionsManager,
-    private val slackWebApiFactory: SlackWebApiFactory
+    private val slackWebApiFactory: SlackWebApiFactory,
+    private val securityContext: SecurityContext
 ) : BaseController() {
     companion object {
         const val PATH = "/admin/slack/oauth.html"
@@ -36,8 +40,14 @@ class SlackOauthController(
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
         val state = Gson().fromJson<SlackOAuthState>(request.getParameter("state"))
-        val userId = state.userId;
-        val user = userModel.findUserById(userId.toLong())
+        val userId = state.userId.toLong()
+        val currentUser = getCurrentUser()
+        if (currentUser?.id != userId) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User id '${userId}' does not match current user id")
+            return null
+        }
+
+        val user = userModel.findUserById(userId)
         if (user == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Can't find user with id '$userId'")
             return null
@@ -97,6 +107,17 @@ class SlackOauthController(
 
         return ModelAndView(RedirectView(request.contextPath + "/profile.html?notificatorType=jbSlackNotifier&item=userNotifications"))
     }
+
+    fun getCurrentUser(): SUser? {
+        val associatedUser: User =
+            securityContext.authorityHolder.associatedUser ?: return null
+        return if (SUser::class.java.isAssignableFrom(associatedUser.javaClass)) {
+            associatedUser as SUser
+        } else {
+            userModel.findUserAccount(null, associatedUser.username)
+        }
+    }
+
 }
 
 private data class SlackOAuthState(val userId: String, val connectionId: String)
