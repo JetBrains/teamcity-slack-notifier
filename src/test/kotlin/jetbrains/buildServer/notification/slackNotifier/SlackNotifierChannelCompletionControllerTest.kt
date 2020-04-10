@@ -23,10 +23,7 @@ class SlackNotifierChannelCompletionControllerTest :
 
         val oauthManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
         myConnection = oauthManager.addConnection(myProject, "test_type", mapOf("secure:token" to "test_token"))
-        myDescriptor = SlackNotifierDescriptor(
-            MockServerPluginDescriptior(),
-            SlackConnectionSelectOptionsProvider(myFixture.projectManager, oauthManager)
-        )
+        myDescriptor = SlackNotifierDescriptor()
 
         return SlackNotifierChannelCompletionController(
             myFixture.securityContext,

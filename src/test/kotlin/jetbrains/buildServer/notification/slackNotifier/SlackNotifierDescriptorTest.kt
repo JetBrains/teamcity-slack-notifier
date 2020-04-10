@@ -15,10 +15,7 @@ class SlackNotifierDescriptorTest : BaseSlackTestCase() {
 
         val connectionManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
 
-        descriptor = SlackNotifierDescriptor(
-            MockServerPluginDescriptior(),
-            SlackConnectionSelectOptionsProvider(myFixture.projectManager, connectionManager)
-        )
+        descriptor = SlackNotifierDescriptor()
     }
 
     @Test

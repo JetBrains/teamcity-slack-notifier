@@ -1,18 +1,12 @@
 package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.serverSide.InvalidProperty
-import jetbrains.buildServer.web.openapi.PluginDescriptor
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
-class SlackNotifierDescriptor(
-    private val pluginDescriptor: PluginDescriptor,
-    private val connectionOptionsSelectProvider: SlackConnectionSelectOptionsProvider
-) {
-
-
+class SlackNotifierDescriptor {
     fun validate(properties: Map<String, String>): MutableCollection<InvalidProperty> {
         val invalidProperties = mutableListOf<InvalidProperty>()
 

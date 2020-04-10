@@ -41,10 +41,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
             MockSlackWebApiFactory()
         mySlackApi = mySlackApiFactory.createSlackWebApi()
 
-        myDescriptor = SlackNotifierDescriptor(
-            MockServerPluginDescriptior(),
-            SlackConnectionSelectOptionsProvider(myFixture.projectManager, myConnectionManager)
-        )
+        myDescriptor = SlackNotifierDescriptor()
         myNotifier = SlackNotifier(
             myFixture.notificatorRegistry,
             mySlackApiFactory,

@@ -3,11 +3,12 @@ package jetbrains.buildServer.notification.slackNotifier
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.BasePropertiesBean
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
-import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.ProjectManager
+import jetbrains.buildServer.serverSide.WebLinks
 import jetbrains.buildServer.serverSide.auth.Permission
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.users.UserModel
+import jetbrains.buildServer.web.NotificationRulesExtension
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import org.springframework.context.annotation.Conditional
@@ -22,13 +23,33 @@ class UserSlackNotifierSettingsController(
     private val pluginDescriptor: PluginDescriptor,
     private val projectManager: ProjectManager,
     private val oAuthConnectionsManager: OAuthConnectionsManager,
-    webControllerManager: WebControllerManager,
-    descriptor: UserSlackNotifierDescriptor,
+    private val webControllerManager: WebControllerManager,
+    private val descriptor: UserSlackNotifierDescriptor,
     private val userModel: UserModel,
-    private val aggregatedSlackApi: AggregatedSlackApi
+    private val aggregatedSlackApi: AggregatedSlackApi,
+    private val webLinks: WebLinks
 ) : BaseController() {
     init {
         webControllerManager.registerController(descriptor.editParametersUrl, this)
+
+        registerUserSettingsPageExtension()
+    }
+
+    private fun registerUserSettingsPageExtension() {
+        val extensionUrl = pluginDescriptor.getPluginResourcesPath("notificationRulesMessage.html")
+        NotificationRulesExtension(
+            descriptor.type,
+            extensionUrl,
+            webControllerManager
+        ).register()
+
+        webControllerManager.registerController(extensionUrl, object : BaseController() {
+            override fun doHandle(p0: HttpServletRequest, p1: HttpServletResponse): ModelAndView? {
+                val mv = ModelAndView(pluginDescriptor.getPluginResourcesPath("notificationRulesMessage.jsp"))
+                mv.model["editConnectionUrl"] = webLinks.getEditProjectPageUrl("_Root") + "&tab=oauthConnections"
+                return mv
+            }
+        })
     }
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
