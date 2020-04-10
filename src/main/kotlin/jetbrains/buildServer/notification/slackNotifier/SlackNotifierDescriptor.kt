@@ -36,7 +36,7 @@ class SlackNotifierDescriptor {
 
     fun getType(): String = Companion.type
     fun getDisplayName(): String {
-        return "Experimental Slack Notifier"
+        return "Slack Notifier"
     }
 
     companion object {
