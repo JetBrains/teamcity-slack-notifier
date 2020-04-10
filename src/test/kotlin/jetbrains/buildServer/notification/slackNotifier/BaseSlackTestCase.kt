@@ -64,7 +64,11 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myConnection = myConnectionManager.addConnection(
             myProject,
             SlackConnection.type,
-            mapOf("secure:token" to "test_token")
+            mapOf(
+                "secure:token" to "test_token",
+                "clientId" to "test_clientId",
+                "secure:clientSecret" to "test_clientSecret"
+            )
         )
 
         myUser = createUser("test_user")
