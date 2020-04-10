@@ -30,6 +30,7 @@
 
 <c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
 
+
 <tr>
     <td>
         <label class="notifierSettingControls__label">
@@ -61,6 +62,7 @@
     </td>
 </tr>
 
+
 <tr id="userSection" style="vertical-align: top">
     <td>
         <label class="notifierSettingControls__label">
@@ -77,6 +79,11 @@
         </a>
     </td>
 
+</tr>
+<tr>
+    <td colspan="2" style="padding-top: 6px;">
+        <div id="connectionWarning" class="attentionComment"></div>
+    </td>
 </tr>
 
 <script type="text/javascript">
@@ -116,13 +123,24 @@
                 "&redirect_uri=" + redirectUrl +
                 "&team=" + team
             );
+
+            var projectId = connection.projectId;
+            if (projectId && projectId !== "_Root") {
+                $j("#connectionWarning").text("Notifications will only be sent in '" + connection.projectName + "'" +
+                    " project and its sub-projects, since this connection is configured in it.");
+                $j("#connectionWarning").show();
+            } else {
+                $j("#connectionWarning").hide();
+            }
         }
     };
 
     <c:forEach items="${connectionsBean.connections}" var="connection">
     BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
         clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
-        team: "${connectionsBean.getTeamForConnection(connection)}"
+        team: "${connectionsBean.getTeamForConnection(connection)}",
+        projectId: "${connection.project.externalId}",
+        projectName: "${connection.project.fullName}"
     };
     </c:forEach>
 
