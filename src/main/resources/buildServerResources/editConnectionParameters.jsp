@@ -2,6 +2,7 @@
 <%@ include file="/include-internal.jsp" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
+<jsp:useBean id="rootUrl" type="java.lang.String" scope="request"/>
 
 <tr>
     <td><label for="displayName">Display name:</label><l:star/></td>
@@ -47,3 +48,11 @@
         <span class="error" id="error_secure:token"></span>
     </td>
 </tr>
+
+<tr class="noBorder">
+    <td colspan="2">
+        Make sure to add <bs:out value="${rootUrl}"/> to OAuth & Permissions/Redirect URLs, otherwise OAuth sign in
+        won't work in user settings.
+    </td>
+</tr>
+
