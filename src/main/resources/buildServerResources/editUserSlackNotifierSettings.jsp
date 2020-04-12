@@ -82,7 +82,7 @@
 </tr>
 <tr>
     <td colspan="2" style="padding-top: 6px;">
-        <div id="connectionWarning" class="attentionComment"></div>
+        <div id="connectionWarning" class="attentionComment" style="display: none;"></div>
     </td>
 </tr>
 

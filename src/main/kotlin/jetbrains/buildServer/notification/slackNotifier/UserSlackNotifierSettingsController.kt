@@ -73,10 +73,8 @@ class UserSlackNotifierSettingsController(
         val availableConnections = projectManager.projects.filter {
             user.isPermissionGrantedForProject(it.projectId, Permission.VIEW_PROJECT)
         }.flatMap { project ->
-            oAuthConnectionsManager.getAvailableConnectionsOfType(project, SlackConnection.type).filter { connection ->
-                connection.project == project
-            }
-        }
+            oAuthConnectionsManager.getAvailableConnectionsOfType(project, SlackConnection.type)
+        }.distinctBy { it.id }
 
         val selectedConnection = availableConnections.find { it.id == selectedConnectionId }
 

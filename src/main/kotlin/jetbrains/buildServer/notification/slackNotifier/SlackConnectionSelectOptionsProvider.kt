@@ -23,9 +23,9 @@ class SlackConnectionSelectOptionsProvider(
         }
 
         return (listOf((SelectOption("", "-- Choose connection --"))) + projects.flatMap { project ->
-            oAuthConnectionsManager.getAvailableConnectionsOfType(project, SlackConnection.type).filter { connection ->
-                connection.project == project
-            }
+            oAuthConnectionsManager.getAvailableConnectionsOfType(project, SlackConnection.type)
+        }.distinctBy {
+            it.id
         }.map {
             SelectOption(it.id, it.connectionDisplayName)
         }).toMutableList()
