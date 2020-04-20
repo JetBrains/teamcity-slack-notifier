@@ -91,7 +91,7 @@
 
 <tr>
     <th>
-        #channel or user id:<l:star/>
+        Channel or user id:<l:star/>
     </th>
     <td>
         <props:textProperty
@@ -102,13 +102,19 @@
         />
         <forms:saving id="channel-autocomplete-loader" style="display: none;" savingTitle="Fetching autocomplete data"/>
         <span class="error" id="error_${properties.channelKey}"></span>
+        <span class="smallNote">
+            Specify where messages should be sent.
+            <br/>
+            Channels should start with '#' symbol.
+        </span>
     </td>
 </tr>
 
 <script>
     $j(document.getElementById("${properties.channelKey}")).autocomplete({
         source: BS.SlackNotifierSettings.createFindUserFunction(),
-        search: BS.SlackNotifierSettings.createSearchUserFunction()
+        search: BS.SlackNotifierSettings.createSearchUserFunction(),
+        minLength: 3
     });
 
     $j(document.getElementById("${properties.channelKey}")).placeholder();
