@@ -122,7 +122,7 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
 
     private fun `then report should contain error about not being added to channel`() {
         assertResultContains {
-            it.category == SlackBuildFeatureHealthReport.invalidBuildFeatureCategory &&
+            it.category == SlackBuildFeatureHealthReport.botIsNotConfiguredCategory &&
                     (it.additionalData["reason"] as String).contains("should be added to the channel")
         }
     }

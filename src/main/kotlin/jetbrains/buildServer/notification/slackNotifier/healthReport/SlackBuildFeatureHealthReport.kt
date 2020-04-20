@@ -26,7 +26,18 @@ class SlackBuildFeatureHealthReport(
         const val type = "slackBuildFeatureReport"
 
         val invalidBuildFeatureCategory =
-            ItemCategory("slackInvalidBuildFeature", "Slack notifications build feature is invalid", ItemSeverity.ERROR)
+            ItemCategory(
+                "slackInvalidBuildFeature",
+                "Slack notifications build feature is invalid",
+                ItemSeverity.ERROR
+            )
+
+        val botIsNotConfiguredCategory =
+            ItemCategory(
+                "slackBotIsNotConfigured",
+                "Slack app bot is not configured correctly",
+                ItemSeverity.WARN
+            )
     }
 
     override fun report(scope: HealthStatusScope, consumer: HealthStatusItemConsumer) {
@@ -129,7 +140,8 @@ class SlackBuildFeatureHealthReport(
                     feature,
                     type,
                     buildType,
-                    "Bot is not added to $receiverName channel. Bot should be added to the channel to be able to post messages"
+                    "Bot is not added to $receiverName channel. Bot should be added to the channel to be able to post messages",
+                    category = botIsNotConfiguredCategory
                 )
             }
         } else {
@@ -145,11 +157,12 @@ class SlackBuildFeatureHealthReport(
         feature: SBuildFeatureDescriptor,
         type: String,
         buildTypeIdentity: BuildTypeIdentity,
-        reason: String
+        reason: String,
+        category: ItemCategory = invalidBuildFeatureCategory
     ): HealthStatusItem {
         return HealthStatusItem(
             feature.id + "_invalidSlackBuildFeature",
-            invalidBuildFeatureCategory,
+            category,
             mapOf(
                 "reason" to reason,
                 "feature" to feature,
