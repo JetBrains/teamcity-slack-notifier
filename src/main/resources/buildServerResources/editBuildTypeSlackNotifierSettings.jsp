@@ -91,7 +91,7 @@
 
 <tr>
     <th>
-        Channel or user id:<l:star/>
+        Channel or user ID:<l:star/>
     </th>
     <td>
         <props:textProperty
@@ -105,7 +105,7 @@
         <span class="smallNote">
             Specify where messages should be sent.
             <br/>
-            Channels should start with '#' symbol.
+            Channel IDs should start with the '#' symbol.
         </span>
     </td>
 </tr>
