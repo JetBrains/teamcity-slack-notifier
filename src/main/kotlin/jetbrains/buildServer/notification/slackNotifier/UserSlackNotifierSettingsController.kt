@@ -70,6 +70,8 @@ class UserSlackNotifierSettingsController(
         val slackUserId = user.getPropertyValue(SlackProperties.channelProperty)
         val selectedConnectionId = user.getPropertyValue(SlackProperties.connectionProperty) ?: ""
 
+        println(slackUserId)
+
         val availableConnections = projectManager.projects.filter {
             user.isPermissionGrantedForProject(it.projectId, Permission.VIEW_PROJECT)
         }.flatMap { project ->
@@ -80,11 +82,12 @@ class UserSlackNotifierSettingsController(
 
         val slackUsername = selectedConnection?.let { connection ->
             connection.parameters["secure:token"]?.let { token ->
-                val slackUser = aggregatedSlackApi.getUsersList(token).find {
+                val users = aggregatedSlackApi.getUsersList(token)
+                val slackUser = users.find {
                     it.id == slackUserId
                 }
 
-                if (slackUser == null && slackUserId != null) {
+                if (slackUser == null && !slackUserId.isNullOrEmpty()) {
                     user.getPropertyValue(SlackProperties.displayNameProperty)
                 } else {
                     slackUser?.displayName
@@ -94,7 +97,9 @@ class UserSlackNotifierSettingsController(
 
 
         mv.model["connectionsBean"] = SlackConnectionsBean(availableConnections, aggregatedSlackApi)
-        mv.model["propertiesBean"] = BasePropertiesBean(user.properties.map {
+        mv.model["propertiesBean"] = BasePropertiesBean(user.properties.filter {
+            it.key != SlackProperties.channelProperty
+        }.map {
             it.key.key to it.value
         }.toMap())
         mv.model["properties"] = SlackProperties()

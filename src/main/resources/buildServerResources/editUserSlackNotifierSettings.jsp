@@ -79,6 +79,7 @@
         </a>
     </td>
 
+    <props:textProperty name="${properties.channelKey}" style="display: none;"/>
 </tr>
 <tr>
     <td colspan="2" style="padding-top: 6px;">
@@ -87,31 +88,32 @@
 </tr>
 
 <script type="text/javascript">
-    var connectionId = "#${properties.connectionKey.replace(':', '-')}";
-    var signInWithSlack = $j("#signInWithSlack");
+  var connectionId = "#${properties.connectionKey.replace(':', '-')}";
+  var signInWithSlack = $j("#signInWithSlack");
+  var slackUsername = "${util:forJS(slackUsername, true, false)}";
 
-    BS.UserSlackNotifierSettings = {
-        connections: {},
+  BS.UserSlackNotifierSettings = {
+    connections: {},
 
-        updateSignInUrl: function (selectedConnectionId) {
-            var connection = this.connections[selectedConnectionId];
-            if (!connection) {
-                $j("#userSection").hide();
-                return;
-            } else {
-                $j("#userSection").show();
-                if (selectedConnectionId === "${selectedConnection}") {
-                    $j("#signedInUserNote").text('You are signed in as ${util:forJS(slackUsername, true, false)}.');
-                } else {
-                    $j("#signedInUserNote").text("You are not signed in.");
-                }
-            }
+    updateSignInUrl: function (selectedConnectionId) {
+      var connection = this.connections[selectedConnectionId];
+      if (!connection) {
+        $j("#userSection").hide();
+        return;
+      } else {
+        $j("#userSection").show();
+        if (selectedConnectionId === "${selectedConnection}" && slackUsername) {
+          $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
+        } else {
+          $j("#signedInUserNote").text("You are not signed in.");
+        }
+      }
 
-            var team = connection.team;
-            var state = encodeURIComponent(JSON.stringify({
-                userId: "${user.id}",
-                connectionId: selectedConnectionId
-            }));
+      var team = connection.team;
+      var state = encodeURIComponent(JSON.stringify({
+        userId: "${user.id}",
+        connectionId: selectedConnectionId
+      }));
 
             var redirectUrl = encodeURIComponent(window["base_uri"] + "/admin/slack/oauth.html");
             var clientId = connection.clientId;
@@ -144,8 +146,12 @@
     };
     </c:forEach>
 
-    BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
-    $j(connectionId).on("change", function () {
-        BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
-    });
+  BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
+  $j(connectionId).on("change", function () {
+    BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
+  });
+
+  $j(document).ready(function () {
+    $j("#saveNotifierSettings").attr("value", "Sign out");
+  });
 </script>
