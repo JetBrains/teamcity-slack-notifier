@@ -123,13 +123,3 @@
     <div id="testConnectionStatus"></div>
     <div id="testConnectionDetails" class="mono"></div>
 </bs:dialog>
-
-<script>
-  $j(document).ready(function () {
-    var additionalButtons = $j("span#editConnectionAdditionalButtons");
-    if (additionalButtons.length) {
-      additionalButtons.empty();
-      additionalButtons.append($j("span#testConnectionButtonWrapper *"));
-    }
-  });
-</script>
