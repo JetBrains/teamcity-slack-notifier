@@ -71,7 +71,7 @@
         <div class="attentionComment">
             TeamCity connection to Slack requires creating a respective
             <a href="https://api.slack.com/apps"
-               target="_blank">Slack app</a>
+               target="_blank" rel="noreferrer">Slack app</a>
             with the following scopes:
             <i>channels:read, chat:write, im:read, im:write, users:read</i>.
             <br/>
@@ -82,7 +82,7 @@
             below.
             <br/>
             Specify a
-            <a href="https://api.slack.com/docs/token-types#bot" target="_blank"> bot user token </a>
+            <a href="https://api.slack.com/docs/token-types#bot" target="_blank" rel="noreferrer"> bot user token </a>
             associated with your Slack app in the <i>Bot token</i> field.
         </div>
     </td>

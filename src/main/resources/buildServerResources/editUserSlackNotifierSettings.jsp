@@ -74,7 +74,7 @@
         <span id="signedInUserNote">
         </span>
         <br/>
-        <a id="signInWithSlack">
+        <a id="signInWithSlack" rel="noreferrer">
             Sign in with Slack
         </a>
     </td>
