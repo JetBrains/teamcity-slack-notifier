@@ -60,13 +60,16 @@
 
 <tr>
     <th>
-        Connection to use:<l:star/>
+        Connection:<l:star/>
     </th>
     <td>
         <c:choose>
             <c:when test="${empty availableConnections}">
-                No suitable Slack connections found. You can create one at the <a href="${createConnectionUrl}">Connections
-                tab</a>
+                No Slack connections available. You can configure a connection in the
+                <a href="${createConnectionUrl}">
+                    parent project’s settings
+                </a>
+                .
             </c:when>
             <c:otherwise>
                 <props:selectProperty
@@ -74,7 +77,7 @@
                         id="${properties.connectionKey.replace(':', '-')}"
                         className="longField"
                 >
-                    <props:option value="">-- Choose Slack connection --</props:option>
+                    <props:option value="">-- Select Slack connection --</props:option>
                     <c:forEach var="connection" items="${availableConnections}">
                         <props:option value="${connection.id}">
                             <c:out

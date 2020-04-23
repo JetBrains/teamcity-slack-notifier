@@ -1,12 +1,14 @@
 <jsp:useBean id="editConnectionUrl" scope="request" type="java.lang.String"/>
 
-<p class="notificationRulesMessage">
-    Specify the builds and events you want receive Slack messages about.
+<p>
+    Specify the builds and events you want to be notified about via Slack messages.
     <br/>
-    In order to receive notifications, you need to
+    To receive notifications for all projects, configure a connection to Slack in the
     <a href="${editConnectionUrl}">
-        configure Slack connection in Root project
+        Root project’s settings
     </a>
-    or any other project you'd like to limit notifications to.
+    and select it in the drop-down menu below.
+    <br/>
+    To receive notifications for a specific project, configure the Slack connection directly in this project’s settings
+    instead.
 </p>
-

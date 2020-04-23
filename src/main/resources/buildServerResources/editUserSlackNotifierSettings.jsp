@@ -34,7 +34,7 @@
 <tr>
     <td>
         <label class="notifierSettingControls__label">
-            Connection to use:<l:star/>
+            Connection:<l:star/>
         </label>
     </td>
     <td>
@@ -48,7 +48,7 @@
                         id="${properties.connectionKey.replace(':', '-')}"
                         className="longField"
                 >
-                    <props:option value="">-- Choose Slack connection --</props:option>
+                    <props:option value="">-- Select Slack connection --</props:option>
                     <c:forEach var="connection" items="${connectionsBean.connections}">
                         <props:option value="${connection.id}">
                             <c:out value="${connection.connectionDisplayName}"/>
@@ -128,8 +128,8 @@
 
             var projectId = connection.projectId;
             if (projectId && projectId !== "_Root") {
-                $j("#connectionWarning").text("Notifications will only be sent in '" + connection.projectName + "'" +
-                    " project and its sub-projects, since this connection is configured in it.");
+                $j("#connectionWarning").text("The selected connection is configured for the " + connection.projectName +
+                    " project. You will receive notifications about builds and events in this project and its subprojects.");
                 $j("#connectionWarning").show();
             } else {
                 $j("#connectionWarning").hide();
