@@ -7,7 +7,7 @@ import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.healthStatus.*
-import jetbrains.buildServer.serverSide.impl.NotificationRulesBuildFeature
+import jetbrains.buildServer.serverSide.impl.NotificationsBuildFeature
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
@@ -71,7 +71,7 @@ class SlackBuildFeatureHealthReport(
     }
 
     private fun getFeatures(buildTypeSettings: BuildTypeSettings): List<SBuildFeatureDescriptor> {
-        return buildTypeSettings.getBuildFeaturesOfType(NotificationRulesBuildFeature.FEATURE_TYPE)
+        return buildTypeSettings.getBuildFeaturesOfType(NotificationsBuildFeature.FEATURE_TYPE)
             .filter {
                 it.parameters["notifier"] == descriptor.getType()
             }
