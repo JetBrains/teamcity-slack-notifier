@@ -5,10 +5,10 @@
     <br/>
     To receive notifications for all projects, configure a connection to Slack in the
     <a href="${editConnectionUrl}">
-        Root project’s settings
+        Root project's settings
     </a>
     and select it in the drop-down menu below.
     <br/>
-    To receive notifications for a specific project, configure the Slack connection directly in this project’s settings
+    To receive notifications for a specific project, configure the Slack connection directly in this project's settings
     instead.
 </p>
