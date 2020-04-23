@@ -4,7 +4,7 @@ import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
 import jetbrains.buildServer.notification.slackNotifier.And
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
-import jetbrains.buildServer.serverSide.impl.NotificationRulesBuildFeature
+import jetbrains.buildServer.serverSide.impl.NotificationsBuildFeature
 import org.testng.annotations.Test
 
 class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFeatureHealthReport>() {
@@ -94,7 +94,7 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
 
     private fun addBuildFeature(parameters: Map<String, String> = emptyMap()) {
         myBuildType.addBuildFeature(
-            NotificationRulesBuildFeature.FEATURE_TYPE,
+            NotificationsBuildFeature.FEATURE_TYPE,
             mapOf(FeatureProviderNotificationRulesHolder.NOTIFIER to myDescriptor.getType()) + parameters
         )
     }
