@@ -56,6 +56,7 @@
   });
 </script>
 
+
 <tr>
     <td><label for="displayName">Display name:</label><l:star/></td>
     <td>
@@ -66,15 +67,31 @@
 </tr>
 
 <tr>
+    <td colspan="2">
+        <div class="attentionComment">
+            TeamCity connection to Slack requires creating a respective
+            <a href="https://api.slack.com/apps"
+               target="_blank">Slack app</a>
+            with the following scopes:
+            <i>channels:read, chat:write, im:read, im:write, users:read</i>.
+            <br/>
+            For proper authentication, set the Redirect URL in <b> OAuth & Permissions | App Management </b> to <bs:out
+                value="${rootUrl}"/>
+            <br/>
+            Copy the Client ID and Secret from the app's Basic Information page to the respective fields in the form
+            below.
+            <br/>
+            Specify a
+            <a href="https://api.slack.com/docs/token-types#bot" target="_blank"> bot user token </a>
+            associated with your Slack app in the <i>Bot token</i> field.
+        </div>
+    </td>
+</tr>
+
+<tr>
     <td><label for="secure:token">Client ID:</label><l:star/></td>
     <td>
         <props:textProperty name="clientId" className="longField"/>
-        <span class="smallNote">
-            You can see your apps or create a new one on <a href="https://api.slack.com/apps"
-                                                            target="_blank">Your Apps</a> page.
-            <br/>
-            This application will need the following scopes: <i>channels:read, chat:write, im:read, im:write, users:read</i>
-        </span>
         <span class="error" id="error_clientId"></span>
     </td>
 </tr>
@@ -93,18 +110,7 @@
     <td><label for="secure:token">Bot token:</label><l:star/></td>
     <td>
         <props:passwordProperty name="secure:token" className="longField"/>
-        <span class="smallNote">
-            Provide <a href="https://api.slack.com/docs/token-types#bot" target="_blank">bot token</a> to be used to connect to your Slack workspace.
-
-        </span>
         <span class="error" id="error_secure:token"></span>
-    </td>
-</tr>
-
-<tr class="noBorder">
-    <td colspan="2">
-        Make sure to add <bs:out value="${rootUrl}"/> to OAuth & Permissions/Redirect URLs, otherwise OAuth sign in
-        won't work in user settings.
     </td>
 </tr>
 
