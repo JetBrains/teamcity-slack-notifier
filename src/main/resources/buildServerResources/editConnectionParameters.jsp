@@ -1,8 +1,60 @@
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ include file="/include-internal.jsp" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
+<%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
 <jsp:useBean id="rootUrl" type="java.lang.String" scope="request"/>
+
+<c:set var="testConnectionUrl" value="/admin/slack/testConnection.html"/>
+
+<bs:linkScript>
+    /js/bs/forms.js
+    /js/bs/editBuildType.js
+</bs:linkScript>
+
+<script>
+  BS.SlackConnectionDialog = OO.extend(BS.PluginPropertiesForm, {
+    formElement: function () {
+      return $j("#OAuthConnection")[0];
+    },
+
+    testConnection: function () {
+      var that = this;
+      var info = "";
+      var success = true;
+
+      BS.PasswordFormSaver.save(that, window['base_uri'] + "${testConnectionUrl}",
+        OO.extend(BS.ErrorsAwareListener, {
+          onBeginSave: function (form) {
+            form.setSaving(true);
+            form.disable();
+          },
+
+          onTestConnectionFailedError: function (elem) {
+            if (success) {
+              info = "";
+            } else if ("" !== info) {
+              info += "\n";
+            }
+            info += elem.textContent || elem.text;
+            success = false;
+          },
+
+          onCompleteSave: function (form, responseXML, err) {
+            BS.XMLResponse.processErrors(responseXML, that, function (id, elem) {
+              success = false;
+              info = elem.textContent || elem.text;
+            });
+            BS.TestConnectionDialog.show(success, success ? "" : info, null);
+            form.setSaving(false);
+            form.enable();
+          }
+        }));
+    }
+  });
+</script>
 
 <tr>
     <td><label for="displayName">Display name:</label><l:star/></td>
@@ -56,3 +108,22 @@
     </td>
 </tr>
 
+<span id="testConnectionButtonWrapper" style="display:none;">
+  <forms:submit id="testConnectionButton" type="button" label="Test connection" onclick="BS.SlackConnectionDialog.testConnection();"/>
+</span>
+
+<bs:dialog dialogId="testConnectionDialog" title="Test Connection" closeCommand="BS.TestConnectionDialog.close();"
+           closeAttrs="showdiscardchangesmessage='false'">
+    <div id="testConnectionStatus"></div>
+    <div id="testConnectionDetails" class="mono"></div>
+</bs:dialog>
+
+<script>
+  $j(document).ready(function () {
+    var additionalButtons = $j("span#editConnectionAdditionalButtons");
+    if (additionalButtons.length) {
+      additionalButtons.empty();
+      additionalButtons.append($j("span#testConnectionButtonWrapper *"));
+    }
+  });
+</script>
