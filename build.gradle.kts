@@ -65,22 +65,7 @@ teamcity {
     version = "2019.2"
 
     server {
-        descriptor {
-            // required properties
-            name = "slackNotifier"
-            displayName = "Slack Notifier"
-            version = project.version as String?
-            vendorName = "JetBrains"
-
-            // optional properties
-            description = "Official plugin to send notifications to Slack"
-            downloadUrl = "download url"
-            email = ""
-            vendorUrl = "http://www.jetbrains.com"
-
-            useSeparateClassloader = true
-            allowRuntimeReload = true
-        }
+        descriptor = file("teamcity-plugin.dist.xml")
     }
 }
 
@@ -99,3 +84,20 @@ tasks.register<Copy>("renameDist") {
     into("build/distributions")
     rename("teamcity-slack-plugin-${version}.zip", "slack.zip")
 }
+
+tasks {
+    register("insertVersion") {
+        doLast {
+            val pluginDescriptor = File("teamcity-plugin.xml")
+            val version = (project.version as String?) ?: "SNAPSHOT"
+            val contents = pluginDescriptor.readText()
+                .replace("<version>[^<]+<\\/version>".toRegex(), "<version>$version</version>")
+            val updatedPluginDescriptor = File("teamcity-plugin.dist.xml").also {
+                it.createNewFile()
+            }
+            updatedPluginDescriptor.writeText(contents)
+        }
+    }
+}
+
+tasks["serverPlugin"].dependsOn("insertVersion")
