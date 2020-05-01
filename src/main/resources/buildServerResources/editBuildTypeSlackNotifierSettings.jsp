@@ -67,7 +67,7 @@
             <c:when test="${empty availableConnections}">
                 No Slack connections available. You can configure a connection in the
                 <a href="${createConnectionUrl}">
-                    parent project’s settings
+                    parent project's settings
                 </a>
                 .
             </c:when>
