@@ -76,8 +76,6 @@ class UserSlackNotifierSettingsController(
         val slackUserId = user.getPropertyValue(SlackProperties.channelProperty)
         val selectedConnectionId = user.getPropertyValue(SlackProperties.connectionProperty) ?: ""
 
-        println(slackUserId)
-
         val availableConnections = projectManager.projects.filter {
             user.isPermissionGrantedForProject(it.projectId, Permission.VIEW_PROJECT)
         }.flatMap { project ->
