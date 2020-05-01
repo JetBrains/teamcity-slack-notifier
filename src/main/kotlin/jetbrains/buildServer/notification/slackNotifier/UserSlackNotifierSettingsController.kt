@@ -11,6 +11,7 @@ import jetbrains.buildServer.users.UserModel
 import jetbrains.buildServer.web.NotificationRulesExtension
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
+import jetbrains.buildServer.web.util.SessionUser
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.ModelAndView
@@ -44,9 +45,14 @@ class UserSlackNotifierSettingsController(
         ).register()
 
         webControllerManager.registerController(extensionUrl, object : BaseController() {
-            override fun doHandle(p0: HttpServletRequest, p1: HttpServletResponse): ModelAndView? {
+            override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
+                val user = SessionUser.getUser(request) ?: return null
+
                 val mv = ModelAndView(pluginDescriptor.getPluginResourcesPath("notificationRulesMessage.jsp"))
+
                 mv.model["editConnectionUrl"] = webLinks.getEditProjectPageUrl("_Root") + "&tab=oauthConnections"
+                mv.model["user"] = user
+                mv.model["rootProject"] = projectManager.rootProject
                 return mv
             }
         })
