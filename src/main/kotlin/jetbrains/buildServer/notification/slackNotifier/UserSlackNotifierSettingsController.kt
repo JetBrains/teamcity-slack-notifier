@@ -73,6 +73,12 @@ class UserSlackNotifierSettingsController(
             return null
         }
 
+        val currentUser = SessionUser.getUser(request)
+        if (currentUser == null) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Unauthenticated")
+            return null
+        }
+
         val slackUserId = user.getPropertyValue(SlackProperties.channelProperty)
         val selectedConnectionId = user.getPropertyValue(SlackProperties.connectionProperty) ?: ""
 
@@ -110,6 +116,10 @@ class UserSlackNotifierSettingsController(
         mv.model["user"] = user
         mv.model["slackUsername"] = slackUsername ?: ""
         mv.model["selectedConnection"] = selectedConnectionId
+
+        println(currentUser.id)
+        println(user.id)
+        mv.model["displaySettings"] = currentUser.id == user.id
 
         return mv
     }

@@ -27,131 +27,140 @@
 <jsp:useBean id="user" type="jetbrains.buildServer.users.SUser" scope="request"/>
 <jsp:useBean id="slackUsername" type="java.lang.String" scope="request"/>
 <jsp:useBean id="selectedConnection" type="java.lang.String" scope="request"/>
+<jsp:useBean id="displaySettings" type="java.lang.Boolean" scope="request"/>
 
 <c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
 
+<c:choose>
+    <c:when test="${displaySettings}">
+    <tr>
+        <td>
+            <label class="notifierSettingControls__label">
+                Connection:<l:star/>
+            </label>
+        </td>
+        <td>
+            <c:choose>
+                <c:when test="${empty connectionsBean.connections}">
+                    No suitable Slack connections found.
+                </c:when>
+                <c:otherwise>
+                    <props:selectProperty
+                            name="${properties.connectionKey}"
+                            id="${properties.connectionKey.replace(':', '-')}"
+                            className="longField"
+                    >
+                        <props:option value="">-- Select Slack connection --</props:option>
+                        <c:forEach var="connection" items="${connectionsBean.connections}">
+                            <props:option value="${connection.id}">
+                                <c:out value="${connection.connectionDisplayName}"/>
+                            </props:option>
+                        </c:forEach>
+                    </props:selectProperty>
+                </c:otherwise>
+            </c:choose>
 
-<tr>
-    <td>
-        <label class="notifierSettingControls__label">
-            Connection:<l:star/>
-        </label>
-    </td>
-    <td>
-        <c:choose>
-            <c:when test="${empty connectionsBean.connections}">
-                No suitable Slack connections found.
-            </c:when>
-            <c:otherwise>
-                <props:selectProperty
-                        name="${properties.connectionKey}"
-                        id="${properties.connectionKey.replace(':', '-')}"
-                        className="longField"
-                >
-                    <props:option value="">-- Select Slack connection --</props:option>
-                    <c:forEach var="connection" items="${connectionsBean.connections}">
-                        <props:option value="${connection.id}">
-                            <c:out value="${connection.connectionDisplayName}"/>
-                        </props:option>
-                    </c:forEach>
-                </props:selectProperty>
-            </c:otherwise>
-        </c:choose>
-
-        <span class="error" id="error_${properties.connectionKey}"></span>
-    </td>
-</tr>
+            <span class="error" id="error_${properties.connectionKey}"></span>
+        </td>
+    </tr>
 
 
-<tr id="userSection" style="vertical-align: top">
-    <td>
-        <label class="notifierSettingControls__label">
-            User:
-        </label>
-    </td>
+    <tr id="userSection" style="vertical-align: top">
+        <td>
+            <label class="notifierSettingControls__label">
+                User:
+            </label>
+        </td>
 
-    <td>
-        <span id="signedInUserNote">
-        </span>
-        <br/>
-        <a id="signInWithSlack" rel="noreferrer">
-            Sign in with Slack
-        </a>
-    </td>
+        <td>
+            <span id="signedInUserNote">
+            </span>
+            <br/>
+            <a id="signInWithSlack" rel="noreferrer">
+                Sign in with Slack
+            </a>
+        </td>
 
-    <props:textProperty name="${properties.channelKey}" style="display: none;"/>
-</tr>
-<tr>
-    <td colspan="2" style="padding-top: 6px;">
-        <div id="connectionWarning" class="attentionComment" style="display: none;"></div>
-    </td>
-</tr>
+        <props:textProperty name="${properties.channelKey}" style="display: none;"/>
+    </tr>
+    <tr>
+        <td colspan="2" style="padding-top: 6px;">
+            <div id="connectionWarning" class="attentionComment" style="display: none;"></div>
+        </td>
+    </tr>
 
-<script type="text/javascript">
-    var connectionId = "#${properties.connectionKey.replace(':', '-')}";
-    var signInWithSlack = $j("#signInWithSlack");
-    var slackUsername = "${util:forJS(slackUsername, true, false)}";
+    <script type="text/javascript">
+        var connectionId = "#${properties.connectionKey.replace(':', '-')}";
+        var signInWithSlack = $j("#signInWithSlack");
+        var slackUsername = "${util:forJS(slackUsername, true, false)}";
 
-    BS.UserSlackNotifierSettings = {
-        connections: {},
+        BS.UserSlackNotifierSettings = {
+            connections: {},
 
-        updateSignInUrl: function (selectedConnectionId) {
-            var connection = this.connections[selectedConnectionId];
-            if (!connection) {
-                $j("#userSection").hide();
-                return;
-            } else {
-                $j("#userSection").show();
-                if (selectedConnectionId === "${selectedConnection}" && slackUsername) {
-                    $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
+            updateSignInUrl: function (selectedConnectionId) {
+                var connection = this.connections[selectedConnectionId];
+                if (!connection) {
+                    $j("#userSection").hide();
+                    return;
                 } else {
-                    $j("#signedInUserNote").text("You are not signed in.");
+                    $j("#userSection").show();
+                    if (selectedConnectionId === "${selectedConnection}" && slackUsername) {
+                        $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
+                    } else {
+                        $j("#signedInUserNote").text("You are not signed in.");
+                    }
+                }
+
+                var team = connection.team;
+                var state = encodeURIComponent(JSON.stringify({
+                    userId: "${user.id}",
+                    connectionId: selectedConnectionId
+                }));
+
+                var redirectUrl = encodeURIComponent(window["base_uri"] + "/admin/slack/oauth.html");
+                var clientId = connection.clientId;
+
+                signInWithSlack.attr("href",
+                    "https://slack.com/oauth/authorize?scope=identity.basic,identity.team" +
+                    "&client_id=" + clientId +
+                    "&state=" + state +
+                    "&redirect_uri=" + redirectUrl +
+                    "&team=" + team
+                );
+
+                var projectId = connection.projectId;
+                if (projectId && projectId !== "_Root") {
+                    $j("#connectionWarning").text("The selected connection is configured for the " + connection.projectName +
+                        " project. You will receive notifications about builds and events in this project and its subprojects.");
+                    $j("#connectionWarning").show();
+                } else {
+                    $j("#connectionWarning").hide();
                 }
             }
+        };
 
-            var team = connection.team;
-            var state = encodeURIComponent(JSON.stringify({
-                userId: "${user.id}",
-                connectionId: selectedConnectionId
-            }));
+        <c:forEach items="${connectionsBean.connections}" var="connection">
+        BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
+            clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
+            team: "${connectionsBean.getTeamForConnection(connection)}",
+            projectId: "${connection.project.externalId}",
+            projectName: "${connection.project.fullName}"
+        };
+        </c:forEach>
 
-            var redirectUrl = encodeURIComponent(window["base_uri"] + "/admin/slack/oauth.html");
-            var clientId = connection.clientId;
+        BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
+        $j(connectionId).on("change", function () {
+            BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
+        });
 
-            signInWithSlack.attr("href",
-                "https://slack.com/oauth/authorize?scope=identity.basic,identity.team" +
-                "&client_id=" + clientId +
-                "&state=" + state +
-                "&redirect_uri=" + redirectUrl +
-                "&team=" + team
-            );
-
-            var projectId = connection.projectId;
-            if (projectId && projectId !== "_Root") {
-                $j("#connectionWarning").text("The selected connection is configured for the " + connection.projectName +
-                    " project. You will receive notifications about builds and events in this project and its subprojects.");
-                $j("#connectionWarning").show();
-            } else {
-                $j("#connectionWarning").hide();
-            }
-        }
-    };
-
-    <c:forEach items="${connectionsBean.connections}" var="connection">
-    BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
-        clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
-        team: "${connectionsBean.getTeamForConnection(connection)}",
-        projectId: "${connection.project.externalId}",
-        projectName: "${connection.project.fullName}"
-    };
-    </c:forEach>
-
-    BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
-    $j(connectionId).on("change", function () {
-        BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
-    });
-
-    $j(document).ready(function () {
-        $j("#saveNotifierSettings").attr("value", "Sign out");
-    });
-</script>
+        $j(document).ready(function () {
+            $j("#saveNotifierSettings").attr("value", "Sign out");
+        });
+    </script>
+    </c:when>
+    <c:otherwise>
+        <script>
+            $j(".notifierSettings").hide()
+        </script>
+    </c:otherwise>
+</c:choose>
