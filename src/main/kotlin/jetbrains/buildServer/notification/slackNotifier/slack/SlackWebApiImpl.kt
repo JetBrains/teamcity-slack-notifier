@@ -23,7 +23,7 @@ class SlackWebApiImpl(
         .configure(SerializationFeature.INDENT_OUTPUT, true)
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-    private val requestTimeout = TeamCityProperties.getInteger(SlackNotifierProperties.requestTimeout, 3000)
+    private val requestTimeout = TeamCityProperties.getInteger(SlackNotifierProperties.requestTimeout, 10_000)
 
     override fun postMessage(token: String, payload: Message): MaybeMessage {
         val response = request(
@@ -164,6 +164,7 @@ class SlackWebApiImpl(
                 .withHeader("Content-Type", "application/json")
                 .withTimeout(requestTimeout)
                 .addParameters(parameters)
+                .withRetryCount(2)
                 .onErrorResponse(HTTPRequestBuilder.ResponseConsumer {
                     response = it.bodyAsString
                 })
@@ -172,8 +173,7 @@ class SlackWebApiImpl(
                 }
                 .onException {
                     logger.error(
-                        "Exception occurred when sending request to Slack",
-                        it
+                        "Exception occurred when sending request to Slack: ${it.message}"
                     )
                     isException = true
                 }

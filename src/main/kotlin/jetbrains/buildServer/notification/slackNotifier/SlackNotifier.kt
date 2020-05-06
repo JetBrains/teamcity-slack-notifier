@@ -200,19 +200,19 @@ class SlackNotifier(
     private fun sendMessage(message: MessagePayload, user: SUser, project: SProject) {
         val sendTo = user.getPropertyValue(SlackProperties.channelProperty)
         if (sendTo == null) {
-            logger.error("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.channelProperty} property")
+            logger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.channelProperty} property")
             return
         }
 
         val connectionId = user.getPropertyValue(SlackProperties.connectionProperty)
         if (connectionId == null) {
-            logger.error("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.connectionProperty} property")
+            logger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.connectionProperty} property")
             return
         }
 
         val token = getToken(project, connectionId)
         if (token == null) {
-            logger.error(
+            logger.warn(
                 "Won't send Slack notification to user with id ${user.id}" +
                         " as no token for connection with id '${connectionId}'" +
                         " in project with external id '${project.externalId}' was found"
