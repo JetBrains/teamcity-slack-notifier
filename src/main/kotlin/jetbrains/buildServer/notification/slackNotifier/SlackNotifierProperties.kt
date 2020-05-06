@@ -7,4 +7,5 @@ object SlackNotifierProperties {
     const val maximumChannelsToCache = "teamcity.internal.notification.jbSlackNotifier.cache.maxChannels"
     const val maximumUsersToCache = "teamcity.internal.notification.jbSlackNotifier.cache.maxUsers"
     const val requestTimeout = "teamcity.internal.notification.jbSlackNotifier.request.timeoutMs"
+    const val loggerThrottleTimeout = "teamcity.internal.notification.jbSlackNotifier.logger.throttleTimeoutMinutes"
 }

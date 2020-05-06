@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.notification.NotificatorAdapter
 import jetbrains.buildServer.notification.NotificatorRegistry
+import jetbrains.buildServer.notification.slackNotifier.logging.ThrottlingLogger
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
@@ -39,6 +40,7 @@ class SlackNotifier(
         )
 
     private val logger = Logger.getInstance(SlackNotifier::class.java.name)
+    private val throttlingLogger = ThrottlingLogger(logger)
 
     init {
         notifierRegistry.register(
@@ -200,19 +202,19 @@ class SlackNotifier(
     private fun sendMessage(message: MessagePayload, user: SUser, project: SProject) {
         val sendTo = user.getPropertyValue(SlackProperties.channelProperty)
         if (sendTo == null) {
-            logger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.channelProperty} property")
+            throttlingLogger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.channelProperty} property")
             return
         }
 
         val connectionId = user.getPropertyValue(SlackProperties.connectionProperty)
         if (connectionId == null) {
-            logger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.connectionProperty} property")
+            throttlingLogger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.connectionProperty} property")
             return
         }
 
         val token = getToken(project, connectionId)
         if (token == null) {
-            logger.warn(
+            throttlingLogger.warn(
                 "Won't send Slack notification to user with id ${user.id}" +
                         " as no token for connection with id '${connectionId}'" +
                         " in project with external id '${project.externalId}' was found"

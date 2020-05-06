@@ -45,6 +45,7 @@ dependencies {
     testImplementation(fileTree(mapOf("dir" to teamcityTestLibs, "include" to arrayOf("*.jar"))))
     testImplementation("org.assertj:assertj-core:1.7.1")
     testImplementation("org.testng:testng:6.8")
+    testImplementation("io.mockk:mockk:1.10.0")
 }
 
 tasks {
