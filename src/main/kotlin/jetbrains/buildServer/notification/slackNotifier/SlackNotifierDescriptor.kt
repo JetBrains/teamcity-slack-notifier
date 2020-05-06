@@ -1,12 +1,15 @@
 package jetbrains.buildServer.notification.slackNotifier
 
+import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.serverSide.InvalidProperty
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
-class SlackNotifierDescriptor {
+class SlackNotifierDescriptor(
+        private val notificatorRegistry: NotificatorRegistry
+) {
     fun validate(properties: Map<String, String>): MutableCollection<InvalidProperty> {
         val invalidProperties = mutableListOf<InvalidProperty>()
 
@@ -36,10 +39,18 @@ class SlackNotifierDescriptor {
 
     fun getType(): String = Companion.type
     fun getDisplayName(): String {
-        return "Slack Notifier"
+        if (displayNameClashes()) {
+            return "$defaultDisplayName (official)"
+        }
+        return defaultDisplayName
+    }
+
+    private fun displayNameClashes(): Boolean {
+        return notificatorRegistry.notificators.find { it.displayName.trim() == defaultDisplayName } != null
     }
 
     companion object {
         const val type = "jbSlackNotifier"
+        const val defaultDisplayName = "Slack Notifier"
     }
 }
