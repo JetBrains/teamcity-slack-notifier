@@ -6,6 +6,7 @@ import jetbrains.buildServer.messages.DefaultMessagesInfo
 import jetbrains.buildServer.notification.BaseNotificationRulesTestCase
 import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
 import jetbrains.buildServer.notification.NotificationRule
+import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.SBuild
@@ -41,7 +42,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
             MockSlackWebApiFactory()
         mySlackApi = mySlackApiFactory.createSlackWebApi()
 
-        myDescriptor = SlackNotifierDescriptor()
+        myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
         myNotifier = SlackNotifier(
             myFixture.notificatorRegistry,
             mySlackApiFactory,

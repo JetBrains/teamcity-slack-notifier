@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.controllers.BaseControllerTestCase
 import jetbrains.buildServer.controllers.Completion
+import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
@@ -23,7 +24,7 @@ class SlackNotifierChannelCompletionControllerTest :
 
         val oauthManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
         myConnection = oauthManager.addConnection(myProject, "test_type", mapOf("secure:token" to "test_token"))
-        myDescriptor = SlackNotifierDescriptor()
+        myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
 
         return SlackNotifierChannelCompletionController(
             myFixture.securityContext,

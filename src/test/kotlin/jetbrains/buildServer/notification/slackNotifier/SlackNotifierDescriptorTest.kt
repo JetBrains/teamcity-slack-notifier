@@ -1,6 +1,7 @@
 package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.ExtensionHolder
+import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import org.testng.annotations.BeforeMethod
@@ -14,8 +15,7 @@ class SlackNotifierDescriptorTest : BaseSlackTestCase() {
         super.setUp()
 
         val connectionManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
-
-        descriptor = SlackNotifierDescriptor()
+        descriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
     }
 
     @Test
