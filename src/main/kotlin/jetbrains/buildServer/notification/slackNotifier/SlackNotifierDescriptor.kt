@@ -46,7 +46,9 @@ class SlackNotifierDescriptor(
     }
 
     private fun displayNameClashes(): Boolean {
-        return notificatorRegistry.notificators.find { it.displayName.trim() == defaultDisplayName } != null
+        return notificatorRegistry.notificators.filter {
+            it.notificatorType != type
+        }.find { it.displayName.trim() == defaultDisplayName } != null
     }
 
     companion object {
