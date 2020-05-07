@@ -116,9 +116,6 @@ class UserSlackNotifierSettingsController(
         mv.model["user"] = user
         mv.model["slackUsername"] = slackUsername ?: ""
         mv.model["selectedConnection"] = selectedConnectionId
-
-        println(currentUser.id)
-        println(user.id)
         mv.model["displaySettings"] = currentUser.id == user.id
 
         return mv
