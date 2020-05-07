@@ -10,6 +10,7 @@ import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
 import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.util.HTTPRequestBuilder
 import java.nio.charset.Charset
+import java.util.*
 
 class SlackWebApiImpl(
     private val requestHandler: HTTPRequestBuilder.RequestHandler
@@ -124,15 +125,18 @@ class SlackWebApiImpl(
             code: String,
             redirectUrl: String
     ): OauthAccessToken {
+        val encodedSecret = Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray())
+
         val response = request(
                 "oauth.access",
                 "",
             parameters = listOf(
-                Pair("client_id", clientId),
-                Pair("client_secret", clientSecret),
                 Pair("code", code),
                 Pair("redirect_uri", redirectUrl)
-            )
+            ),
+                headers = mapOf(
+                        "Authorization" to "Basic $encodedSecret"
+                )
         )
 
         if (response.isException || response.message == null) {
@@ -143,11 +147,12 @@ class SlackWebApiImpl(
     }
 
     private fun request(
-        path: String,
-        token: String,
-        parameters: List<Pair<String, String?>> = mutableListOf(),
-        body: String = "",
-        method: String = "GET"
+            path: String,
+            token: String,
+            parameters: List<Pair<String, String?>> = mutableListOf(),
+            headers: Map<String, String> = emptyMap(),
+            body: String = "",
+            method: String = "GET"
     ): SlackResponse {
         var response: String? = null
         var isException = false
@@ -162,6 +167,11 @@ class SlackWebApiImpl(
                 )
                 .withHeader("Authorization", "Bearer $token")
                 .withHeader("Content-Type", "application/json")
+                .also {
+                    for (header in headers) {
+                        it.withHeader(header.key, header.value)
+                    }
+                }
                 .withTimeout(requestTimeout)
                 .addParameters(parameters)
                 .withRetryCount(2)
