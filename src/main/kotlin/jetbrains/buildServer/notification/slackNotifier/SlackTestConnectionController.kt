@@ -5,6 +5,9 @@ import jetbrains.buildServer.controllers.BaseFormXmlController
 import jetbrains.buildServer.controllers.BasePropertiesBean
 import jetbrains.buildServer.controllers.FormUtil
 import jetbrains.buildServer.controllers.admin.projects.PluginPropertiesUtil
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
+import jetbrains.buildServer.serverSide.InvalidProperty
+import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.SBuildServer
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import org.jdom.Element
@@ -18,9 +21,11 @@ import javax.servlet.http.HttpServletResponse
 class SlackTestConnectionController(
         server: SBuildServer,
         webControllerManager: WebControllerManager,
-        private val connection: SlackConnection
+        private val connection: SlackConnection,
+        slackWebApiFactory: SlackWebApiFactory
 ) : BaseFormXmlController(server) {
     private val path = "/admin/slack/testConnection.html"
+    private val slackApi = slackWebApiFactory.createSlackWebApi()
 
     init {
         webControllerManager.registerController(path, this)
@@ -30,6 +35,7 @@ class SlackTestConnectionController(
         val errors = ActionErrors()
         val props = getProps(request)
         errors.fillErrors(connection.propertiesProcessor, props)
+        errors.fillErrors(getPropertiesProcessor(), props)
         errors.serialize(xmlResponse)
     }
 
@@ -37,6 +43,22 @@ class SlackTestConnectionController(
         val propBean = BasePropertiesBean(emptyMap())
         PluginPropertiesUtil.bindPropertiesFromRequest(request, propBean)
         return propBean.properties
+    }
+
+    // client_id and client_secret are tested separately since there is no API for checking if they are correct
+    private fun getPropertiesProcessor(): PropertiesProcessor = PropertiesProcessor {
+        val errors = mutableListOf<InvalidProperty>()
+        val botToken = it["secure:token"] ?: return@PropertiesProcessor errors
+        val authTest = slackApi.authTest(botToken)
+        if (!authTest.ok) {
+            errors.add(
+                    InvalidProperty(
+                            "secure:token",
+                            "Bot token is invalid. Authentication failed with the following error: ${authTest.error}"
+                    )
+            )
+        }
+        errors
     }
 
     override fun doGet(request: HttpServletRequest, response: HttpServletResponse) = null
