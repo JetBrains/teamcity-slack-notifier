@@ -8,6 +8,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Pair
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
 import jetbrains.buildServer.serverSide.TeamCityProperties
+import jetbrains.buildServer.serverSide.impl.SecondaryNodeSecurityManager
+import jetbrains.buildServer.util.FuncThrow
 import jetbrains.buildServer.util.HTTPRequestBuilder
 import java.nio.charset.Charset
 import java.util.*
@@ -39,7 +41,7 @@ class SlackWebApiImpl(
         return mapper.readValue(response.message, MaybeMessage::class.java)
     }
 
-    override fun channelsList(token: String, cursor: String?): ChannelsList {
+    override fun channelsList(token: String, cursor: String?): ChannelsList = readOnlyRequest {
         val response = request(
             "channels.list",
             token,
@@ -51,12 +53,13 @@ class SlackWebApiImpl(
             )
         )
         if (response.isException || response.message == null) {
-            return ChannelsList(ok = false, error = unknownError)
+            ChannelsList(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, ChannelsList::class.java)
         }
-        return mapper.readValue(response.message, ChannelsList::class.java)
     }
 
-    override fun usersList(token: String, cursor: String?): UsersList {
+    override fun usersList(token: String, cursor: String?): UsersList = readOnlyRequest {
         val response = request(
             "users.list",
             token,
@@ -66,57 +69,58 @@ class SlackWebApiImpl(
             )
         )
         if (response.isException || response.message == null) {
-            return UsersList(ok = false, error = unknownError)
+            UsersList(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, UsersList::class.java)
         }
-
-        return mapper.readValue(response.message, UsersList::class.java)
     }
 
-    override fun authTest(token: String): AuthTestResult {
+    override fun authTest(token: String): AuthTestResult = readOnlyRequest {
         val response = request("auth.test", token)
 
         if (response.isException || response.message == null) {
-            return AuthTestResult(ok = false, error = unknownError)
+            AuthTestResult(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, AuthTestResult::class.java)
         }
-
-        return mapper.readValue(response.message, AuthTestResult::class.java)
     }
 
-    override fun botsInfo(token: String, botId: String): MaybeBot {
+    override fun botsInfo(token: String, botId: String): MaybeBot = readOnlyRequest {
         val response = request("bots.info", token, parameters = listOf(Pair("bot", botId)))
 
         if (response.isException || response.message == null) {
-            return MaybeBot(ok = false, error = unknownError)
+            MaybeBot(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, MaybeBot::class.java)
         }
-
-        return mapper.readValue(response.message, MaybeBot::class.java)
     }
 
-    override fun conversationsMembers(token: String, channelId: String): ConversationMembers {
+    override fun conversationsMembers(token: String, channelId: String): ConversationMembers = readOnlyRequest {
         val response = request("conversations.members", token, parameters = listOf(Pair("channel", channelId)))
 
         if (response.isException || response.message == null) {
-            return ConversationMembers(ok = false, error = unknownError)
+            ConversationMembers(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, ConversationMembers::class.java)
         }
-
-        return mapper.readValue(response.message, ConversationMembers::class.java)
     }
 
-    override fun usersIdentity(token: String): UserIdentity {
+    override fun usersIdentity(token: String): UserIdentity = readOnlyRequest {
         val response = request("users.identity", token)
         if (response.isException || response.message == null) {
-            return UserIdentity(ok = false, error = unknownError)
+            UserIdentity(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, UserIdentity::class.java)
         }
-
-        return mapper.readValue(response.message, UserIdentity::class.java)
     }
 
-    override fun usersInfo(token: String, userId: String): MaybeUser {
+    override fun usersInfo(token: String, userId: String): MaybeUser = readOnlyRequest {
         val response = request("users.info", token, listOf(Pair("user", userId)))
         if (response.isException || response.message == null) {
-            return MaybeUser(ok = false, error = unknownError)
+            MaybeUser(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, MaybeUser::class.java)
         }
-        return mapper.readValue(response.message, MaybeUser::class.java)
     }
 
     override fun oauthAccess(
@@ -193,6 +197,11 @@ class SlackWebApiImpl(
 
         return SlackResponse(response, isException)
     }
+
+    private fun <T> readOnlyRequest(block: () -> T): T =
+        SecondaryNodeSecurityManager.runSafeNetworkOperation(FuncThrow<T, Throwable> {
+            block()
+        })
 
     internal data class SlackResponse(val message: String?, val isException: Boolean)
 
