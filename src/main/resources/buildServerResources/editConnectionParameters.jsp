@@ -8,6 +8,7 @@
 <jsp:useBean id="rootUrl" type="java.lang.String" scope="request"/>
 
 <c:set var="testConnectionUrl" value="/admin/slack/testConnection.html"/>
+<c:url var="slackNotifierSettingsUrl" value="/profile.html?notificatorType=jbSlackNotifier&item=userNotifications"/>
 
 <bs:linkScript>
     /js/bs/forms.js
@@ -45,7 +46,8 @@
           onCompleteSave: function (form, responseXML, err) {
             BS.XMLResponse.processErrors(responseXML, that, function (id, elem) {
               success = false;
-              info = elem.textContent || elem.text;
+              info += elem.textContent || elem.text;
+              info += "\n";
             });
             BS.TestConnectionDialog.show(success, success ? "" : info, null);
             form.setSaving(false);
@@ -114,6 +116,20 @@
     </td>
 </tr>
 
+<tr>
+    <td colspan="2" style="padding-top: 6px;">
+        <div class="attentionComment">
+            Please note that 'Test connection' will only check if 'Bot token' field is correct.
+            <br/>
+            To check that 'Client ID' and 'Client secret' are correct,
+            sign in to Slack in your
+            <a href="${slackNotifierSettingsUrl}">
+                user profile
+            </a>.
+        </div>
+    </td>
+</tr>
+
 <span id="testConnectionButtonWrapper" style="display:none;">
   <forms:submit id="testConnectionButton" type="button" label="Test connection" onclick="BS.SlackConnectionDialog.testConnection();"/>
 </span>
@@ -123,3 +139,13 @@
     <div id="testConnectionStatus"></div>
     <div id="testConnectionDetails" class="mono"></div>
 </bs:dialog>
+
+<script>
+  $j(document).ready(function () {
+    var additionalButtons = $j("span#editConnectionAdditionalButtons");
+    if (additionalButtons.length) {
+      additionalButtons.empty();
+      additionalButtons.append($j("span#testConnectionButtonWrapper *"));
+    }
+  });
+</script>
