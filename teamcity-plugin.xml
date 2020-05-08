@@ -4,7 +4,7 @@
   <info>
     <name>slackNotifier</name>
     <display-name>Slack Notifier</display-name>
-    <version>123</version>
+    <version>@Version@</version>
     <description>Official plugin to send notifications to Slack</description>
     <download-url>download url</download-url>
     <vendor>

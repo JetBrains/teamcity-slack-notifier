@@ -5,7 +5,8 @@ plugins {
 }
 
 group = "org.jetbrains.teamcity"
-version = "${if (project.hasProperty("PluginVersion")) project.property("PluginVersion") else "SNAPSHOT"}"
+val pluginVersion = "${if (project.hasProperty("PluginVersion")) project.property("PluginVersion") else "SNAPSHOT"}"
+version = pluginVersion
 
 
 val teamcityVersion =
@@ -66,7 +67,8 @@ teamcity {
     version = "2019.2"
 
     server {
-        descriptor = file("teamcity-plugin.dist.xml")
+        descriptor = file("teamcity-plugin.xml")
+        tokens = mapOf("Version" to pluginVersion)
     }
 }
 
@@ -81,24 +83,8 @@ tasks.getByName<Test>("test") {
 }
 
 tasks.register<Copy>("renameDist") {
-    from("build/distributions/teamcity-slack-plugin-${version}.zip")
+    from("build/distributions/teamcity-slack-plugin-${pluginVersion}.zip")
     into("build/distributions")
-    rename("teamcity-slack-plugin-${version}.zip", "slack.zip")
+    rename("teamcity-slack-plugin-${pluginVersion}.zip", "slack.zip")
 }
 
-tasks {
-    register("insertVersion") {
-        doLast {
-            val pluginDescriptor = File("teamcity-plugin.xml")
-            val version = (project.version as String?) ?: "SNAPSHOT"
-            val contents = pluginDescriptor.readText()
-                .replace("<version>[^<]+<\\/version>".toRegex(), "<version>$version</version>")
-            val updatedPluginDescriptor = File("teamcity-plugin.dist.xml").also {
-                it.createNewFile()
-            }
-            updatedPluginDescriptor.writeText(contents)
-        }
-    }
-}
-
-tasks["serverPlugin"].dependsOn("insertVersion")
