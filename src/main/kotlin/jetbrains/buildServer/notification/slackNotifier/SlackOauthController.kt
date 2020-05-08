@@ -3,6 +3,7 @@ package jetbrains.buildServer.notification.slackNotifier
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
 import jetbrains.buildServer.controllers.BaseController
+import jetbrains.buildServer.notification.slackNotifier.slack.OauthAccessToken
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
@@ -40,45 +41,26 @@ class SlackOauthController(
         val userId = state.userId.toLong()
         val currentUser = SessionUser.getUser(request.session)
         if (currentUser?.id != userId) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User id '${userId}' does not match current user id")
-            return null
+            return errorMessage(request, "User id '${userId}' does not match current user id")
         }
 
         val user = userModel.findUserById(userId)
-        if (user == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Can't find user with id '$userId'")
-            return null
-        }
+            ?: return errorMessage(request, "Can't find user with id '$userId'")
 
         val connectionId = state.connectionId
         val connection = projectManager.projects.mapNotNull {
             oAuthConnectionsManager.findConnectionById(it, connectionId)
         }.firstOrNull()
-        if (connection == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Can't find connection with id '${connectionId}")
-            return null
-        }
+            ?: return errorMessage(request, "Can't find connection with id '${connectionId}")
 
         val code = request.getParameter("code")
         val redirectUrl = request.requestURL.toString()
 
         val clientId = connection.parameters["clientId"]
-        if (clientId == null) {
-            response.sendError(
-                HttpServletResponse.SC_BAD_REQUEST,
-                "Can't find 'clientId' property in connection with id '${connectionId}'"
-            )
-            return null
-        }
+            ?: return errorMessage(request, "Can't find 'clientId' property in connection with id '${connectionId}'")
 
         val clientSecret = connection.parameters["secure:clientSecret"]
-        if (clientSecret == null) {
-            response.sendError(
-                HttpServletResponse.SC_BAD_REQUEST,
-                "Can't find 'secure:clientSecret' property in connection with id '${connectionId}'"
-            )
-            return null
-        }
+            ?: return errorMessage(request, "Can't find 'secure:clientSecret' property in connection with id '${connectionId}'")
 
         val oauthToken = slackApi.oauthAccess(
             clientId = clientId,
@@ -88,14 +70,12 @@ class SlackOauthController(
         )
 
         if (!oauthToken.ok) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unexpected error: ${oauthToken.error}")
-            return null
+            return handleOAuthTokenError(request, oauthToken)
         }
 
         val userIdentity = slackApi.usersIdentity(oauthToken.accessToken)
         if (!userIdentity.ok) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unexpected error: ${userIdentity.error}")
-            return null
+            return errorMessage(request, "Unexpected error: ${userIdentity.error}")
         }
 
         val slackUserId = userIdentity.user.id
@@ -103,7 +83,26 @@ class SlackOauthController(
         user.setUserProperty(SlackProperties.connectionProperty, connectionId)
         user.setUserProperty(SlackProperties.displayNameProperty, userIdentity.user.displayName)
 
-        return ModelAndView(RedirectView(request.contextPath + "/profile.html?notificatorType=jbSlackNotifier&item=userNotifications"))
+        return redirectToNotifierSettings(request)
+    }
+
+    private fun errorMessage(request: HttpServletRequest, message: String): ModelAndView {
+        getOrCreateMessages(request).addMessage("settingsError", message)
+        return redirectToNotifierSettings(request)
+    }
+
+    private fun redirectToNotifierSettings(request: HttpServletRequest): ModelAndView {
+        return ModelAndView(
+            RedirectView(request.contextPath + "/profile.html?notificatorType=jbSlackNotifier&item=userNotifications")
+        )
+    }
+
+    private fun handleOAuthTokenError(request: HttpServletRequest, oauthToken: OauthAccessToken): ModelAndView {
+        return when (oauthToken.error) {
+            "bad_client_secret" -> errorMessage(request, "Error: invalid 'Client secret' field in provided connection")
+            "invalid_client_id" -> errorMessage(request, "Error: invalid 'Client ID' field in provided connection")
+            else -> errorMessage(request, "Unexpected error: ${oauthToken.error}")
+        }
     }
 }
 
