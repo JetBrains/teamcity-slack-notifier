@@ -1,8 +1,10 @@
-package jetbrains.buildServer.notification.slackNotifier
+package jetbrains.buildServer.notification.slackNotifier.auth
 
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
 import jetbrains.buildServer.controllers.BaseController
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
+import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.OauthAccessToken
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.ProjectManager

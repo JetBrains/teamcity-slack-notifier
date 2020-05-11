@@ -1,3 +1,5 @@
+<%@ page import="jetbrains.buildServer.users.SUser" %>
+<%@ page import="jetbrains.buildServer.web.util.SessionUser" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ include file="/include-internal.jsp" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
@@ -7,7 +9,10 @@
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
 <jsp:useBean id="rootUrl" type="java.lang.String" scope="request"/>
 
-<c:set var="testConnectionUrl" value="/admin/slack/testConnection.html"/>
+<c:url var="testConnectionUrl" value="/admin/slack/testConnection.html"/>
+<c:set var="testAuthRedirectUrl" value="/admin/slack/auth/test.html"/>
+<c:url var="prepareForAuthTest" value="/admin/slack/auth/prepareForTest.html"/>
+
 <c:url var="slackNotifierSettingsUrl" value="/profile.html?notificatorType=jbSlackNotifier&item=userNotifications"/>
 
 <bs:linkScript>
@@ -16,46 +21,124 @@
 </bs:linkScript>
 
 <script>
-  BS.SlackConnectionDialog = OO.extend(BS.PluginPropertiesForm, {
-    formElement: function () {
-      return $j("#OAuthConnection")[0];
-    },
+    BS.SlackConnectionDialog = OO.extend(BS.PluginPropertiesForm, {
+        results: [],
 
-    testConnection: function () {
-      var that = this;
-      var info = "";
-      var success = true;
+        formElement: function () {
+            return $j("#OAuthConnection")[0];
+        },
 
-      BS.PasswordFormSaver.save(that, window['base_uri'] + "${testConnectionUrl}",
-        OO.extend(BS.ErrorsAwareListener, {
-          onBeginSave: function (form) {
-            form.setSaving(true);
-            form.disable();
-          },
+        testConnection: function () {
+            this.testBotToken();
+            this.testClientIdAndSecret();
+        },
 
-          onTestConnectionFailedError: function (elem) {
-            if (success) {
-              info = "";
-            } else if ("" !== info) {
-              info += "\n";
+        testBotToken: function () {
+            var that = this;
+            var info = "";
+            var success = true;
+
+            BS.PasswordFormSaver.save(that, "${testConnectionUrl}",
+                OO.extend(BS.ErrorsAwareListener, {
+                    onBeginSave: function (form) {
+                        form.setSaving(true);
+                        form.disable();
+                    },
+
+                    onTestConnectionFailedError: function (elem) {
+                        if (success) {
+                            info = "";
+                        } else if ("" !== info) {
+                            info += "\n";
+                        }
+                        info += elem.textContent || elem.text;
+                        success = false;
+                    },
+
+                    onCompleteSave: function (form, responseXML, err) {
+                        BS.XMLResponse.processErrors(responseXML, that, function (id, elem) {
+                            success = false;
+                            info += elem.textContent || elem.text;
+                            info += "\n";
+                        });
+
+                        that.results.push({
+                            success: success,
+                            message: info
+                        });
+
+                        that.displayDialogIfFinished(form);
+                    }
+                })
+            );
+        },
+
+        displayDialogIfFinished: function(form) {
+            if (form) {
+                this.form = form;
             }
-            info += elem.textContent || elem.text;
-            success = false;
-          },
 
-          onCompleteSave: function (form, responseXML, err) {
-            BS.XMLResponse.processErrors(responseXML, that, function (id, elem) {
-              success = false;
-              info += elem.textContent || elem.text;
-              info += "\n";
+            // Two results are expected:
+            // 1. check for the bot token correctness
+            // 2. check for client id and client secret correctness
+            // These checks are executed in parallel using two different flows. The only was to sync them is to
+            // store their results and then check if both are finished
+            if (this.results.length < 2) {
+                return;
+            }
+
+            var firstResult = this.results[0];
+            var secondResult = this.results[1];
+
+            var success = firstResult.success && secondResult.success;
+            var message = (firstResult.message + "\n" + secondResult.message).trim();
+
+            BS.TestConnectionDialog.show(success, message, null);
+            this.form.setSaving(false);
+            this.form.enable();
+        },
+
+        testClientIdAndSecret: function () {
+            var clientId = document.getElementById("clientId").value;
+            this.prepareForAuthTest(function(success, teamId) {
+                window.open(
+                    "https://slack.com/oauth/authorize?scope=identity.basic,identity.team" +
+                    "&client_id=" + clientId +
+                    "&redirect_uri=" + window["base_uri"] + "${testAuthRedirectUrl}" +
+                    "&team=" + teamId,
+                    "_blank"
+                );
             });
-            BS.TestConnectionDialog.show(success, success ? "" : info, null);
-            form.setSaving(false);
-            form.enable();
-          }
-        }));
-    }
-  });
+        },
+
+        prepareForAuthTest: function (callback) {
+            callback = callback || function(){};
+
+            BS.PasswordFormSaver.save(this, "${prepareForAuthTest}",
+                OO.extend(BS.ErrorsAwareListener, {
+                    onTestConnectionFailedError: function (elem) {
+                        callback(false);
+                    },
+
+                    onSuccessfulSave: function (responseXML) {
+                        var team = responseXML.documentElement.getElementsByTagName("response").item(0);
+                        callback(true, team);
+                    }
+                })
+            )
+        },
+    });
+
+    BS.TestSlackAuthentication = {
+        result: function (success, message) {
+            BS.SlackConnectionDialog.results.push({
+                success: success,
+                message: message
+            });
+
+            BS.SlackConnectionDialog.displayDialogIfFinished();
+        }
+    };
 </script>
 
 
@@ -116,22 +199,9 @@
     </td>
 </tr>
 
-<tr>
-    <td colspan="2" style="padding-top: 6px;">
-        <div class="attentionComment">
-            Please note that 'Test connection' will only check if 'Bot token' field is correct.
-            <br/>
-            To check that 'Client ID' and 'Client secret' are correct,
-            sign in to Slack in your
-            <a href="${slackNotifierSettingsUrl}">
-                user profile
-            </a>.
-        </div>
-    </td>
-</tr>
-
 <span id="testConnectionButtonWrapper" style="display:none;">
-  <forms:submit id="testConnectionButton" type="button" label="Test connection" onclick="BS.SlackConnectionDialog.testConnection();"/>
+  <forms:submit id="testConnectionButton" type="button" label="Test connection"
+                onclick="BS.SlackConnectionDialog.testConnection();"/>
 </span>
 
 <bs:dialog dialogId="testConnectionDialog" title="Test Connection" closeCommand="BS.TestConnectionDialog.close();"
@@ -141,11 +211,11 @@
 </bs:dialog>
 
 <script>
-  $j(document).ready(function () {
-    var additionalButtons = $j("span#editConnectionAdditionalButtons");
-    if (additionalButtons.length) {
-      additionalButtons.empty();
-      additionalButtons.append($j("span#testConnectionButtonWrapper *"));
-    }
-  });
+    $j(document).ready(function () {
+        var additionalButtons = $j("span#editConnectionAdditionalButtons");
+        if (additionalButtons.length) {
+            additionalButtons.empty();
+            additionalButtons.append($j("span#testConnectionButtonWrapper *"));
+        }
+    });
 </script>
