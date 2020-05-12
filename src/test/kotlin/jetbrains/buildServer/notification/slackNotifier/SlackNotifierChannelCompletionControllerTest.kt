@@ -7,7 +7,7 @@ import jetbrains.buildServer.controllers.BaseControllerTestCase
 import jetbrains.buildServer.controllers.Completion
 import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
-import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
+import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.web.openapi.WebControllerManager

@@ -4,6 +4,7 @@ import jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptor
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
+import jetbrains.buildServer.notification.slackNotifier.slack.CachingSlackWebApi
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.healthStatus.*
@@ -17,10 +18,10 @@ import org.springframework.stereotype.Service
 class SlackBuildFeatureHealthReport(
     private val descriptor: SlackNotifierDescriptor,
     private val oAuthConnectionsManager: OAuthConnectionsManager,
-    private val slackWebApiFactory: SlackWebApiFactory,
+    slackWebApiFactory: SlackWebApiFactory,
     private val aggregatedSlackApi: AggregatedSlackApi
 ) : HealthStatusReport() {
-    private val slackApi = slackWebApiFactory.createSlackWebApi()
+    private val slackApi = CachingSlackWebApi(slackWebApiFactory.createSlackWebApi(), defaultTimeoutSeconds = 60)
 
     companion object {
         const val type = "slackBuildFeatureReport"

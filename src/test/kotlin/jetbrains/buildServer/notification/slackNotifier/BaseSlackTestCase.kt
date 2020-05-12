@@ -7,8 +7,9 @@ import jetbrains.buildServer.notification.BaseNotificationRulesTestCase
 import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
 import jetbrains.buildServer.notification.NotificationRule
 import jetbrains.buildServer.notification.NotificatorRegistry
+import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApi
+import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
 import jetbrains.buildServer.serverSide.InvalidProperty
-import jetbrains.buildServer.serverSide.MockServerPluginDescriptior
 import jetbrains.buildServer.serverSide.SBuild
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
@@ -39,7 +40,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myConnectionManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
 
         mySlackApiFactory =
-            MockSlackWebApiFactory()
+                MockSlackWebApiFactory()
         mySlackApi = mySlackApiFactory.createSlackWebApi()
 
         myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))

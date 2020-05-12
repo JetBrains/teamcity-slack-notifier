@@ -1,6 +1,6 @@
-package jetbrains.buildServer.notification.slackNotifier
+package jetbrains.buildServer.notification.slackNotifier.slack
 
-import jetbrains.buildServer.notification.slackNotifier.slack.*
+const val slackToken = "test_token"
 
 class MockSlackWebApi : SlackWebApi {
     val messages = mutableListOf<Message>()
@@ -103,5 +103,6 @@ class MockSlackWebApi : SlackWebApi {
         return MaybeUser(ok = true)
     }
 
-    private fun incorrectToken(token: String) = token != "test_token"
+    private fun incorrectToken(token: String) = token != slackToken
 }
+
