@@ -54,7 +54,7 @@ class SlackTestConnectionController(
             errors.add(
                     InvalidProperty(
                             "secure:token",
-                            "Bot token is invalid. Authentication failed with the following error: ${authTest.error}"
+                            "Bot token is invalid. Bot authentication failed with the following error: ${authTest.error}"
                     )
             )
         }

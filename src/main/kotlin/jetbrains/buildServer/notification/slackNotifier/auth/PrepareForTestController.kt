@@ -25,43 +25,32 @@ class PrepareForTestController(
 
     override fun doPost(request: HttpServletRequest, response: HttpServletResponse, xmlElement: Element) {
         val props = getProps(request)
-        val clientId = props["clientId"]
-        if (clientId == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "'clientId' parameter is required")
-            return
-        }
-
-        val clientSecret = props["secure:clientSecret"]
-        if (clientSecret == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "'secure:clientSecret' parameter is required")
-            return
-        }
-
+        val clientId = props["clientId"] ?: return respondError(xmlElement, "'clientId' parameter is required")
+        val clientSecret = props["secure:clientSecret"] ?: return respondError(xmlElement, "'secure:clientSecret' parameter is required")
         request.session.setAttribute("slack.clientId", clientId)
         request.session.setAttribute("slack.clientSecret", clientSecret)
-
-        val botToken = props["secure:token"]
-        if (botToken == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "'secure:token' parameter is required")
-            return
-        }
-
+        val botToken = props["secure:token"] ?: return respondError(xmlElement, "'secure:token' parameter is required")
         val bot = slackApi.getBot(botToken)
-        val teamId = bot.teamId
-        if (teamId == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Can't find team for provided bot token")
-            return
-        }
-
-        val teamIdXml = Element("teamId")
-        teamIdXml.addContent(teamId)
-        xmlElement.addContent(teamIdXml)
+        val teamId = bot.teamId ?: return respondError(xmlElement, "Invalid bot token")
+        respondTeamId(xmlElement, teamId)
     }
 
     private fun getProps(request: HttpServletRequest): Map<String, String> {
         val propBean = BasePropertiesBean(emptyMap())
         PluginPropertiesUtil.bindPropertiesFromRequest(request, propBean)
         return propBean.properties
+    }
+
+    private fun respondError(xmlElement: Element, error: String) {
+        val errorXml = Element("error")
+        errorXml.addContent(error)
+        xmlElement.addContent(errorXml)
+    }
+
+    private fun respondTeamId(xmlElement: Element, teamId: String) {
+        val teamIdXml = Element("teamId")
+        teamIdXml.addContent(teamId)
+        xmlElement.addContent(teamIdXml)
     }
 
     override fun doGet(p0: HttpServletRequest, p1: HttpServletResponse) = null

@@ -29,6 +29,8 @@
         },
 
         testConnection: function () {
+            this.results = [];
+
             this.testBotToken();
             this.testClientIdAndSecret();
         },
@@ -62,15 +64,19 @@
                             info += "\n";
                         });
 
-                        that.results.push({
-                            success: success,
-                            message: info
-                        });
-
-                        that.displayDialogIfFinished(form);
+                        that.newTestConnectionResult(success, info, form)
                     }
                 })
             );
+        },
+
+        newTestConnectionResult(success, info, form) {
+            this.results.push({
+                success: success,
+                message: info
+            });
+
+            this.displayDialogIfFinished(form);
         },
 
         displayDialogIfFinished: function(form) {
@@ -91,7 +97,16 @@
             var secondResult = this.results[1];
 
             var success = firstResult.success && secondResult.success;
-            var message = (firstResult.message + "\n" + secondResult.message).trim();
+            var message;
+            if (success) {
+                message = (firstResult.message + "\n" + secondResult.message).trim();
+            } else {
+                if (!firstResult.success) {
+                    message = firstResult.message
+                } else {
+                    message = secondResult.message;
+                }
+            }
 
             BS.TestConnectionDialog.show(success, message, null);
             this.form.setSaving(false);
@@ -100,29 +115,46 @@
 
         testClientIdAndSecret: function () {
             var clientId = document.getElementById("clientId").value;
-            this.prepareForAuthTest(function(success, teamId) {
+            this.prepareForAuthTest(function(success, data, form) {
+                if (!success) {
+                    this.newTestConnectionResult(success, data, form);
+                }
+
                 window.open(
                     "https://slack.com/oauth/authorize?scope=identity.basic,identity.team" +
                     "&client_id=" + clientId +
                     "&redirect_uri=" + window["base_uri"] + "${testAuthRedirectUrl}" +
-                    "&team=" + teamId,
+                    "&team=" + data,
                     "_blank"
                 );
+
+                // If clientId is incorrect, Slack will show error page and will not redirect back to TeamCity
+                // To handle this case, form is always enabled after redirecting to Slack
+                if (form) {
+                    form.setSaving(false);
+                    form.enable();
+                }
             });
         },
 
         prepareForAuthTest: function (callback) {
             callback = callback || function(){};
+            var form;
 
             BS.PasswordFormSaver.save(this, "${prepareForAuthTest}",
                 OO.extend(BS.ErrorsAwareListener, {
-                    onTestConnectionFailedError: function (elem) {
-                        callback(false);
+                    onBeginSave: function (f) {
+                        form = f;
+                    },
+
+                    onTestConnectionFailedError: function (responseXML) {
+                        var error = responseXML.documentElement.getElementsByTagName("error").item(0);
+                        callback(false, error, form);
                     },
 
                     onSuccessfulSave: function (responseXML) {
                         var team = responseXML.documentElement.getElementsByTagName("response").item(0);
-                        callback(true, team);
+                        callback(true, team, form);
                     }
                 })
             )
@@ -131,12 +163,7 @@
 
     BS.TestSlackAuthentication = {
         result: function (success, message) {
-            BS.SlackConnectionDialog.results.push({
-                success: success,
-                message: message
-            });
-
-            BS.SlackConnectionDialog.displayDialogIfFinished();
+            BS.SlackConnectionDialog.newTestConnectionResult(success, message);
         }
     };
 </script>

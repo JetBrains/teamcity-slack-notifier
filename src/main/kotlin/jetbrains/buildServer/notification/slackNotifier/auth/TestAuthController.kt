@@ -26,19 +26,11 @@ class TestAuthController(
     }
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
-        val mv = ModelAndView(pluginDescriptor.getPluginResourcesPath("auth/test.jsp"))
-
         val code = request.getParameter("code")
         val clientId = request.session.getAttribute("slack.clientId") as? String?
-        if (clientId == null) {
-            mv.model["result"] = TestAuthResult(false, "Unexpected error: can't find client id in session")
-            return mv
-        }
+                ?: return authResult(false, "Unexpected error: can't find client id in session")
         val clientSecret = request.session.getAttribute("slack.clientSecret") as? String?
-        if (clientSecret == null) {
-            mv.model["result"] = TestAuthResult(false, "Unexpected error: can't find client secret in session")
-            return mv
-        }
+                ?: return authResult(false, "Unexpected error: can't find client secret in session")
 
         val redirectUrl = request.requestURL.toString()
 
@@ -50,17 +42,20 @@ class TestAuthController(
         )
 
         if (!oauthToken.ok) {
-            mv.model["result"] = TestAuthResult(false, "Test authentication failed: ${oauthToken.error}")
-            return mv
+            return authResult(false, "Test authentication failed: ${oauthToken.error}")
         }
 
         val userIdentity = slackApi.usersIdentity(oauthToken.accessToken)
         if (!userIdentity.ok) {
-            mv.model["result"] = TestAuthResult(false, "Unexpected error: ${userIdentity.error}")
-            return mv
+            return authResult(false, "Unexpected error: ${userIdentity.error}")
         }
 
-        mv.model["result"] = TestAuthResult(true, "You successfully singed in as ${userIdentity.user.displayName}")
+        return authResult(true, "You successfully singed in as ${userIdentity.user.displayName}")
+    }
+
+    private fun authResult(success: Boolean, message: String): ModelAndView {
+        val mv = ModelAndView(pluginDescriptor.getPluginResourcesPath("auth/test.jsp"))
+        mv.model["result"] = TestAuthResult(success, message)
         return mv
     }
 }
