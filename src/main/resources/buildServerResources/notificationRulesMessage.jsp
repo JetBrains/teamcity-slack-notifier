@@ -9,6 +9,8 @@
 <p>
     Specify the builds and events you want to be notified about via Slack messages.
     <br/>
+
+    Slack Notifier requires configuring a Slack connection.
     To receive notifications for all projects, configure a connection to Slack in the
     <c:choose>
         <c:when test='${user.isPermissionGrantedForProject(rootProject.projectId, Permission.EDIT_PROJECT)}'>
@@ -19,10 +21,7 @@
         <c:otherwise>
             Root project's settings
         </c:otherwise>
-    </c:choose>
-
-    and select it in the drop-down menu below.
+    </c:choose>.
     <br/>
-    To receive notifications for a specific project, configure the Slack connection directly in this project's settings
-    instead.
+    To receive notifications for a specific project, configure the connection directly in this project's settings instead.
 </p>
