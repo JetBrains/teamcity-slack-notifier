@@ -14,6 +14,8 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
 import jetbrains.buildServer.tests.TestName
 import jetbrains.buildServer.users.SUser
+import jetbrains.buildServer.util.positioning.PositionAware
+import jetbrains.buildServer.util.positioning.PositionConstraint
 import jetbrains.buildServer.vcs.VcsRoot
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
@@ -29,7 +31,7 @@ class SlackNotifier(
 
     private val oauthManager: OAuthConnectionsManager,
     private val descriptor: SlackNotifierDescriptor
-) : NotificatorAdapter() {
+) : NotificatorAdapter(), PositionAware {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
     private val config =
@@ -247,5 +249,9 @@ class SlackNotifier(
     fun clearAllErrors() {
 
     }
+
+    override fun getOrderId(): String = notificatorType
+
+    override fun getConstraint(): PositionConstraint = PositionConstraint.after("email")
 }
 
