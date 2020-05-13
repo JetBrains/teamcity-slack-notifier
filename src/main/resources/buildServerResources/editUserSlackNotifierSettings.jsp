@@ -119,9 +119,10 @@
 
                 var redirectUrl = encodeURIComponent(window["base_uri"] + "/admin/slack/oauth.html");
                 var clientId = connection.clientId;
+                var teamDomain = connection.teamDomain;
 
                 signInWithSlack.attr("href",
-                    "https://slack.com/oauth/authorize?scope=identity.basic,identity.team" +
+                    "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
                     "&client_id=" + clientId +
                     "&state=" + state +
                     "&redirect_uri=" + redirectUrl +
@@ -143,6 +144,7 @@
         BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
             clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
             team: "${connectionsBean.getTeamForConnection(connection)}",
+            teamDomain: "${connectionsBean.getTeamDomainForConnection(connection)}",
             projectId: "${connection.project.externalId}",
             projectName: "${connection.project.fullName}"
         };

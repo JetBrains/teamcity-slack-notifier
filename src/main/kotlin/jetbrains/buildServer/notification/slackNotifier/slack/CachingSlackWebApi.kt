@@ -15,6 +15,7 @@ class CachingSlackWebApi(
     private val usersInfoCache = createCache<String, MaybeUser>()
     private val conversationMembersCache = createCache<String, ConversationMembers>()
     private val userIdentityCache = createCache<String, UserIdentity>()
+    private val teamInfoCache = createCache<String, MaybeTeam>()
 
     /**
      * Posts new message every time, makes no sense to cache
@@ -73,6 +74,12 @@ class CachingSlackWebApi(
     override fun usersIdentity(token: String): UserIdentity {
         return userIdentityCache.get(token) {
             slackApi.usersIdentity(token)
+        }
+    }
+
+    override fun teamInfo(token: String, team: String): MaybeTeam {
+        return teamInfoCache.get("$token;;$team") {
+            slackApi.teamInfo(token, team)
         }
     }
 

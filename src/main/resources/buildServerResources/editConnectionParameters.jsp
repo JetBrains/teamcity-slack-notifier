@@ -120,11 +120,14 @@
                     this.newTestConnectionResult(success, data, form);
                 }
 
+                var teamDomain = data.teamDomain;
+                var teamId = data.teamId;
+
                 window.open(
-                    "https://slack.com/oauth/authorize?scope=identity.basic,identity.team" +
+                    "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
                     "&client_id=" + clientId +
                     "&redirect_uri=" + window["base_uri"] + "${testAuthRedirectUrl}" +
-                    "&team=" + data,
+                    "&team=" + teamId,
                     "_blank"
                 );
 
@@ -153,8 +156,12 @@
                     },
 
                     onSuccessfulSave: function (responseXML) {
-                        var team = responseXML.documentElement.getElementsByTagName("response").item(0);
-                        callback(true, team, form);
+                        var teamId = responseXML.documentElement.getElementsByTagName("teamId").item(0).innerHTML;
+                        var teamDomain = responseXML.documentElement.getElementsByTagName("teamDomain").item(0).innerHTML;
+                        callback(true, {
+                            teamId: teamId,
+                            teamDomain: teamDomain
+                        }, form);
                     }
                 })
             )
@@ -185,7 +192,7 @@
             <a href="https://api.slack.com/apps"
                target="_blank" rel="noreferrer">Slack app</a>
             with the following scopes:
-            <i>channels:read, chat:write, im:read, im:write, users:read</i>.
+            <i>channels:read, chat:write, im:read, im:write, users:read, team:read</i>.
             <br/>
             For proper authentication, set the Redirect URL in <b> OAuth & Permissions | App Management </b> to <bs:out
                 value="${rootUrl}"/>

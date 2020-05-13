@@ -150,6 +150,15 @@ class SlackWebApiImpl(
         return mapper.readValue(response.message, OauthAccessToken::class.java)
     }
 
+    override fun teamInfo(token: String, team: String): MaybeTeam = readOnlyRequest {
+        val response = request("team.info", token, listOf(Pair("team", team)))
+        if (response.isException || response.message == null) {
+            MaybeTeam(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, MaybeTeam::class.java)
+        }
+    }
+
     private fun request(
             path: String,
             token: String,

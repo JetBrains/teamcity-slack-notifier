@@ -26,5 +26,8 @@ interface SlackWebApi {
     fun oauthAccess(clientId: String, clientSecret: String, code: String, redirectUrl: String): OauthAccessToken
 
     fun usersIdentity(token: String): UserIdentity
+
+    // https://api.slack.com/methods/team.info
+    fun teamInfo(token: String, team: String): MaybeTeam
 }
 

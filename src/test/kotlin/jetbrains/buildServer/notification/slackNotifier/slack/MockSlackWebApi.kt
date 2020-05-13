@@ -103,6 +103,10 @@ class MockSlackWebApi : SlackWebApi {
         return MaybeUser(ok = true)
     }
 
+    override fun teamInfo(token: String, team: String): MaybeTeam {
+        return MaybeTeam(ok = true)
+    }
+
     private fun incorrectToken(token: String) = token != slackToken
 }
 

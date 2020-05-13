@@ -32,7 +32,8 @@ class PrepareForTestController(
         val botToken = props["secure:token"] ?: return respondError(xmlElement, "'secure:token' parameter is required")
         val bot = slackApi.getBot(botToken)
         val teamId = bot.teamId ?: return respondError(xmlElement, "Invalid bot token")
-        respondTeamId(xmlElement, teamId)
+        val teamDomain = bot.teamDomain ?: return respondError(xmlElement, "Invalid bot token")
+        respondTeam(xmlElement, teamId, teamDomain)
     }
 
     private fun getProps(request: HttpServletRequest): Map<String, String> {
@@ -47,10 +48,13 @@ class PrepareForTestController(
         xmlElement.addContent(errorXml)
     }
 
-    private fun respondTeamId(xmlElement: Element, teamId: String) {
+    private fun respondTeam(xmlElement: Element, teamId: String, teamDomain: String) {
         val teamIdXml = Element("teamId")
         teamIdXml.addContent(teamId)
+        val teamDomainXml = Element("teamDomain")
+        teamDomainXml.addContent(teamDomain)
         xmlElement.addContent(teamIdXml)
+        xmlElement.addContent(teamDomainXml)
     }
 
     override fun doGet(p0: HttpServletRequest, p1: HttpServletResponse) = null

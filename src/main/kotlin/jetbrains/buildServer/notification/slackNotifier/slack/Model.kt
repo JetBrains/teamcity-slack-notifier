@@ -259,6 +259,13 @@ data class Team(
     val icon: Icon = noIcon
 )
 
+data class MaybeTeam(
+        override val ok: Boolean = false,
+        override val error: String = "",
+        override val needed: String = "",
+        val team: Team = Team("")
+): MaybeError
+
 data class Icon(
     @JsonProperty("image_default")
     val default: Boolean = true,

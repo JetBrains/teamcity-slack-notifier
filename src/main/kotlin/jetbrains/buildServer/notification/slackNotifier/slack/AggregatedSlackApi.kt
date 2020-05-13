@@ -57,7 +57,11 @@ class AggregatedSlackApi(
             val bot = slackApi.authTest(token)
             val botInfo = slackApi.botsInfo(token, bot.botId)
             val userInfo = slackApi.usersInfo(token, botInfo.bot.userId)
-            AggregatedBot(id = bot.botId, teamId = userInfo.user?.teamId)
+            val teamId = userInfo.user?.teamId
+            val team = teamId?.let {
+                slackApi.teamInfo(token, it)
+            }
+            AggregatedBot(id = bot.botId, teamId = teamId, teamDomain = team?.team?.domain)
         }
     }
 
@@ -79,5 +83,6 @@ class AggregatedSlackApi(
 
 data class AggregatedBot(
         val id: String,
-        val teamId: String?
+        val teamId: String?,
+        val teamDomain: String?
 )
