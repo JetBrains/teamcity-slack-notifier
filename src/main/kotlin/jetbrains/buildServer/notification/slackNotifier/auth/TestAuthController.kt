@@ -50,7 +50,7 @@ class TestAuthController(
             return authResult(false, "Unexpected error: ${userIdentity.error}")
         }
 
-        return authResult(true, "You successfully singed in as ${userIdentity.user.displayName}")
+        return authResult(true, "You successfully signed in as ${userIdentity.user.displayName}")
     }
 
     private fun authResult(success: Boolean, message: String): ModelAndView {
