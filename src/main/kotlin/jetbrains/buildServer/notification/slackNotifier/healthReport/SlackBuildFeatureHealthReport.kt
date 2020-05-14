@@ -137,11 +137,13 @@ class SlackBuildFeatureHealthReport(
 
 
             if (!members.members.contains(bot.userId)) {
+                val botName = slackApi.botsInfo(token, bot.botId).bot.name
+
                 return generateHealthStatus(
                     feature,
                     type,
                     buildType,
-                    "Bot is not added to $receiverName channel. Bot should be added to the channel to be able to post messages",
+                    "Bot '$botName' is not added to $receiverName channel. Bot should be added to the channel to be able to post messages",
                     category = botIsNotConfiguredCategory
                 )
             }

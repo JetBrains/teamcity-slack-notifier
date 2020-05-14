@@ -108,7 +108,7 @@
         <span class="smallNote">
             Specify where messages should be sent.
             <br/>
-            Channel IDs should start with the '#' symbol.
+            Channel IDs should start with the '#' symbol. Bot should be added to the provided channel to be able to send notifications.
         </span>
     </td>
 </tr>
