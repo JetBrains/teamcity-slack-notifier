@@ -70,7 +70,7 @@
             );
         },
 
-        newTestConnectionResult(success, info, form) {
+        newTestConnectionResult: function(success, info, form) {
             this.results.push({
                 success: success,
                 message: info
