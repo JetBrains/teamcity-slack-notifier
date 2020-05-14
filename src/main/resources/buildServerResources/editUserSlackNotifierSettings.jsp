@@ -73,15 +73,12 @@
         </td>
 
         <td>
-            <span id="signedInUserNote">
-            </span>
-            <br/>
-            <a id="signInWithSlack" rel="noreferrer">
-                Sign in with Slack
-            </a>
+            <span id="signedInUserNote"></span>
         </td>
 
-        <props:textProperty name="${properties.channelKey}" style="display: none;"/>
+        <span style="display: none">
+            <props:textProperty name="${properties.channelKey}" style="display: none; "/>
+        </span>
     </tr>
     <tr>
         <td colspan="2" style="padding-top: 6px;">
@@ -89,74 +86,95 @@
         </td>
     </tr>
 
+    <span id="singInWithSlackWrapper" style="display:none;">
+        <a rel="noreferrer" class="signInWithSlack btn btn_mini submitButton">
+            Sign In
+        </a>
+    </span>
+
     <script type="text/javascript">
-        var connectionId = "#${properties.connectionKey.replace(':', '-')}";
-        var signInWithSlack = $j("#signInWithSlack");
-        var slackUsername = "${util:forJS(slackUsername, true, false)}";
+        $j(document).ready(function() {
+            var connectionId = "#${properties.connectionKey.replace(':', '-')}";
+            var slackUsername = "${util:forJS(slackUsername, true, false)}";
 
-        BS.UserSlackNotifierSettings = {
-            connections: {},
+            var signOutButton = $j("#saveNotifierSettings");
 
-            updateSignInUrl: function (selectedConnectionId) {
-                var connection = this.connections[selectedConnectionId];
-                if (!connection) {
-                    $j("#userSection").hide();
-                    return;
-                } else {
-                    $j("#userSection").show();
-                    if (selectedConnectionId === "${selectedConnection}" && slackUsername) {
-                        $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
+            BS.UserSlackNotifierSettings = {
+                connections: {},
+
+                updateSignInUrl: function (selectedConnectionId) {
+                    var signInButton = $j(".signInWithSlack");
+
+                    var connection = this.connections[selectedConnectionId];
+                    if (!connection) {
+                        $j("#userSection").hide();
+                        signInButton.hide();
+                        signOutButton.attr("value", "Save");
+                        return;
                     } else {
-                        $j("#signedInUserNote").text("You are not signed in.");
+                        signOutButton.attr("value", "Sign out");
+
+                        $j("#userSection").show();
+                        if (selectedConnectionId === "${selectedConnection}" && slackUsername) {
+                            $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
+                            signInButton.hide()
+                            signOutButton.show();
+                        } else {
+                            $j("#signedInUserNote").text("You are not signed in.");
+                            signInButton.show();
+                            signOutButton.hide();
+                        }
+                    }
+
+                    var team = connection.team;
+                    var state = encodeURIComponent(JSON.stringify({
+                        userId: "${user.id}",
+                        connectionId: selectedConnectionId
+                    }));
+
+                    var redirectUrl = encodeURIComponent(window["base_uri"] + "/admin/slack/oauth.html");
+                    var clientId = connection.clientId;
+                    var teamDomain = connection.teamDomain;
+
+                    signInButton.attr("href",
+                        "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
+                        "&client_id=" + clientId +
+                        "&state=" + state +
+                        "&redirect_uri=" + redirectUrl +
+                        "&team=" + team
+                    );
+
+                    var projectId = connection.projectId;
+                    if (projectId && projectId !== "_Root") {
+                        $j("#connectionWarning").text("The selected connection is configured for the " + connection.projectName +
+                            " project. You will receive notifications about builds and events in this project and its subprojects.");
+                        $j("#connectionWarning").show();
+                    } else {
+                        $j("#connectionWarning").hide();
                     }
                 }
+            };
 
-                var team = connection.team;
-                var state = encodeURIComponent(JSON.stringify({
-                    userId: "${user.id}",
-                    connectionId: selectedConnectionId
-                }));
+            <c:forEach items="${connectionsBean.connections}" var="connection">
+                BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
+                    clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
+                    team: "${connectionsBean.getTeamForConnection(connection)}",
+                    teamDomain: "${connectionsBean.getTeamDomainForConnection(connection)}",
+                    projectId: "${connection.project.externalId}",
+                    projectName: "${connection.project.fullName}"
+                };
+            </c:forEach>
 
-                var redirectUrl = encodeURIComponent(window["base_uri"] + "/admin/slack/oauth.html");
-                var clientId = connection.clientId;
-                var teamDomain = connection.teamDomain;
+            BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
+            $j(connectionId).on("change", function () {
+                BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
+            });
 
-                signInWithSlack.attr("href",
-                    "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
-                    "&client_id=" + clientId +
-                    "&state=" + state +
-                    "&redirect_uri=" + redirectUrl +
-                    "&team=" + team
-                );
-
-                var projectId = connection.projectId;
-                if (projectId && projectId !== "_Root") {
-                    $j("#connectionWarning").text("The selected connection is configured for the " + connection.projectName +
-                        " project. You will receive notifications about builds and events in this project and its subprojects.");
-                    $j("#connectionWarning").show();
-                } else {
-                    $j("#connectionWarning").hide();
-                }
+            var additionalButtons = $j("span#additionalNotifierButtonsBefore");
+            if (additionalButtons.length) {
+                additionalButtons.empty();
+                additionalButtons.append($j("span#singInWithSlackWrapper *"));
             }
-        };
-
-        <c:forEach items="${connectionsBean.connections}" var="connection">
-        BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
-            clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
-            team: "${connectionsBean.getTeamForConnection(connection)}",
-            teamDomain: "${connectionsBean.getTeamDomainForConnection(connection)}",
-            projectId: "${connection.project.externalId}",
-            projectName: "${connection.project.fullName}"
-        };
-        </c:forEach>
-
-        BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
-        $j(connectionId).on("change", function () {
-            BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
-        });
-
-        $j(document).ready(function () {
-            $j("#saveNotifierSettings").attr("value", "Sign out");
         });
     </script>
     </c:when>
