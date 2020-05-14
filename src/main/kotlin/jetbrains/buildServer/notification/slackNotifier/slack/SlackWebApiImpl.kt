@@ -26,6 +26,8 @@ class SlackWebApiImpl(
             .configure(SerializationFeature.INDENT_OUTPUT, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
+    private val maxNumberOfRetries = 2
+
     override fun postMessage(token: String, payload: Message): MaybeMessage {
         val response = request(
                 "chat.postMessage",
@@ -166,7 +168,7 @@ class SlackWebApiImpl(
             method: String = "GET"
     ): SlackResponse {
         var response: String? = null
-        var isException = false
+        val exceptions = mutableListOf<Exception>()
 
         val post: HTTPRequestBuilder.Request =
                 HTTPRequestBuilder("$baseUrl/${path}")
@@ -190,7 +192,7 @@ class SlackWebApiImpl(
                                 )
                         )
                         .addParameters(parameters)
-                        .withRetryCount(2)
+                        .withRetryCount(maxNumberOfRetries)
                         .onErrorResponse(HTTPRequestBuilder.ResponseConsumer {
                             response = it.bodyAsString
                         })
@@ -198,14 +200,16 @@ class SlackWebApiImpl(
                             response = it.bodyAsString
                         }
                         .onException {
-                            logger.error(
+                            logger.warn(
                                     "Exception occurred when sending request to Slack: ${it.message}"
                             )
-                            isException = true
+                            exceptions.add(it)
                         }
                         .build()
 
         requestHandler.doRequest(post)
+
+        val isException = exceptions.size > maxNumberOfRetries
 
         return SlackResponse(response, isException)
     }
