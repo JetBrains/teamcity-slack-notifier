@@ -27,6 +27,13 @@ class SlackWebApiImplTest : BaseTestCase() {
         `then result should be successful`()
     }
 
+    @Test
+    fun `should return error if request always fails`() {
+        `given slack always fails`()
+        `when message is sent`()
+        `then result should be error`()
+    }
+
     private fun `given slack is responding correctly`() {
         slackApi = SlackWebApiImpl(
                 MockRequestHandler(standardResponse)
@@ -39,12 +46,22 @@ class SlackWebApiImplTest : BaseTestCase() {
         )
     }
 
+    private fun `given slack always fails`() {
+        slackApi = SlackWebApiImpl(
+                AlwaysFailingMockRequestHandler()
+        )
+    }
+
     private fun `when message is sent`() {
         slackResponse = slackApi.postMessage(slackToken, Message("#test_channel", "Test message"))
     }
 
     private fun `then result should be successful`() {
         assertTrue(slackResponse.ok)
+    }
+
+    private fun `then result should be error`() {
+        assertFalse(slackResponse.ok)
     }
 }
 
