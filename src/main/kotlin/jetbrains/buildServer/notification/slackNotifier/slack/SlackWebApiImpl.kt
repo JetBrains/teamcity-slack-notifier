@@ -15,25 +15,23 @@ import java.nio.charset.Charset
 import java.util.*
 
 class SlackWebApiImpl(
-    private val requestHandler: HTTPRequestBuilder.RequestHandler
+        private val requestHandler: HTTPRequestBuilder.RequestHandler
 ) : SlackWebApi {
     private val baseUrl = "https://slack.com/api"
 
     private val logger = Logger.getInstance(SlackWebApi::class.java.name)
 
     private val mapper = ObjectMapper()
-        .registerModule(KotlinModule())
-        .configure(SerializationFeature.INDENT_OUTPUT, true)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-
-    private val requestTimeout = TeamCityProperties.getInteger(SlackNotifierProperties.requestTimeout, 10_000)
+            .registerModule(KotlinModule())
+            .configure(SerializationFeature.INDENT_OUTPUT, true)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     override fun postMessage(token: String, payload: Message): MaybeMessage {
         val response = request(
-            "chat.postMessage",
-            token,
-            body = mapper.writeValueAsString(payload),
-            method = "POST"
+                "chat.postMessage",
+                token,
+                body = mapper.writeValueAsString(payload),
+                method = "POST"
         )
         if (response.isException || response.message == null) {
             return MaybeMessage(ok = false, error = unknownError)
@@ -43,14 +41,14 @@ class SlackWebApiImpl(
 
     override fun channelsList(token: String, cursor: String?): ChannelsList = readOnlyRequest {
         val response = request(
-            "channels.list",
-            token,
-            listOf(
-                Pair("cursor", cursor),
-                Pair("limit", "1000"),
-                Pair("exclude_members", "true"),
-                Pair("exclude_archived", "true")
-            )
+                "channels.list",
+                token,
+                listOf(
+                        Pair("cursor", cursor),
+                        Pair("limit", "1000"),
+                        Pair("exclude_members", "true"),
+                        Pair("exclude_archived", "true")
+                )
         )
         if (response.isException || response.message == null) {
             ChannelsList(ok = false, error = unknownError)
@@ -61,12 +59,12 @@ class SlackWebApiImpl(
 
     override fun usersList(token: String, cursor: String?): UsersList = readOnlyRequest {
         val response = request(
-            "users.list",
-            token,
-            listOf(
-                Pair("cursor", cursor),
-                Pair("limit", "1000")
-            )
+                "users.list",
+                token,
+                listOf(
+                        Pair("cursor", cursor),
+                        Pair("limit", "1000")
+                )
         )
         if (response.isException || response.message == null) {
             UsersList(ok = false, error = unknownError)
@@ -134,10 +132,10 @@ class SlackWebApiImpl(
         val response = request(
                 "oauth.access",
                 "",
-            parameters = listOf(
-                Pair("code", code),
-                Pair("redirect_uri", redirectUrl)
-            ),
+                parameters = listOf(
+                        Pair("code", code),
+                        Pair("redirect_uri", redirectUrl)
+                ),
                 headers = mapOf(
                         "Authorization" to "Basic $encodedSecret"
                 )
@@ -171,36 +169,41 @@ class SlackWebApiImpl(
         var isException = false
 
         val post: HTTPRequestBuilder.Request =
-            HTTPRequestBuilder("$baseUrl/${path}")
-                .withMethod(method)
-                .withPostStringEntity(
-                    body,
-                    "application/json",
-                    Charset.forName("UTF-8")
-                )
-                .withHeader("Authorization", "Bearer $token")
-                .withHeader("Content-Type", "application/json")
-                .also {
-                    for (header in headers) {
-                        it.withHeader(header.key, header.value)
-                    }
-                }
-                .withTimeout(requestTimeout)
-                .addParameters(parameters)
-                .withRetryCount(2)
-                .onErrorResponse(HTTPRequestBuilder.ResponseConsumer {
-                    response = it.bodyAsString
-                })
-                .onSuccess {
-                    response = it.bodyAsString
-                }
-                .onException {
-                    logger.error(
-                        "Exception occurred when sending request to Slack: ${it.message}"
-                    )
-                    isException = true
-                }
-                .build()
+                HTTPRequestBuilder("$baseUrl/${path}")
+                        .withMethod(method)
+                        .withPostStringEntity(
+                                body,
+                                "application/json",
+                                Charset.forName("UTF-8")
+                        )
+                        .withHeader("Authorization", "Bearer $token")
+                        .withHeader("Content-Type", "application/json")
+                        .also {
+                            for (header in headers) {
+                                it.withHeader(header.key, header.value)
+                            }
+                        }
+                        .withTimeout(
+                                TeamCityProperties.getInteger(
+                                        SlackNotifierProperties.requestTimeout,
+                                        10_000
+                                )
+                        )
+                        .addParameters(parameters)
+                        .withRetryCount(2)
+                        .onErrorResponse(HTTPRequestBuilder.ResponseConsumer {
+                            response = it.bodyAsString
+                        })
+                        .onSuccess {
+                            response = it.bodyAsString
+                        }
+                        .onException {
+                            logger.error(
+                                    "Exception occurred when sending request to Slack: ${it.message}"
+                            )
+                            isException = true
+                        }
+                        .build()
 
         requestHandler.doRequest(post)
 
@@ -208,9 +211,9 @@ class SlackWebApiImpl(
     }
 
     private fun <T> readOnlyRequest(block: () -> T): T =
-        SecondaryNodeSecurityManager.runSafeNetworkOperation(FuncThrow<T, Throwable> {
-            block()
-        })
+            SecondaryNodeSecurityManager.runSafeNetworkOperation(FuncThrow<T, Throwable> {
+                block()
+            })
 
     internal data class SlackResponse(val message: String?, val isException: Boolean)
 

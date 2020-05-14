@@ -9,6 +9,7 @@
             <class name="jetbrains.buildServer.notification.slackNotifier.healthReport.SlackConnectionHealthReportTest"/>
             <class name="jetbrains.buildServer.notification.slackNotifier.healthReport.SlackBuildFeatureHealthReportTest"/>
             <class name="jetbrains.buildServer.notification.slackNotifier.logging.ThrottlingLoggerTest"/>
+            <class name="jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiImplTest"/>
         </classes>
     </test>
 </suite>
