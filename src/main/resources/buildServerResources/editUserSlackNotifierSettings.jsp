@@ -126,7 +126,6 @@
                         }
                     }
 
-                    var team = connection.team;
                     var state = encodeURIComponent(JSON.stringify({
                         userId: "${user.id}",
                         connectionId: selectedConnectionId
@@ -140,8 +139,7 @@
                         "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
                         "&client_id=" + clientId +
                         "&state=" + state +
-                        "&redirect_uri=" + redirectUrl +
-                        "&team=" + team
+                        "&redirect_uri=" + redirectUrl
                     );
 
                     var projectId = connection.projectId;

@@ -120,13 +120,11 @@
                 }
 
                 var teamDomain = data.teamDomain;
-                var teamId = data.teamId;
 
                 window.open(
                     "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
                     "&client_id=" + clientId +
-                    "&redirect_uri=" + window["base_uri"] + "${testAuthRedirectUrl}" +
-                    "&team=" + teamId,
+                    "&redirect_uri=" + window["base_uri"] + "${testAuthRedirectUrl}",
                     "_blank"
                 );
 
