@@ -113,9 +113,10 @@
 
         testClientIdAndSecret: function () {
             var clientId = document.getElementById("clientId").value;
-            this.prepareForAuthTest(function(success, data, form) {
+            var that = this;
+            this.prepareForAuthTest(function (success, data, form) {
                 if (!success) {
-                    this.newTestConnectionResult(success, data, form);
+                    that.newTestConnectionResult(success, data, form);
                 }
 
                 var teamDomain = data.teamDomain;
@@ -154,12 +155,16 @@
                     },
 
                     onSuccessfulSave: function (responseXML) {
-                        var teamId = responseXML.documentElement.getElementsByTagName("teamId").item(0).innerHTML;
-                        var teamDomain = responseXML.documentElement.getElementsByTagName("teamDomain").item(0).innerHTML;
-                        callback(true, {
-                            teamId: teamId,
-                            teamDomain: teamDomain
-                        }, form);
+                        try {
+                            var teamId = responseXML.documentElement.getElementsByTagName("teamId").item(0).innerHTML;
+                            var teamDomain = responseXML.documentElement.getElementsByTagName("teamDomain").item(0).innerHTML;
+                            callback(true, {
+                                teamId: teamId,
+                                teamDomain: teamDomain
+                            }, form);
+                        } catch (e) {
+                            callback(false, "", form);
+                        }
                     }
                 })
             )
