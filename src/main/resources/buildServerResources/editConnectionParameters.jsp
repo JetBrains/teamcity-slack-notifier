@@ -197,8 +197,8 @@
             with the following scopes:
             <i>channels:read, chat:write, im:read, im:write, users:read, team:read, groups:read</i>.
             <br/>
-            For proper authentication, set the Redirect URL in <b> OAuth & Permissions | App Management </b> to <bs:out
-                value="${rootUrl}"/>
+            For proper authentication, add <bs:out value="${rootUrl}"/> and any other server urls
+            to the Redirect URLs in <b> OAuth & Permissions | App Management </b>.
             <br/>
             Copy the Client ID and Secret from the app's Basic Information page to the respective fields in the form
             below.
