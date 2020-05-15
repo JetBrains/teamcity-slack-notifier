@@ -41,15 +41,14 @@ class SlackWebApiImpl(
         return mapper.readValue(response.message, MaybeMessage::class.java)
     }
 
-    override fun channelsList(token: String, cursor: String?): ChannelsList = readOnlyRequest {
+    override fun conversationsList(token: String, cursor: String?, types: String): ChannelsList = readOnlyRequest {
         val response = request(
-                "channels.list",
+                "conversations.list",
                 token,
                 listOf(
                         Pair("cursor", cursor),
                         Pair("limit", "1000"),
-                        Pair("exclude_members", "true"),
-                        Pair("exclude_archived", "true")
+                        Pair("types", types)
                 )
         )
         if (response.isException || response.message == null) {
@@ -58,6 +57,7 @@ class SlackWebApiImpl(
             mapper.readValue(response.message, ChannelsList::class.java)
         }
     }
+
 
     override fun usersList(token: String, cursor: String?): UsersList = readOnlyRequest {
         val response = request(

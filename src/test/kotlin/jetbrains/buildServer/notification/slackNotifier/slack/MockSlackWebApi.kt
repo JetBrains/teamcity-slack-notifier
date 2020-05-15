@@ -14,17 +14,17 @@ class MockSlackWebApi : SlackWebApi {
         return MaybeMessage(ok = true)
     }
 
-    override fun channelsList(token: String, cursor: String?): ChannelsList {
+    override fun conversationsList(token: String, cursor: String?, types: String): ChannelsList {
         if (incorrectToken(token)) {
             return ChannelsList(ok = false)
         }
 
         return ChannelsList(
-            ok = true,
-            channels = listOf(
-                Channel("CHANNEL_ID_1", "test_channel"),
-                Channel("CHANNEL_ID_2", "anotherChannel")
-            )
+                ok = true,
+                channels = listOf(
+                        Channel("CHANNEL_ID_1", "test_channel"),
+                        Channel("CHANNEL_ID_2", "anotherChannel")
+                )
         )
     }
 

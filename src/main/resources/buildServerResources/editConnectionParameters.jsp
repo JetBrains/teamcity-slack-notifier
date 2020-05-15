@@ -1,5 +1,3 @@
-<%@ page import="jetbrains.buildServer.users.SUser" %>
-<%@ page import="jetbrains.buildServer.web.util.SessionUser" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ include file="/include-internal.jsp" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
@@ -192,7 +190,7 @@
             <a href="https://api.slack.com/apps"
                target="_blank" rel="noreferrer">Slack app</a>
             with the following scopes:
-            <i>channels:read, chat:write, im:read, im:write, users:read, team:read</i>.
+            <i>channels:read, chat:write, im:read, im:write, users:read, team:read, groups:read</i>.
             <br/>
             For proper authentication, set the Redirect URL in <b> OAuth & Permissions | App Management </b> to <bs:out
                 value="${rootUrl}"/>

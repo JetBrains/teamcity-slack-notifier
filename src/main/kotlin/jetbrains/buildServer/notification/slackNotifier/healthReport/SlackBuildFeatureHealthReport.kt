@@ -110,17 +110,18 @@ class SlackBuildFeatureHealthReport(
         if (receiverName.startsWith("#")) {
             val bot = slackApi.authTest(token)
 
-            val channel = aggregatedSlackApi.getChannelsList(token).find {
+            val channels = aggregatedSlackApi.getChannelsList(token)
+            val channel = channels.find {
                 "#${it.name}" == receiverName
             }
             if (channel == null) {
                 val botName = slackApi.botsInfo(token, bot.botId).bot.name
 
                 return generateHealthStatus(
-                    feature,
-                    type,
-                    buildType,
-                    "Can't find channel $receiverName. If it's private, you should add bot '${botName}' to this channel before it can post messages there"
+                        feature,
+                        type,
+                        buildType,
+                        "Can't find channel $receiverName. If it's private, you should add bot '${botName}' to this channel before it can post messages there"
                 )
             }
 

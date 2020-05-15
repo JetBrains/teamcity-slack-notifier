@@ -39,7 +39,7 @@ class AggregatedSlackApi(
     fun getChannelsList(token: String): List<Channel> {
         return myChannelsCache.get(token) {
             getList { cursor ->
-                slackApi.channelsList(token, cursor)
+                slackApi.conversationsList(token, cursor)
             }
         }
     }

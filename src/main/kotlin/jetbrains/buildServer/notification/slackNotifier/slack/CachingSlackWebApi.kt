@@ -25,11 +25,11 @@ class CachingSlackWebApi(
     }
 
     /**
-     * All channels should be cached, not only the ones got for the specified cursor
+     * All conversations should be cached, not only the ones got for the specified cursor
      * See [AggregatedSlackApi]
      */
-    override fun channelsList(token: String, cursor: String?): ChannelsList {
-        return slackApi.channelsList(token, cursor)
+    override fun conversationsList(token: String, cursor: String?, types: String): ChannelsList {
+        return slackApi.conversationsList(token, cursor, types)
     }
 
     /**
