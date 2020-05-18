@@ -34,12 +34,6 @@ class SlackNotifier(
 ) : NotificatorAdapter(), PositionAware {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
-    private val config =
-        SlackNotifierConfig(
-            serverPaths,
-            descriptor,
-            this
-        )
 
     private val logger = Logger.getInstance(SlackNotifier::class.java.name)
     private val throttlingLogger = ThrottlingLogger(logger)
@@ -240,10 +234,6 @@ class SlackNotifier(
         }
 
         return null
-    }
-
-    fun getConfig(): SlackNotifierConfig {
-        return config
     }
 
     fun clearAllErrors() {
