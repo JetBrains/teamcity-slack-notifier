@@ -2,6 +2,7 @@ package jetbrains.buildServer.notification.slackNotifier.auth
 
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
+import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
@@ -30,6 +31,7 @@ class SlackOauthController(
 ) : BaseController() {
     companion object {
         const val PATH = "/admin/slack/oauth.html"
+        private val LOG = Logger.getInstance(SlackOauthController::class.java.name)
     }
 
     private val slackApi = slackWebApiFactory.createSlackWebApi()
@@ -103,8 +105,16 @@ class SlackOauthController(
         return when (oauthToken.error) {
             "bad_client_secret" -> errorMessage(request, "Error: invalid 'Client secret' field in provided connection")
             "invalid_client_id" -> errorMessage(request, "Error: invalid 'Client ID' field in provided connection")
+            "bad_redirect_uri" -> {
+                warnBadRedirectUriInfo(request)
+                errorMessage(request, "Internal error: bad_redirect_uri. See notification debug logs for more detail")
+            }
             else -> errorMessage(request, "Unexpected error: ${oauthToken.error}")
         }
+    }
+
+    private fun warnBadRedirectUriInfo(request: HttpServletRequest) {
+        LOG.warn("Internal error: bad_redirect_uri '${request.requestURL}'")
     }
 }
 

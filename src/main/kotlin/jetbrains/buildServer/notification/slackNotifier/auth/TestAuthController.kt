@@ -1,7 +1,7 @@
 package jetbrains.buildServer.notification.slackNotifier.auth
 
+import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.controllers.BaseController
-import jetbrains.buildServer.controllers.BaseFormXmlController
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.web.openapi.PluginDescriptor
@@ -20,6 +20,7 @@ class TestAuthController(
         private val pluginDescriptor: PluginDescriptor
 ) : BaseController() {
     private val slackApi = slackWebApiFactory.createSlackWebApi()
+    private val LOG = Logger.getInstance(TestAuthController::class.java.name)
 
     init {
         webControllerManager.registerController("/admin/slack/auth/test.html", this)
@@ -42,6 +43,9 @@ class TestAuthController(
         )
 
         if (!oauthToken.ok) {
+            if (oauthToken.error == "bad_redirect_uri") {
+                warnBadRedirectUriInfo(request)
+            }
             return authResult(false, "Test authentication failed: ${oauthToken.error}")
         }
 
@@ -51,6 +55,10 @@ class TestAuthController(
         }
 
         return authResult(true, "You successfully signed in as ${userIdentity.user.displayName}")
+    }
+
+    private fun warnBadRedirectUriInfo(request: HttpServletRequest) {
+        LOG.warn("Internal error: bad_redirect_uri '${request.requestURL}'")
     }
 
     private fun authResult(success: Boolean, message: String): ModelAndView {
