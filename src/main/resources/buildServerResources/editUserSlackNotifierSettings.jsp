@@ -131,7 +131,7 @@
                         connectionId: selectedConnectionId
                     }));
 
-                    var redirectUrl = encodeURIComponent(window["base_uri"] + "/admin/slack/oauth.html");
+                    var redirectUrl = encodeURIComponent(window["base_uri"] + "/slack/oauth.html");
                     var clientId = connection.clientId;
                     var teamDomain = connection.teamDomain;
 

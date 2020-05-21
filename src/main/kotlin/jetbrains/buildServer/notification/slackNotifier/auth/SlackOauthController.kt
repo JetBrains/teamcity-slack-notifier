@@ -30,7 +30,7 @@ class SlackOauthController(
     private val slackWebApiFactory: SlackWebApiFactory
 ) : BaseController() {
     companion object {
-        const val PATH = "/admin/slack/oauth.html"
+        const val PATH = "/slack/oauth.html"
         private val LOG = Logger.getInstance(SlackOauthController::class.java.name)
     }
 
