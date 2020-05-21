@@ -12,6 +12,7 @@ import jetbrains.buildServer.web.NotificationRulesExtension
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import jetbrains.buildServer.web.util.SessionUser
+import jetbrains.buildServer.web.util.WebUtil
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.ModelAndView
@@ -117,6 +118,7 @@ class UserSlackNotifierSettingsController(
         mv.model["slackUsername"] = slackUsername ?: ""
         mv.model["selectedConnection"] = selectedConnectionId
         mv.model["displaySettings"] = currentUser.id == user.id
+        mv.model["rootUrl"] = WebUtil.getRootUrl(request)
 
         return mv
     }

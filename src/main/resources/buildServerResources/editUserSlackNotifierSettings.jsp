@@ -28,6 +28,7 @@
 <jsp:useBean id="slackUsername" type="java.lang.String" scope="request"/>
 <jsp:useBean id="selectedConnection" type="java.lang.String" scope="request"/>
 <jsp:useBean id="displaySettings" type="java.lang.Boolean" scope="request"/>
+<jsp:useBean id="rootUrl" type="java.lang.String" scope="request"/>
 
 <c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
 
@@ -131,7 +132,7 @@
                         connectionId: selectedConnectionId
                     }));
 
-                    var redirectUrl = encodeURIComponent(window["base_uri"] + "/slack/oauth.html");
+                    var redirectUrl = encodeURIComponent("${rootUrl}/slack/oauth.html");
                     var clientId = connection.clientId;
                     var teamDomain = connection.teamDomain;
 

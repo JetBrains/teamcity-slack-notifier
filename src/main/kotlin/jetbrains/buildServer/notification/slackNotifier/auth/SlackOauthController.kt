@@ -13,6 +13,7 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.users.UserModel
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import jetbrains.buildServer.web.util.SessionUser
+import jetbrains.buildServer.web.util.WebUtil
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.ModelAndView
@@ -58,7 +59,7 @@ class SlackOauthController(
             ?: return errorMessage(request, "Can't find connection with id '${connectionId}")
 
         val code = request.getParameter("code")
-        val redirectUrl = request.requestURL.toString()
+        val redirectUrl = WebUtil.getRootUrl(request) + PATH
 
         val clientId = connection.parameters["clientId"]
             ?: return errorMessage(request, "Can't find 'clientId' property in connection with id '${connectionId}'")
