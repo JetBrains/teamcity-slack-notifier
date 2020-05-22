@@ -6,6 +6,7 @@ import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.WebControllerManager
+import jetbrains.buildServer.web.util.WebUtil
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.ModelAndView
@@ -22,8 +23,12 @@ class TestAuthController(
     private val slackApi = slackWebApiFactory.createSlackWebApi()
     private val LOG = Logger.getInstance(TestAuthController::class.java.name)
 
+    companion object {
+        const val PATH = "/admin/slack/auth/test.html"
+    }
+
     init {
-        webControllerManager.registerController("/admin/slack/auth/test.html", this)
+        webControllerManager.registerController(PATH, this)
     }
 
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
@@ -33,7 +38,7 @@ class TestAuthController(
         val clientSecret = request.session.getAttribute("slack.clientSecret") as? String?
                 ?: return authResult(false, "Unexpected error: can't find client secret in session")
 
-        val redirectUrl = request.requestURL.toString()
+        val redirectUrl = WebUtil.getRootUrl(request) + PATH
 
         val oauthToken = slackApi.oauthAccess(
                 clientId = clientId,

@@ -1,3 +1,5 @@
+<%@ page import="jetbrains.buildServer.web.util.WebUtil" %>
+
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ include file="/include-internal.jsp" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
@@ -5,10 +7,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
+<c:set var="currentRootUrl" value="${WebUtil.getRootUrl(pageContext.request)}"/>
 <jsp:useBean id="rootUrl" type="java.lang.String" scope="request"/>
 
 <c:url var="testConnectionUrl" value="/admin/slack/testConnection.html"/>
-<c:set var="testAuthRedirectUrl" value="/admin/slack/auth/test.html"/>
+<c:set var="testAuthRedirectUrl" value="${currentRootUrl}/admin/slack/auth/test.html"/>
 <c:url var="prepareForAuthTest" value="/admin/slack/auth/prepareForTest.html"/>
 
 <c:url var="slackNotifierSettingsUrl" value="/profile.html?notificatorType=jbSlackNotifier&item=userNotifications"/>
@@ -124,7 +127,7 @@
                 window.open(
                     "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
                     "&client_id=" + clientId +
-                    "&redirect_uri=" + window["base_uri"] + "${testAuthRedirectUrl}",
+                    "&redirect_uri=" + "${testAuthRedirectUrl}",
                     "_blank"
                 );
 
@@ -195,7 +198,11 @@
             with the following scopes:
             <i>channels:read, chat:write, im:read, im:write, users:read, team:read, groups:read</i>.
             <br/>
-            For proper authentication, add <bs:out value="${rootUrl}"/> and any other server urls
+            For proper authentication, add <bs:out value="${rootUrl}"/>,
+            <c:if test="${!rootUrl.equals(currentRootUrl)}">
+                <bs:out value="${currentRootUrl}"/>
+            </c:if>
+            and any other server urls
             to the Redirect URLs in <b> OAuth & Permissions | App Management </b>.
             <br/>
             Copy the Client ID and Secret from the app's Basic Information page to the respective fields in the form
