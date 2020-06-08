@@ -45,17 +45,16 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
         myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
         myNotifier = SlackNotifier(
-            myFixture.notificatorRegistry,
-            mySlackApiFactory,
-            SimpleMessageBuilder(
-                SlackMessageFormatter(),
-                myFixture.webLinks,
-                myProjectManager
-            ),
-            myFixture.serverPaths,
-            myProjectManager,
-            myConnectionManager,
-            myDescriptor
+                myFixture.notificatorRegistry,
+                mySlackApiFactory,
+                SimpleMessageBuilder(
+                        SlackMessageFormatter(),
+                        myFixture.webLinks,
+                        myProjectManager
+                ),
+                myProjectManager,
+                myConnectionManager,
+                myDescriptor
         )
 
         myFixture.addService(myNotifier)

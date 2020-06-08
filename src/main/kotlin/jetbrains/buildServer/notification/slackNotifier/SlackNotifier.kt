@@ -23,14 +23,13 @@ import org.springframework.stereotype.Service
 @Service
 @Conditional(SlackNotifierEnabled::class)
 class SlackNotifier(
-    notifierRegistry: NotificatorRegistry,
-    slackApiFactory: SlackWebApiFactory,
-    private val messageBuilder: MessageBuilder,
-    serverPaths: ServerPaths,
-    private val projectManager: ProjectManager,
+        notifierRegistry: NotificatorRegistry,
+        slackApiFactory: SlackWebApiFactory,
+        private val messageBuilder: MessageBuilder,
+        private val projectManager: ProjectManager,
+        private val oauthManager: OAuthConnectionsManager,
 
-    private val oauthManager: OAuthConnectionsManager,
-    private val descriptor: SlackNotifierDescriptor
+        private val descriptor: SlackNotifierDescriptor
 ) : NotificatorAdapter(), PositionAware {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
