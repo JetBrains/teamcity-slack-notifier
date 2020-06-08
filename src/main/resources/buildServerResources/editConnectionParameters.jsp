@@ -216,7 +216,7 @@
 </tr>
 
 <tr>
-    <td><label for="secure:token">Client ID:</label><l:star/></td>
+    <td><label for="clientId">Client ID:</label><l:star/></td>
     <td>
         <props:textProperty name="clientId" className="longField"/>
         <span class="error" id="error_clientId"></span>

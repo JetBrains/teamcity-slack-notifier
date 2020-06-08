@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dsl-extension kind="projectFeature" type="OAuthProvider" generateDslJar="true"
+               applicable="params['providerType'] == 'slackConnection'">
+    <class name="SlackConnection">
+        <description>
+            Project feature defining an OAuth connection settings for Slack
+        </description>
+    </class>
+    <init>
+        <param name="providerType" value="slackConnection"/>
+    </init>
+    <function name="slackConnection">
+        <description>
+            Creates a Slack connection in the current project
+            @see SlackConnection
+        </description>
+    </function>
+    <params>
+        <param name="displayName" mandatory="true">
+            <description>
+                Human friendly connection name
+            </description>
+        </param>
+        <param name="secure:token" dslName="botToken" mandatory="true">
+            <description>
+                Bot token, xoxb-***
+            </description>
+        </param>
+        <param name="clientId" mandatory="true">
+            <description>
+                Client ID
+            </description>
+        </param>
+        <param name="secure:clientSecret" dslName="clientSecret" mandatory="true">
+            <description>
+                Client secret
+            </description>
+        </param>
+    </params>
+</dsl-extension>
