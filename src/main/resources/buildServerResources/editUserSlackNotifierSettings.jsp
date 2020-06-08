@@ -18,6 +18,7 @@
 <%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
 <%@ taglib prefix="util" uri="/WEB-INF/functions/util" %>
 
+<%@ page import="jetbrains.buildServer.serverSide.auth.Permission" %>
 
 <jsp:useBean id="propertiesBean" type="jetbrains.buildServer.controllers.BasePropertiesBean" scope="request"/>
 <jsp:useBean id="connectionsBean"
@@ -29,22 +30,37 @@
 <jsp:useBean id="selectedConnection" type="java.lang.String" scope="request"/>
 <jsp:useBean id="displaySettings" type="java.lang.Boolean" scope="request"/>
 <jsp:useBean id="rootUrl" type="java.lang.String" scope="request"/>
+<jsp:useBean id="editConnectionUrl" scope="request" type="java.lang.String"/>
+<jsp:useBean id="rootProject" scope="request" type="jetbrains.buildServer.serverSide.SProject"/>
 
 <c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
 
 <c:choose>
     <c:when test="${displaySettings}">
-    <tr>
-        <td>
-            <label class="notifierSettingControls__label">
-                Connection:<l:star/>
-            </label>
-        </td>
-        <td>
-            <c:choose>
-                <c:when test="${empty connectionsBean.connections}">
-                    No suitable Slack connections found.
-                </c:when>
+        <tr>
+            <td style="vertical-align: top">
+                <label class="notifierSettingControls__label">
+                    Connection:<l:star/>
+                </label>
+            </td>
+            <td>
+                <c:choose>
+                    <c:when test="${empty connectionsBean.connections}">
+                        No suitable Slack connections found. Configure Slack connection in the
+                        <c:choose>
+                            <c:when test='${user.isPermissionGrantedForProject(rootProject.projectId, Permission.EDIT_PROJECT)}'>
+                                <a href="${editConnectionUrl}">
+                                    Root project's settings
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                Root project's settings
+                            </c:otherwise>
+                        </c:choose>.
+                        <br/>
+                        To receive notifications for a specific project, configure the connection directly in this project's settings instead.
+                        <br/>
+                    </c:when>
                 <c:otherwise>
                     <props:selectProperty
                             name="${properties.connectionKey}"

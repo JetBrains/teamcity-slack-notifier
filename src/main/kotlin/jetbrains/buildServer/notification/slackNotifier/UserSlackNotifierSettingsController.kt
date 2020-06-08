@@ -119,6 +119,8 @@ class UserSlackNotifierSettingsController(
         mv.model["selectedConnection"] = selectedConnectionId
         mv.model["displaySettings"] = currentUser.id == user.id
         mv.model["rootUrl"] = WebUtil.getRootUrl(request)
+        mv.model["editConnectionUrl"] = webLinks.getEditProjectPageUrl("_Root") + "&tab=oauthConnections"
+        mv.model["rootProject"] = projectManager.rootProject
 
         return mv
     }
