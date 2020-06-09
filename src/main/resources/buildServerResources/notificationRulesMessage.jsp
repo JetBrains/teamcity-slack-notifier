@@ -14,14 +14,12 @@
     To receive notifications for all projects, configure a connection to Slack in the
     <c:choose>
         <c:when test='${user.isPermissionGrantedForProject(rootProject.projectId, Permission.EDIT_PROJECT)}'>
-            <a href="${editConnectionUrl}">
-                Root project's settings
-            </a>
+            <a href="${editConnectionUrl}">Root project's settings</a>.
         </c:when>
         <c:otherwise>
-            Root project's settings
+            Root project's settings.
         </c:otherwise>
-    </c:choose>.
+    </c:choose>
     <br/>
     To receive notifications for a specific project, configure the connection directly in this project's settings instead.
 </p>

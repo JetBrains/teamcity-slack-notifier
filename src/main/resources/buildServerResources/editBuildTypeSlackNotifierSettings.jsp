@@ -65,11 +65,8 @@
     <td>
         <c:choose>
             <c:when test="${empty availableConnections}">
-                No Slack connections available. You can configure a connection in the
-                <a href="${createConnectionUrl}">
-                    parent project's settings
-                </a>
-                .
+                No suitable Slack connections were found. You can configure a connection in the
+                <a href="${createConnectionUrl}"> parent project's settings</a>.
             </c:when>
             <c:otherwise>
                 <props:selectProperty

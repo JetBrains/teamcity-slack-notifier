@@ -46,18 +46,17 @@
             <td>
                 <c:choose>
                     <c:when test="${empty connectionsBean.connections}">
-                        No suitable Slack connections found. Configure Slack connection in the
+                        No suitable Slack connections were found.
+                        <br/>
+                        To receive notifications for all projects, configure Slack connection in the
                         <c:choose>
                             <c:when test='${user.isPermissionGrantedForProject(rootProject.projectId, Permission.EDIT_PROJECT)}'>
-                                <a href="${editConnectionUrl}">
-                                    Root project's settings
-                                </a>
+                                <a href="${editConnectionUrl}">Root project's settings</a>.
                             </c:when>
                             <c:otherwise>
-                                Root project's settings
+                                Root project's settings.
                             </c:otherwise>
-                        </c:choose>.
-                        <br/>
+                        </c:choose>
                         To receive notifications for a specific project, configure the connection directly in this project's settings instead.
                         <br/>
                     </c:when>
