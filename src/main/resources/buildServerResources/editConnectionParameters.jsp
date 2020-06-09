@@ -120,6 +120,7 @@
             this.prepareForAuthTest(function (success, data, form) {
                 if (!success) {
                     that.newTestConnectionResult(success, data, form);
+                    return;
                 }
 
                 var teamDomain = data.teamDomain;
