@@ -7,8 +7,11 @@ import jetbrains.buildServer.notification.BaseNotificationRulesTestCase
 import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
 import jetbrains.buildServer.notification.NotificationRule
 import jetbrains.buildServer.notification.NotificatorRegistry
+import jetbrains.buildServer.notification.slackNotifier.notification.SimpleMessageBuilder
+import jetbrains.buildServer.notification.slackNotifier.notification.SlackNotifier
 import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApi
 import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.SBuild
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants

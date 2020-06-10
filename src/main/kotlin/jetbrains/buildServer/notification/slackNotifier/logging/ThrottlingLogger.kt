@@ -20,12 +20,13 @@ class ThrottlingLogger(
         private val currentTimeInNanos: () -> Long = { System.nanoTime() }
 ) {
     private val lastTimeMessageWasSent = ConcurrentWeakHashMap<String, Long>()
+    private val defaultLastTime = TimeUnit.DAYS.toNanos(-1)
 
     fun warn(message: String) {
         lastTimeMessageWasSent.compute(message) { _, lastTime ->
             val now = currentTimeInNanos()
             val timeout = TeamCityProperties.getLong(SlackNotifierProperties.loggerThrottleTimeout, 60)
-            if (now - (lastTime ?: 0) > TimeUnit.MINUTES.toNanos(timeout)) {
+            if (now - (lastTime ?: defaultLastTime) > TimeUnit.MINUTES.toNanos(timeout)) {
                 logger.warn(message)
                 now
             } else {

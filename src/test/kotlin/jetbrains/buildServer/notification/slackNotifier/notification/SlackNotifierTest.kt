@@ -1,7 +1,9 @@
-package jetbrains.buildServer.notification.slackNotifier
+package jetbrains.buildServer.notification.slackNotifier.notification
 
 
 import jetbrains.buildServer.notification.NotificationRule.Event.*
+import jetbrains.buildServer.notification.slackNotifier.And
+import jetbrains.buildServer.notification.slackNotifier.BaseSlackTestCase
 import org.testng.annotations.Test
 
 

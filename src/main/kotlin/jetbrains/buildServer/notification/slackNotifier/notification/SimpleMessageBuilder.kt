@@ -1,6 +1,7 @@
-package jetbrains.buildServer.notification.slackNotifier
+package jetbrains.buildServer.notification.slackNotifier.notification
 
 import jetbrains.buildServer.Build
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
 import jetbrains.buildServer.serverSide.*
@@ -13,10 +14,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class SimpleMessageBuilder(
-    private val format: SlackMessageFormatter,
-    private val links: RelativeWebLinks,
+        private val format: SlackMessageFormatter,
+        private val links: RelativeWebLinks,
 
-    private val projectManager: ProjectManager
+        private val projectManager: ProjectManager
 ) : MessageBuilder {
     private val maxBuildProblemsToShow = 10
 
@@ -44,11 +45,11 @@ class SimpleMessageBuilder(
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable, users: Set<SUser?>): MessagePayload {
         return MessagePayload(
-            ":x: Labeling failed for root ${root.name}. More details on ${format.url(
-                links.getViewResultsUrl(
-                    build
-                ), "build result page"
-            )}"
+                ":x: Labeling failed for root ${root.name}. More details on ${format.url(
+                        links.getViewResultsUrl(
+                                build
+                        ), "build result page"
+                )}"
         )
     }
 
@@ -62,11 +63,11 @@ class SimpleMessageBuilder(
 
     override fun responsibleChanged(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
         return MessagePayload(
-            "Investigation of ${format.url(
-                links.getConfigurationHomePageUrl(
-                    buildType
-                ), buildType.fullName
-            )} failure changed"
+                "Investigation of ${format.url(
+                        links.getConfigurationHomePageUrl(
+                                buildType
+                        ), buildType.fullName
+                )} failure changed"
         )
     }
 
@@ -77,12 +78,12 @@ class SimpleMessageBuilder(
         users: Set<SUser?>
     ): MessagePayload {
         return MessagePayload(
-            "Investigation of" +
-                    " ${format.url(
-                        links.getTestDetailsUrl(project.externalId, newValue.testNameId),
-                        newValue.testName.asString
-                    )} test failure changed in" +
-                    " ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}"
+                "Investigation of" +
+                        " ${format.url(
+                                links.getTestDetailsUrl(project.externalId, newValue.testNameId),
+                                newValue.testName.asString
+                        )} test failure changed in" +
+                        " ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}"
         )
     }
 
@@ -98,19 +99,19 @@ class SimpleMessageBuilder(
         }
 
         return MessagePayload(
-            "Investigation of ${testNamesNotNull.size} tests changed " +
-                    "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
-                    testNamesFormatted
+                "Investigation of ${testNamesNotNull.size} tests changed " +
+                        "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
+                        testNamesFormatted
         )
     }
 
     override fun responsibleAssigned(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
         return MessagePayload(
-            "You are assigned for investigation of ${format.url(
-                links.getConfigurationHomePageUrl(
-                    buildType
-                ), buildType.fullName
-            )} failure"
+                "You are assigned for investigation of ${format.url(
+                        links.getConfigurationHomePageUrl(
+                                buildType
+                        ), buildType.fullName
+                )} failure"
         )
     }
 
@@ -121,12 +122,12 @@ class SimpleMessageBuilder(
         users: Set<SUser?>
     ): MessagePayload {
         return MessagePayload(
-            "You are assigned for investigation of" +
-                    " ${format.url(
-                        links.getTestDetailsUrl(project.externalId, newValue.testNameId),
-                        newValue.testName.asString
-                    )} test failure in" +
-                    " ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}"
+                "You are assigned for investigation of" +
+                        " ${format.url(
+                                links.getTestDetailsUrl(project.externalId, newValue.testNameId),
+                                newValue.testName.asString
+                        )} test failure in" +
+                        " ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}"
         )
     }
 
@@ -142,9 +143,9 @@ class SimpleMessageBuilder(
         }
 
         return MessagePayload(
-            "You are assigned for investigation of ${testNamesNotNull.size} tests " +
-                    "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
-                    testNamesFormatted
+                "You are assigned for investigation of ${testNamesNotNull.size} tests " +
+                        "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
+                        testNamesFormatted
         )
     }
 
@@ -160,9 +161,9 @@ class SimpleMessageBuilder(
         }
 
         return MessagePayload(
-            "You are assigned for investigation of ${buildProblemsNotNull.size} build problems " +
-                    "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
-                    buildProblemsFormatted
+                "You are assigned for investigation of ${buildProblemsNotNull.size} build problems " +
+                        "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
+                        buildProblemsFormatted
         )
     }
 
@@ -189,9 +190,9 @@ class SimpleMessageBuilder(
         }
 
         return MessagePayload(
-            "Investigation for ${buildProblemsNotNull.size} build problems changed " +
-                    "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
-                    buildProblemsFormatted
+                "Investigation for ${buildProblemsNotNull.size} build problems changed " +
+                        "in ${format.url(links.getProjectPageUrl(project.externalId), project.fullName)}:\n" +
+                        buildProblemsFormatted
         )
     }
 

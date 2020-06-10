@@ -1,4 +1,4 @@
-package jetbrains.buildServer.notification.slackNotifier
+package jetbrains.buildServer.notification.slackNotifier.slack
 
 import org.springframework.stereotype.Service
 

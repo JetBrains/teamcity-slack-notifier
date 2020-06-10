@@ -1,9 +1,12 @@
-package jetbrains.buildServer.notification.slackNotifier
+package jetbrains.buildServer.notification.slackNotifier.notification
 
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.notification.NotificatorAdapter
 import jetbrains.buildServer.notification.NotificatorRegistry
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptor
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
+import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.logging.ThrottlingLogger
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry

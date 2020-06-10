@@ -13,7 +13,7 @@ class ThrottlingLoggerTest : BaseTestCase() {
     private lateinit var logger: ThrottlingLogger
     private lateinit var mockLogger: Logger
     private val lastMessage = slot<String>()
-    private var currentTime: Long = System.nanoTime()
+    private var currentTime: Long = TimeUnit.DAYS.toNanos(1)
 
     private val testMessage1 = "test message 1"
     private val testMessage2 = "test message 2"
