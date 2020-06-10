@@ -10,40 +10,37 @@ import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
 import jetbrains.buildServer.tests.TestName
 import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.VcsRoot
-import org.springframework.stereotype.Service
 
-@Service
 class SimpleMessageBuilder(
         private val format: SlackMessageFormatter,
         private val links: RelativeWebLinks,
-
-        private val projectManager: ProjectManager
+        private val detailsFormatter: DetailsFormatter
 ) : MessageBuilder {
     private val maxBuildProblemsToShow = 10
 
-    override fun buildStarted(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
+    override fun buildStarted(build: SRunningBuild): MessagePayload {
         val triggeredBy = build.triggeredBy
         val prefix = if (triggeredBy.isTriggeredByUser) {
             " by ${triggeredBy.user!!.descriptiveName}"
         } else {
             ""
         }
-        return MessagePayload("${buildUrl(build)} started${prefix}")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} started${prefix}")
     }
 
-    override fun buildSuccessful(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload(":heavy_check_mark: ${buildUrl(build)} is successful")
+    override fun buildSuccessful(build: SRunningBuild): MessagePayload {
+        return MessagePayload(":heavy_check_mark: ${detailsFormatter.buildUrl(build)} is successful.")
     }
 
-    override fun buildFailed(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload(":x: ${buildUrl(build)} failed")
+    override fun buildFailed(build: SRunningBuild): MessagePayload {
+        return MessagePayload(":x: ${detailsFormatter.buildUrl(build)} failed")
     }
 
-    override fun buildFailedToStart(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload(":exclamation: ${buildUrl(build)} failed to start")
+    override fun buildFailedToStart(build: SRunningBuild): MessagePayload {
+        return MessagePayload(":exclamation: ${detailsFormatter.buildUrl(build)} failed to start")
     }
 
-    override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable, users: Set<SUser?>): MessagePayload {
+    override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload {
         return MessagePayload(
                 ":x: Labeling failed for root ${root.name}. More details on ${format.url(
                         links.getViewResultsUrl(
@@ -53,15 +50,15 @@ class SimpleMessageBuilder(
         )
     }
 
-    override fun buildFailing(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload(":x: ${buildUrl(build)} is failing")
+    override fun buildFailing(build: SRunningBuild): MessagePayload {
+        return MessagePayload(":x: ${detailsFormatter.buildUrl(build)} is failing")
     }
 
-    override fun buildProbablyHanging(build: SRunningBuild, users: Set<SUser?>): MessagePayload {
-        return MessagePayload(":warning: ${buildUrl(build)} is probably hanging")
+    override fun buildProbablyHanging(build: SRunningBuild): MessagePayload {
+        return MessagePayload(":warning: ${detailsFormatter.buildUrl(build)} is probably hanging")
     }
 
-    override fun responsibleChanged(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
+    override fun responsibleChanged(buildType: SBuildType): MessagePayload {
         return MessagePayload(
                 "Investigation of ${format.url(
                         links.getConfigurationHomePageUrl(
@@ -72,10 +69,9 @@ class SimpleMessageBuilder(
     }
 
     override fun responsibleChanged(
-        oldValue: TestNameResponsibilityEntry?,
-        newValue: TestNameResponsibilityEntry,
-        project: SProject,
-        users: Set<SUser?>
+            oldValue: TestNameResponsibilityEntry?,
+            newValue: TestNameResponsibilityEntry,
+            project: SProject
     ): MessagePayload {
         return MessagePayload(
                 "Investigation of" +
@@ -88,10 +84,9 @@ class SimpleMessageBuilder(
     }
 
     override fun responsibleChanged(
-        testNames: Collection<TestName?>,
-        entry: ResponsibilityEntry,
-        project: SProject,
-        users: Set<SUser?>
+            testNames: Collection<TestName?>,
+            entry: ResponsibilityEntry,
+            project: SProject
     ): MessagePayload {
         val testNamesNotNull = testNames.asSequence().filterNotNull().toList()
         val testNamesFormatted = formatProblems(testNamesNotNull) {
@@ -105,7 +100,7 @@ class SimpleMessageBuilder(
         )
     }
 
-    override fun responsibleAssigned(buildType: SBuildType, users: Set<SUser?>): MessagePayload {
+    override fun responsibleAssigned(buildType: SBuildType): MessagePayload {
         return MessagePayload(
                 "You are assigned for investigation of ${format.url(
                         links.getConfigurationHomePageUrl(
@@ -116,10 +111,9 @@ class SimpleMessageBuilder(
     }
 
     override fun responsibleAssigned(
-        oldValue: TestNameResponsibilityEntry?,
-        newValue: TestNameResponsibilityEntry,
-        project: SProject,
-        users: Set<SUser?>
+            oldValue: TestNameResponsibilityEntry?,
+            newValue: TestNameResponsibilityEntry,
+            project: SProject
     ): MessagePayload {
         return MessagePayload(
                 "You are assigned for investigation of" +
@@ -132,10 +126,9 @@ class SimpleMessageBuilder(
     }
 
     override fun responsibleAssigned(
-        testNames: Collection<TestName?>,
-        entry: ResponsibilityEntry,
-        project: SProject,
-        users: Set<SUser?>
+            testNames: Collection<TestName?>,
+            entry: ResponsibilityEntry,
+            project: SProject
     ): MessagePayload {
         val testNamesNotNull = testNames.asSequence().filterNotNull().toList()
         val testNamesFormatted = formatProblems(testNamesNotNull) {
@@ -150,10 +143,9 @@ class SimpleMessageBuilder(
     }
 
     override fun buildProblemResponsibleAssigned(
-        buildProblems: Collection<BuildProblemInfo?>,
-        entry: ResponsibilityEntry,
-        project: SProject,
-        users: Set<SUser?>
+            buildProblems: Collection<BuildProblemInfo?>,
+            entry: ResponsibilityEntry,
+            project: SProject
     ): MessagePayload {
         val buildProblemsNotNull = buildProblems.asSequence().filterNotNull().toList()
         val buildProblemsFormatted = formatProblems(buildProblemsNotNull) {
@@ -179,10 +171,9 @@ class SimpleMessageBuilder(
     }
 
     override fun buildProblemResponsibleChanged(
-        buildProblems: Collection<BuildProblemInfo?>,
-        entry: ResponsibilityEntry,
-        project: SProject,
-        users: Set<SUser?>
+            buildProblems: Collection<BuildProblemInfo?>,
+            entry: ResponsibilityEntry,
+            project: SProject
     ): MessagePayload {
         val buildProblemsNotNull = buildProblems.asSequence().filterNotNull().toList()
         val buildProblemsFormatted = formatProblems(buildProblemsNotNull) {
@@ -196,9 +187,9 @@ class SimpleMessageBuilder(
         )
     }
 
-    override fun testsMuted(tests: Collection<STest?>, muteInfo: MuteInfo, users: Set<SUser?>): MessagePayload {
-        val user = userName(muteInfo)
-        val project = projectName(muteInfo)
+    override fun testsMuted(tests: Collection<STest?>, muteInfo: MuteInfo): MessagePayload {
+        val user = detailsFormatter.userName(muteInfo)
+        val project = detailsFormatter.projectName(muteInfo)
         return if (user == null) {
             MessagePayload("${tests.size} tests were muted in $project")
         } else {
@@ -207,13 +198,12 @@ class SimpleMessageBuilder(
     }
 
     override fun testsUnmuted(
-        tests: Collection<STest?>,
-        muteInfo: MuteInfo,
-        user: SUser?,
-        users: Set<SUser?>
+            tests: Collection<STest?>,
+            muteInfo: MuteInfo,
+            user: SUser?
     ): MessagePayload {
-        val username = userName(muteInfo)
-        val project = projectName(muteInfo)
+        val username = detailsFormatter.userName(muteInfo)
+        val project = detailsFormatter.projectName(muteInfo)
         return if (username == null) {
             MessagePayload("${tests.size} tests were unmuted in $project.")
         } else {
@@ -222,12 +212,11 @@ class SimpleMessageBuilder(
     }
 
     override fun buildProblemsMuted(
-        buildProblems: Collection<BuildProblemInfo?>,
-        muteInfo: MuteInfo,
-        users: Set<SUser?>
+            buildProblems: Collection<BuildProblemInfo?>,
+            muteInfo: MuteInfo
     ): MessagePayload {
-        val user = userName(muteInfo)
-        val project = projectName(muteInfo)
+        val user = detailsFormatter.userName(muteInfo)
+        val project = detailsFormatter.projectName(muteInfo)
 
         return if (user == null) {
             MessagePayload("${buildProblems.size} problems were muted in $project")
@@ -237,37 +226,16 @@ class SimpleMessageBuilder(
     }
 
     override fun buildProblemsUnmuted(
-        buildProblems: Collection<BuildProblemInfo?>,
-        muteInfo: MuteInfo,
-        user: SUser?,
-        users: Set<SUser?>
+            buildProblems: Collection<BuildProblemInfo?>,
+            muteInfo: MuteInfo,
+            user: SUser?
     ): MessagePayload {
-        val username = userName(muteInfo)
-        val project = projectName(muteInfo)
+        val username = detailsFormatter.userName(muteInfo)
+        val project = detailsFormatter.projectName(muteInfo)
         return if (username == null) {
             MessagePayload("${buildProblems.size} problems were unmuted in $project.")
         } else {
             MessagePayload("$username unmuted ${buildProblems.size} problems in $project.")
         }
     }
-
-    private fun userName(muteInfo: MuteInfo) = muteInfo.mutingUser?.username
-    private fun projectName(muteInfo: MuteInfo): String {
-        val project = muteInfo.project ?: return "<deleted project>"
-        val url = links.getProjectPageUrl(project.externalId)
-        return format.url(url, project.fullName)
-    }
-
-    private fun buildUrl(build: Build): String {
-        val projectName =
-            projectManager.findProjectByExternalId(build.projectExternalId)?.fullName ?: "<deleted project>"
-
-        val buildType = build.buildType
-        val buildTypeName = buildType?.name ?: ""
-
-        val buildName = "$buildTypeName ${number(build)}"
-        return "$projectName / ${format.url(links.getViewResultsUrl(build), buildName)}"
-    }
-
-    private fun number(build: Build) = "#${build.buildNumber}"
 }

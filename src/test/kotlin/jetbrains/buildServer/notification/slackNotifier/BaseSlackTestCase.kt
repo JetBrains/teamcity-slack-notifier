@@ -7,8 +7,7 @@ import jetbrains.buildServer.notification.BaseNotificationRulesTestCase
 import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
 import jetbrains.buildServer.notification.NotificationRule
 import jetbrains.buildServer.notification.NotificatorRegistry
-import jetbrains.buildServer.notification.slackNotifier.notification.SimpleMessageBuilder
-import jetbrains.buildServer.notification.slackNotifier.notification.SlackNotifier
+import jetbrains.buildServer.notification.slackNotifier.notification.*
 import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApi
 import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
@@ -46,14 +45,28 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                 MockSlackWebApiFactory()
         mySlackApi = mySlackApiFactory.createSlackWebApi()
 
+        val messageFormatter = SlackMessageFormatter()
+        val detailsFormatter = DetailsFormatter(
+                messageFormatter,
+                myFixture.webLinks,
+                myFixture.projectManager
+        )
+
         myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
         myNotifier = SlackNotifier(
                 myFixture.notificatorRegistry,
                 mySlackApiFactory,
-                SimpleMessageBuilder(
-                        SlackMessageFormatter(),
-                        myFixture.webLinks,
-                        myProjectManager
+                ChoosingMessageBuilderFactory(
+                        SimpleMessageBuilderFactory(
+                                messageFormatter,
+                                myFixture.webLinks,
+                                detailsFormatter
+                        ),
+                        VerboseMessageBuilderFactory(
+                                messageFormatter,
+                                myFixture.webLinks,
+                                detailsFormatter
+                        )
                 ),
                 myProjectManager,
                 myConnectionManager,

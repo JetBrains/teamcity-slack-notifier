@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service
 class SlackNotifier(
         notifierRegistry: NotificatorRegistry,
         slackApiFactory: SlackWebApiFactory,
-        private val messageBuilder: MessageBuilder,
+        private val messageBuilderFactory: ChoosingMessageBuilderFactory,
         private val projectManager: ProjectManager,
         private val oauthManager: OAuthConnectionsManager,
 
@@ -51,25 +51,39 @@ class SlackNotifier(
 
     override fun notifyTestsMuted(tests: Collection<STest>, muteInfo: MuteInfo, users: Set<SUser>) {
         val project = muteInfo.project ?: return
-        sendMessage(messageBuilder.testsMuted(tests, muteInfo, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.testsMuted(tests, muteInfo), receiver, project)
+        }
+    }
+
+    private fun forReceiver(users: Set<SUser>, block: (receiver: SUser, messageBuilder: MessageBuilder) -> Unit) {
+        for (user in users) {
+            block(user, messageBuilderFactory.get(user))
+        }
     }
 
     override fun notifyBuildProblemsUnmuted(
-        buildProblems: Collection<BuildProblemInfo>,
-        muteInfo: MuteInfo,
-        user: SUser?,
-        users: Set<SUser>
+            buildProblems: Collection<BuildProblemInfo>,
+            muteInfo: MuteInfo,
+            user: SUser?,
+            users: Set<SUser>
     ) {
         val project = muteInfo.project ?: return
-        sendMessage(messageBuilder.buildProblemsUnmuted(buildProblems, muteInfo, user, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildProblemsUnmuted(buildProblems, muteInfo, receiver), receiver, project)
+        }
     }
 
     override fun notifyLabelingFailed(build: Build, root: VcsRoot, exception: Throwable, users: Set<SUser>) {
-        sendMessage(messageBuilder.labelingFailed(build, root, exception, users), users, build)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.labelingFailed(build, root, exception), receiver, build)
+        }
     }
 
     override fun notifyResponsibleChanged(buildType: SBuildType, users: Set<SUser>) {
-        sendMessage(messageBuilder.responsibleChanged(buildType, users), users, buildType.project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.responsibleChanged(buildType), receiver, buildType.project)
+        }
     }
 
     override fun notifyResponsibleChanged(
@@ -78,7 +92,9 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        sendMessage(messageBuilder.responsibleChanged(oldValue, newValue, project, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.responsibleChanged(oldValue, newValue, project), receiver, project)
+        }
     }
 
     override fun notifyResponsibleChanged(
@@ -87,16 +103,22 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        sendMessage(messageBuilder.responsibleChanged(testNames, entry, project, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.responsibleChanged(testNames, entry, project), receiver, project)
+        }
     }
 
     override fun notifyBuildSuccessful(build: SRunningBuild, users: Set<SUser>) {
-        sendMessage(messageBuilder.buildSuccessful(build, users), users, build)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildSuccessful(build), receiver, build)
+        }
     }
 
 
     override fun notifyBuildFailed(build: SRunningBuild, users: Set<SUser>) {
-        sendMessage(messageBuilder.buildFailed(build, users), users, build)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildFailed(build), receiver, build)
+        }
     }
 
     override fun notifyBuildProblemResponsibleChanged(
@@ -105,7 +127,9 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        sendMessage(messageBuilder.buildProblemResponsibleChanged(buildProblems, entry, project, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildProblemResponsibleChanged(buildProblems, entry, project), receiver, project)
+        }
     }
 
     override fun notifyBuildProblemsMuted(
@@ -114,11 +138,15 @@ class SlackNotifier(
         users: Set<SUser>
     ) {
         val project = muteInfo.project ?: return
-        sendMessage(messageBuilder.buildProblemsMuted(buildProblems, muteInfo, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildProblemsMuted(buildProblems, muteInfo), receiver, project)
+        }
     }
 
     override fun notifyBuildFailedToStart(build: SRunningBuild, users: Set<SUser>) {
-        sendMessage(messageBuilder.buildFailedToStart(build, users), users, build)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildFailedToStart(build), receiver, build)
+        }
     }
 
     override fun notifyTestsUnmuted(
@@ -128,11 +156,15 @@ class SlackNotifier(
         users: Set<SUser>
     ) {
         val project = muteInfo.project ?: return
-        sendMessage(messageBuilder.testsUnmuted(tests, muteInfo, user, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.testsUnmuted(tests, muteInfo, user), receiver, project)
+        }
     }
 
     override fun notifyBuildProbablyHanging(build: SRunningBuild, users: Set<SUser>) {
-        sendMessage(messageBuilder.buildProbablyHanging(build, users), users, build)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildProbablyHanging(build), receiver, build)
+        }
     }
 
     override fun notifyBuildProblemResponsibleAssigned(
@@ -141,19 +173,25 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        sendMessage(
-            messageBuilder.buildProblemResponsibleAssigned(buildProblems, entry, project, users),
-            users,
-            project
-        )
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(
+                    messageBuilder.buildProblemResponsibleAssigned(buildProblems, entry, project),
+                    receiver,
+                    project
+            )
+        }
     }
 
     override fun notifyBuildStarted(build: SRunningBuild, users: Set<SUser>) {
-        sendMessage(messageBuilder.buildStarted(build, users), users, build)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildStarted(build), receiver, build)
+        }
     }
 
     override fun notifyResponsibleAssigned(buildType: SBuildType, users: Set<SUser>) {
-        sendMessage(messageBuilder.responsibleAssigned(buildType, users), users, buildType.project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.responsibleAssigned(buildType), receiver, buildType.project)
+        }
     }
 
     override fun notifyResponsibleAssigned(
@@ -162,7 +200,9 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        sendMessage(messageBuilder.responsibleAssigned(oldValue, newValue, project, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.responsibleAssigned(oldValue, newValue, project), receiver, project)
+        }
     }
 
     override fun notifyResponsibleAssigned(
@@ -171,30 +211,28 @@ class SlackNotifier(
         project: SProject,
         users: Set<SUser>
     ) {
-        sendMessage(messageBuilder.responsibleAssigned(testNames, entry, project, users), users, project)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.responsibleAssigned(testNames, entry, project), receiver, project)
+        }
     }
 
     override fun notifyBuildFailing(build: SRunningBuild, users: Set<SUser>) {
-        sendMessage(messageBuilder.buildFailing(build, users), users, build)
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.buildFailing(build), receiver, build)
+        }
     }
 
-    private fun sendMessage(message: MessagePayload, users: Set<SUser>, build: Build) {
+    private fun sendMessage(message: MessagePayload, user: SUser, build: Build) {
         val project = projectManager.findProjectByExternalId(build.buildType?.projectExternalId)
         if (project == null) {
             logger.error(
-                "Won't send notification because can't find project for build" +
-                        " ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
-                        " by external id ${build.buildType?.projectExternalId}."
+                    "Won't send notification because can't find project for build" +
+                            " ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
+                            " by external id ${build.buildType?.projectExternalId}."
             )
             return
         }
-        sendMessage(message, users, project)
-    }
-
-    private fun sendMessage(message: MessagePayload, users: Set<SUser>, project: SProject) {
-        for (user in users) {
-            sendMessage(message, user, project)
-        }
+        sendMessage(message, user, project)
     }
 
     private fun sendMessage(message: MessagePayload, user: SUser, project: SProject) {
@@ -236,10 +274,6 @@ class SlackNotifier(
         }
 
         return null
-    }
-
-    fun clearAllErrors() {
-
     }
 
     override fun getOrderId(): String = notificatorType

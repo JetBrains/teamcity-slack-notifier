@@ -5,19 +5,25 @@ import jetbrains.buildServer.users.PluginPropertyKey
 
 class SlackProperties {
     companion object {
-        val channelPropertyName = "channel"
-        val channelProperty =
-            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, channelPropertyName)
+        private const val channel = "channel"
+        private const val connection = "connection"
+        private const val displayName = "displayName"
+        private const val messageFormat = "messageFormat"
+        private const val addBuildStatus = "addBuildStatus"
 
-        val connectionPropertyName = "connection"
-        val connectionProperty =
-            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, connectionPropertyName)
+        val channelProperty = property(channel)
+        val connectionProperty = property(connection)
+        val displayNameProperty = property(displayName)
+        val messageFormatProperty = property(messageFormat)
+        val addBuildStatusProperty = property(addBuildStatus)
 
-        val displayName = "displayName"
-        val displayNameProperty =
-            PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, displayName)
+        private fun property(name: String): PluginPropertyKey {
+            return PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, name)
+        }
     }
 
     val channelKey = channelProperty.key
     val connectionKey = connectionProperty.key
+    val messageFormatKey = messageFormatProperty.key
+    val addBuildStatusKey = addBuildStatusProperty.key
 }
