@@ -180,6 +180,6 @@ class SlackBuildFeatureHealthReport(
         Companion.type
 
     override fun getDisplayName(): String = "Report Slack incorrectly configured notifications build feature"
-    override fun getCategories(): Collection<ItemCategory> = listOf(invalidBuildFeatureCategory)
+    override fun getCategories(): Collection<ItemCategory> = listOf(invalidBuildFeatureCategory, botIsNotConfiguredCategory)
     override fun canReportItemsFor(scope: HealthStatusScope): Boolean = true
 }
