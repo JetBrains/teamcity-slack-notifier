@@ -4,69 +4,70 @@ package jetbrains.buildServer.notification.slackNotifier.notification
 import jetbrains.buildServer.notification.NotificationRule.Event.*
 import jetbrains.buildServer.notification.slackNotifier.And
 import jetbrains.buildServer.notification.slackNotifier.BaseSlackTestCase
+import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import org.testng.annotations.Test
 
 
 class SlackNotifierTest : BaseSlackTestCase() {
     @Test
-    fun `test should not send notification if user is subscribed to different event`() {
+    fun `should not send notification if user is subscribed to different event`() {
         `given user is subscribed to`(BUILD_FINISHED_FAILURE)
         `when build finishes`()
         `then no messages should be sent`()
     }
 
     @Test
-    fun `test should send notification about build start`() {
+    fun `should send notification about build start`() {
         `given user is subscribed to`(BUILD_STARTED)
         val build = `when build starts`()
         `then message should contain`("start", build.buildNumber)
     }
 
     @Test
-    fun `test should send notification about build success`() {
+    fun `should send notification about build success`() {
         `given user is subscribed to`(BUILD_FINISHED_SUCCESS)
         val build = `when build finishes`()
         `then message should contain`("success", build.buildNumber)
     }
 
     @Test
-    fun `test should send notification about build failure`() {
+    fun `should send notification about build failure`() {
         `given user is subscribed to`(BUILD_FINISHED_FAILURE)
         val build = `when build fails`()
         `then message should contain`("failed", build.buildNumber)
     }
 
     @Test
-    fun `test should send notification about build starting to fail`() {
+    fun `should send notification about build starting to fail`() {
         `given user is subscribed to`(BUILD_FAILING)
         val build = `when build is failing`()
         `then message should contain`("failing", build.buildNumber)
     }
 
     @Test
-    fun `test should send notification about build probably hanging`() {
+    fun `should send notification about build probably hanging`() {
         `given user is subscribed to`(BUILD_PROBABLY_HANGING)
         val build = `when build hangs`()
         `then message should contain`("hang", build.buildNumber)
     }
 
     @Test
-    fun `test should send notification about build problem`() {
+    fun `should send notification about build problem`() {
         `given user is subscribed to`(NEW_BUILD_PROBLEM_OCCURRED, BUILD_FINISHED_FAILURE)
         val build = `when build problem occurs`()
         `then message should contain`("fail", build.buildNumber)
     }
 
     @Test
-    fun `test should send notification about responsibility change`() {
+    fun `should send notification about responsibility change`() {
         `given user is subscribed to`(RESPONSIBILITY_CHANGES)
         `when responsibility changes`()
         `then message should contain`("investigation") And
-            1.`messages should be sent`()
+                1.`messages should be sent`()
     }
 
     @Test
-    fun `test build feature should send notification about build start`() {
+    fun `build feature should send notification about build start`() {
         `given build feature is subscribed to`(BUILD_STARTED)
         val build = `when build starts`()
         `then message should contain`("start", build.buildNumber)
@@ -74,44 +75,134 @@ class SlackNotifierTest : BaseSlackTestCase() {
 
 
     @Test
-    fun `test build feature should send notification about build success`() {
+    fun `build feature should send notification about build success`() {
         `given build feature is subscribed to`(BUILD_FINISHED_SUCCESS)
         val build = `when build finishes`()
         `then message should contain`("success", build.buildNumber)
     }
 
     @Test
-    fun `test build feature should send notification about build failure`() {
+    fun `build feature should send notification about build failure`() {
         `given build feature is subscribed to`(BUILD_FINISHED_FAILURE)
         val build = `when build fails`()
         `then message should contain`("failed", build.buildNumber)
     }
 
     @Test
-    fun `test build feature should send notification about build starting to fail`() {
+    fun `build feature should send notification about build starting to fail`() {
         `given build feature is subscribed to`(BUILD_FAILING)
         val build = `when build is failing`()
         `then message should contain`("failing", build.buildNumber)
     }
 
     @Test
-    fun `test build feature should send notification about build probably hanging`() {
+    fun `build feature should send notification about build probably hanging`() {
         `given build feature is subscribed to`(BUILD_PROBABLY_HANGING)
         val build = `when build hangs`()
         `then message should contain`("hang", build.buildNumber)
     }
 
     @Test
-    fun `test build feature should send notification about build problem`() {
+    fun `build feature should send notification about build problem`() {
         `given build feature is subscribed to`(NEW_BUILD_PROBLEM_OCCURRED, BUILD_FINISHED_FAILURE)
         val build = `when build problem occurs`()
         `then message should contain`("fail", build.buildNumber)
     }
 
     @Test
-    fun `test notification about manual build start should contain user who triggered it`() {
+    fun `notification about manual build start should contain user who triggered it`() {
         `given user is subscribed to`(BUILD_STARTED)
         val build = `when build is triggered manually`()
         `then message should contain`(build.triggeredBy.user!!.descriptiveName)
+    }
+
+    @Test
+    fun `build feature should send verbose notification about build success`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_SUCCESS,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose",
+                        SlackProperties.addBranchProperty.key to "true"
+                )
+        )
+        val build = `when build finishes in master`()
+        `then message should contain`("success", build.buildNumber, "master")
+    }
+
+    @Test
+    fun `build feature should send verbose notification about build failure`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_FAILURE,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose",
+                        SlackProperties.addBranchProperty.key to "true"
+                )
+        )
+        val build = `when build fails in master`()
+        `then message should contain`("fail", build.buildNumber, "master")
+    }
+
+    @Test
+    fun `build feature should send build status in verbose notification about build success`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_SUCCESS,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose",
+                        SlackProperties.addBuildStatusProperty.key to "true"
+                )
+        )
+        val build = `when build finishes with custom status`()
+        `then message should contain`("success", build.buildNumber, "Custom build status")
+    }
+
+    @Test
+    fun `build feature should send build status in verbose notification about build failure`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_FAILURE,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose",
+                        SlackProperties.addBuildStatusProperty.key to "true"
+                )
+        )
+        val build = `when build fails with custom status`()
+        `then message should contain`("fail", build.buildNumber, "Custom build status")
+    }
+
+    @Test
+    fun `build feature should send changes in verbose notification about build success`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_SUCCESS,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose",
+                        SlackProperties.addChangesProperty.key to "true"
+                )
+        )
+        val build = `when build finishes with changes`()
+        `then message should contain`("success", build.buildNumber, "commiter1", "Commit message")
+    }
+
+    @Test
+    fun `build feature should send changes in verbose notification about build failure`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_FAILURE,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose",
+                        SlackProperties.addChangesProperty.key to "true"
+                )
+        )
+        val build = `when build fails with changes`()
+        `then message should contain`("fail", build.buildNumber, "commiter1", "Commit message")
+    }
+
+    @Test
+    fun `build feature should not send changes in verbose notification if no options are provided`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_SUCCESS,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose"
+                )
+        )
+        `when build finishes with changes`()
+        `then message should not contain`("commiter1", "Commit message")
     }
 }

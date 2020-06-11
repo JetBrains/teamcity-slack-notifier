@@ -3,6 +3,7 @@ package jetbrains.buildServer.notification.slackNotifier
 import jetbrains.buildServer.BuildProblemData
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.messages.DefaultMessagesInfo
+import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.BaseNotificationRulesTestCase
 import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
 import jetbrains.buildServer.notification.NotificationRule
@@ -17,6 +18,7 @@ import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.users.SUser
+import jetbrains.buildServer.vcs.ModificationDataForTest
 import org.testng.annotations.BeforeMethod
 import java.util.function.BooleanSupplier
 
@@ -99,15 +101,15 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         storeRules(myUser, myNotifier, newRule(*events))
     }
 
-    fun `given build feature is subscribed to`(vararg events: NotificationRule.Event) {
+    fun `given build feature is subscribed to`(vararg events: NotificationRule.Event, additionalParameters: Map<String, String> = emptyMap()) {
         myBuildType.addBuildFeature(
-            FeatureProviderNotificationRulesHolder.FEATURE_NAME,
-            mapOf(
-                "notifier" to myNotifier.notificatorType,
-                SlackProperties.channelProperty.key to "#test_channel",
-                SlackProperties.connectionProperty.key to myConnection.id,
-                *(events.map { NotificationRulesConstants.getName(it) to "true" }).toTypedArray()
-            )
+                FeatureProviderNotificationRulesHolder.FEATURE_NAME,
+                mapOf(
+                        "notifier" to myNotifier.notificatorType,
+                        SlackProperties.channelProperty.key to "#test_channel",
+                        SlackProperties.connectionProperty.key to myConnection.id,
+                        *(events.map { NotificationRulesConstants.getName(it) to "true" }).toTypedArray()
+                ) + additionalParameters
         )
     }
 
@@ -121,8 +123,49 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         return finishBuild()
     }
 
+    fun `when build finishes in master`(): SBuild {
+        startBuildInBranch("master")
+        return finishBuild()
+    }
+
+    fun `when build finishes with custom status`(): SBuild {
+        startBuild()
+        myFixture.logBuildMessages(
+                runningBuild,
+                listOf(DefaultMessagesInfo.createTextMessage("##teamcity[buildStatus text='Custom build status']"))
+        )
+        runningBuild.updateBuild()
+        return finishBuild()
+    }
+
+    fun `when build finishes with changes`(): SBuild {
+        val vcsRoot = myFixture.addVcsRoot("vcs", "")
+        startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "commiter1", vcsRoot, "1"))
+        return finishBuild()
+    }
+
     fun `when build fails`(): SBuild {
         return createFailedBuild()
+    }
+
+    fun `when build fails in master`(): SBuild {
+        return createBuildInBranch("master", Status.FAILURE)
+    }
+
+    fun `when build fails with custom status`(): SBuild {
+        startBuild()
+        myFixture.logBuildMessages(
+                runningBuild,
+                listOf(DefaultMessagesInfo.createTextMessage("##teamcity[buildStatus text='Custom build status']"))
+        )
+        runningBuild.updateBuild()
+        return finishBuild(true)
+    }
+
+    fun `when build fails with changes`(): SBuild {
+        val vcsRoot = myFixture.addVcsRoot("vcs", "")
+        startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "commiter1", vcsRoot, "1"))
+        return finishBuild(true)
     }
 
     fun `when build newly fails`(): SBuild {
@@ -130,6 +173,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         finishBuild()
         return createFailedBuild()
     }
+
     fun `when build is failing`(): SBuild {
         val build = startBuild()
 
@@ -192,6 +236,16 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
         for (str in strs) {
             assertContains(mySlackApi.messages.last().text, str)
+        }
+    }
+
+    fun `then message should not contain`(vararg strs: String) {
+        waitForAssert(BooleanSupplier {
+            mySlackApi.messages.isNotEmpty()
+        }, 2000L)
+
+        for (str in strs) {
+            assertNotContains(mySlackApi.messages.last().text, str, false)
         }
     }
 

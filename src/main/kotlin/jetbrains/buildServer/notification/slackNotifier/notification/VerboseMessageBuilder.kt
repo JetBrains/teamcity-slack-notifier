@@ -40,7 +40,7 @@ class VerboseMessageBuilder(
     private fun MessagePayloadBuilder.addBuildStatus(build: Build) {
         if (verboseMessagesOptions.addBuildStatus) {
             newline()
-            add("${format.bold("Build status:")} ${build.buildStatus.text}")
+            add("${format.bold("Build status:")} ${build.statusDescriptor.text}")
         }
     }
 
