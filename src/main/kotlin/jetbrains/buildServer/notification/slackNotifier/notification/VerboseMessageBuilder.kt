@@ -9,28 +9,34 @@ import jetbrains.buildServer.serverSide.mute.MuteInfo
 import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
 import jetbrains.buildServer.tests.TestName
 import jetbrains.buildServer.users.SUser
+import jetbrains.buildServer.vcs.SelectPrevBuildPolicy
 import jetbrains.buildServer.vcs.VcsRoot
+import java.text.SimpleDateFormat
 
 class VerboseMessageBuilder(
         private val messageBuilder: MessageBuilder,
         private val verboseMessagesOptions: VerboseMessagesOptions,
         private val format: SlackMessageFormatter
 ) : MessageBuilder {
+    private val changeDateFormat = SimpleDateFormat("d MMM HH:mm")
+
     override fun buildStarted(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildStarted(build))
         addBranch(build)
+        addChanges(build)
     }
 
     override fun buildSuccessful(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildSuccessful(build))
         addBranch(build)
         addBuildStatus(build)
+        addChanges(build)
     }
 
     private fun MessagePayloadBuilder.addBuildStatus(build: Build) {
         if (verboseMessagesOptions.addBuildStatus) {
             newline()
-            add("Build status: ${format.bold(build.buildStatus.text)}")
+            add("${format.bold("Build status:")} ${build.buildStatus.text}")
         }
     }
 
@@ -46,34 +52,57 @@ class VerboseMessageBuilder(
         }
     }
 
+    private fun MessagePayloadBuilder.addChanges(build: Build) {
+        if (!verboseMessagesOptions.addChanges) {
+            return
+        }
+
+        val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
+        if (changes.isEmpty()) {
+            return
+        }
+
+        newline()
+        add(format.bold("Changes:"))
+        for (change in changes.take(verboseMessagesOptions.maximumNumberOfChanges)) {
+            newline()
+            add("\"${change.description.trim()}\" by ${change.userName} at ${changeDateFormat.format(change.vcsDate)}")
+        }
+    }
+
     override fun buildFailed(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailed(build))
         addBranch(build)
         addBuildStatus(build)
+        addChanges(build)
     }
 
     override fun buildFailedToStart(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailedToStart(build))
         addBranch(build)
         addBuildStatus(build)
+        addChanges(build)
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload = messagePayload {
         add(messageBuilder.labelingFailed(build, root, exception))
         addBranch(build)
         addBuildStatus(build)
+        addChanges(build)
     }
 
     override fun buildFailing(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailing(build))
         addBranch(build)
         addBuildStatus(build)
+        addChanges(build)
     }
 
     override fun buildProbablyHanging(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildProbablyHanging(build))
         addBranch(build)
         addBuildStatus(build)
+        addChanges(build)
     }
 
     override fun responsibleChanged(buildType: SBuildType): MessagePayload {

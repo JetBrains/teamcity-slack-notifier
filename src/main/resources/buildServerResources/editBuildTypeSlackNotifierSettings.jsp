@@ -150,7 +150,31 @@
     <td>
         <props:checkboxProperty name="${properties.addBranchKey}"/>
         <span class="smallNote">
-            When checked, branch will be added to the notification messages.
+            When checked, branch name will be added to the notification messages.
+        </span>
+    </td>
+</tr>
+
+<tr class="messageFormatOption verboseFormatOption">
+    <th>
+        Add changes:
+    </th>
+    <td>
+        <props:checkboxProperty name="${properties.addChangesKey}"/>
+        <span class="smallNote">
+            When checked, changes (commit message, commiter and date) will be added to the notification messages.
+        </span>
+    </td>
+</tr>
+
+<tr class="messageFormatOption verboseFormatOption">
+    <th>
+        Maximum number of changes:
+    </th>
+    <td>
+        <props:textProperty name="${properties.maximumNumberOfChangesKey}"/>
+        <span class="smallNote">
+            Maximum number of changes to display in one notification.
         </span>
     </td>
 </tr>

@@ -11,15 +11,20 @@ class VerboseMessageBuilderFactory(
         private val slackMessageFormatter: SlackMessageFormatter
 ) : MessageBuilderFactory {
     override fun get(user: SUser): MessageBuilder {
-        val addBuildStatus = user.getPropertyValue(SlackProperties.addBuildStatusProperty)?.toBoolean() ?: false
-        val addBranch = user.getPropertyValue(SlackProperties.addBranchProperty)?.toBoolean() ?: false
+        val addBuildStatus = user.getBooleanProperty(SlackProperties.addBuildStatusProperty)
+        val addBranch = user.getBooleanProperty(SlackProperties.addBranchProperty)
+        val addChanges = user.getBooleanProperty(SlackProperties.addChangesProperty)
+        val maximumNumberOfChanges = user.getPropertyValue(SlackProperties.maximumNumberOfChangesProperty)?.toIntOrNull()
+                ?: 10
         val messageBuilder = simpleMessageBuilderFactory.get(user)
 
         return VerboseMessageBuilder(
                 messageBuilder,
                 VerboseMessagesOptions(
                         addBuildStatus = addBuildStatus,
-                        addBranch = addBranch
+                        addBranch = addBranch,
+                        addChanges = addChanges,
+                        maximumNumberOfChanges = maximumNumberOfChanges
                 ),
                 slackMessageFormatter
         )

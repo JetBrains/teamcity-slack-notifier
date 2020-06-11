@@ -11,6 +11,8 @@ class SlackProperties {
         private const val messageFormat = "messageFormat"
         private const val addBuildStatus = "addBuildStatus"
         private const val addBranch = "addBranch"
+        private const val addChanges = "addChanges"
+        private const val maximumNumberOfChanges = "maximumNumberOfChanges"
 
         val channelProperty = property(channel)
         val connectionProperty = property(connection)
@@ -18,6 +20,8 @@ class SlackProperties {
         val messageFormatProperty = property(messageFormat)
         val addBuildStatusProperty = property(addBuildStatus)
         val addBranchProperty = property(addBranch)
+        val addChangesProperty = property(addChanges)
+        val maximumNumberOfChangesProperty = property(maximumNumberOfChanges)
 
         private fun property(name: String): PluginPropertyKey {
             return PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, name)
@@ -29,4 +33,6 @@ class SlackProperties {
     val messageFormatKey = messageFormatProperty.key
     val addBuildStatusKey = addBuildStatusProperty.key
     val addBranchKey = addBranchProperty.key
+    val addChangesKey = addChangesProperty.key
+    val maximumNumberOfChangesKey = maximumNumberOfChangesProperty.key
 }
