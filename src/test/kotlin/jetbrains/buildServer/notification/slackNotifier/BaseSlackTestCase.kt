@@ -52,20 +52,21 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                 myFixture.projectManager
         )
 
+        val simpleMessageBuilderFactory = SimpleMessageBuilderFactory(
+                messageFormatter,
+                myFixture.webLinks,
+                detailsFormatter
+        )
+
         myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
         myNotifier = SlackNotifier(
                 myFixture.notificatorRegistry,
                 mySlackApiFactory,
                 ChoosingMessageBuilderFactory(
-                        SimpleMessageBuilderFactory(
-                                messageFormatter,
-                                myFixture.webLinks,
-                                detailsFormatter
-                        ),
+                        simpleMessageBuilderFactory,
                         VerboseMessageBuilderFactory(
-                                messageFormatter,
-                                myFixture.webLinks,
-                                detailsFormatter
+                                simpleMessageBuilderFactory,
+                                messageFormatter
                         )
                 ),
                 myProjectManager,

@@ -54,6 +54,14 @@
             return function () {
                 $j("#channel-autocomplete-loader").show();
             };
+        },
+
+        onMessageFormatChange: function () {
+            var select = document.getElementById("${properties.messageFormatKey}")
+            var selectedFormat = select.options[select.selectedIndex].value;
+
+            $j(".messageFormatOption").hide();
+            $j("." + selectedFormat + "FormatOption").show();
         }
     };
 </script>
@@ -110,6 +118,43 @@
     </td>
 </tr>
 
+<tr>
+    <th>
+        Message format:
+    </th>
+    <td>
+        <props:selectProperty name="${properties.messageFormatKey}"
+                              onchange="BS.SlackNotifierSettings.onMessageFormatChange()">
+            <props:option value="simple">Simple</props:option>
+            <props:option value="verbose">Verbose</props:option>
+        </props:selectProperty>
+    </td>
+</tr>
+
+<tr class="messageFormatOption verboseFormatOption">
+    <th>
+        Add build status:
+    </th>
+    <td>
+        <props:checkboxProperty name="${properties.addBuildStatusKey}"/>
+        <span class="smallNote">
+            When checked, build status will be added to the notification messages.
+        </span>
+    </td>
+</tr>
+
+<tr class="messageFormatOption verboseFormatOption">
+    <th>
+        Add branch:
+    </th>
+    <td>
+        <props:checkboxProperty name="${properties.addBranchKey}"/>
+        <span class="smallNote">
+            When checked, branch will be added to the notification messages.
+        </span>
+    </td>
+</tr>
+
 <script>
     $j(document.getElementById("${properties.channelKey}")).autocomplete({
         source: BS.SlackNotifierSettings.createFindUserFunction(),
@@ -118,4 +163,6 @@
     });
 
     $j(document.getElementById("${properties.channelKey}")).placeholder();
+
+    BS.SlackNotifierSettings.onMessageFormatChange();
 </script>

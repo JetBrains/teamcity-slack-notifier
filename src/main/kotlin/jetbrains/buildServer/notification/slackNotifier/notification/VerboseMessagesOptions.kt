@@ -1,5 +1,6 @@
 package jetbrains.buildServer.notification.slackNotifier.notification
 
 data class VerboseMessagesOptions(
-        val addBuildStatus: Boolean
+        val addBuildStatus: Boolean,
+        val addBranch: Boolean
 )

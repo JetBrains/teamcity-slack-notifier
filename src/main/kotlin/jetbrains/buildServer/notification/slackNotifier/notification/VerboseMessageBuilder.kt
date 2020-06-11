@@ -12,95 +12,115 @@ import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.VcsRoot
 
 class VerboseMessageBuilder(
+        private val messageBuilder: MessageBuilder,
         private val verboseMessagesOptions: VerboseMessagesOptions,
-        private val format: SlackMessageFormatter,
-        private val links: RelativeWebLinks,
-        private val detailsFormatter: DetailsFormatter
+        private val format: SlackMessageFormatter
 ) : MessageBuilder {
-    override fun buildStarted(build: SRunningBuild): MessagePayload {
-        val triggeredBy = build.triggeredBy
-        val prefix = if (triggeredBy.isTriggeredByUser) {
-            " by ${triggeredBy.user!!.descriptiveName}"
-        } else {
-            ""
+    override fun buildStarted(build: SRunningBuild): MessagePayload = messagePayload {
+        add(messageBuilder.buildStarted(build))
+        addBranch(build)
+    }
+
+    override fun buildSuccessful(build: SRunningBuild): MessagePayload = messagePayload {
+        add(messageBuilder.buildSuccessful(build))
+        addBranch(build)
+        addBuildStatus(build)
+    }
+
+    private fun MessagePayloadBuilder.addBuildStatus(build: Build) {
+        if (verboseMessagesOptions.addBuildStatus) {
+            newline()
+            add("Build status: ${format.bold(build.buildStatus.text)}")
         }
-        return MessagePayload("${detailsFormatter.buildUrl(build)} started${prefix}")
     }
 
-    override fun buildSuccessful(build: SRunningBuild): MessagePayload {
-        val buildStatusPrefix = if (verboseMessagesOptions.addBuildStatus) {
-            " Status: ${build.buildStatus.text}."
-        } else {
-            ""
+    private fun MessagePayloadBuilder.addBranch(build: Build) {
+        if (!verboseMessagesOptions.addBranch) {
+            return
         }
-        return MessagePayload(":heavy_check_mark: ${detailsFormatter.buildUrl(build)} is successful.${buildStatusPrefix}")
+
+        if (build is SBuild) {
+            build.branch?.displayName?.let { branch ->
+                add(" in branch ${format.bold(branch)}")
+            }
+        }
     }
 
-    override fun buildFailed(build: SRunningBuild): MessagePayload {
-        TODO("Not yet implemented")
+    override fun buildFailed(build: SRunningBuild): MessagePayload = messagePayload {
+        add(messageBuilder.buildFailed(build))
+        addBranch(build)
+        addBuildStatus(build)
     }
 
-    override fun buildFailedToStart(build: SRunningBuild): MessagePayload {
-        TODO("Not yet implemented")
+    override fun buildFailedToStart(build: SRunningBuild): MessagePayload = messagePayload {
+        add(messageBuilder.buildFailedToStart(build))
+        addBranch(build)
+        addBuildStatus(build)
     }
 
-    override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload {
-        TODO("Not yet implemented")
+    override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload = messagePayload {
+        add(messageBuilder.labelingFailed(build, root, exception))
+        addBranch(build)
+        addBuildStatus(build)
     }
 
-    override fun buildFailing(build: SRunningBuild): MessagePayload {
-        TODO("Not yet implemented")
+    override fun buildFailing(build: SRunningBuild): MessagePayload = messagePayload {
+        add(messageBuilder.buildFailing(build))
+        addBranch(build)
+        addBuildStatus(build)
     }
 
-    override fun buildProbablyHanging(build: SRunningBuild): MessagePayload {
-        TODO("Not yet implemented")
+    override fun buildProbablyHanging(build: SRunningBuild): MessagePayload = messagePayload {
+        add(messageBuilder.buildProbablyHanging(build))
+        addBranch(build)
+        addBuildStatus(build)
     }
 
     override fun responsibleChanged(buildType: SBuildType): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.responsibleChanged(buildType)
     }
 
     override fun responsibleChanged(oldValue: TestNameResponsibilityEntry?, newValue: TestNameResponsibilityEntry, project: SProject): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.responsibleChanged(oldValue, newValue, project)
     }
 
     override fun responsibleChanged(testNames: Collection<TestName?>, entry: ResponsibilityEntry, project: SProject): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.responsibleChanged(testNames, entry, project)
     }
 
     override fun responsibleAssigned(buildType: SBuildType): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.responsibleAssigned(buildType)
     }
 
     override fun responsibleAssigned(oldValue: TestNameResponsibilityEntry?, newValue: TestNameResponsibilityEntry, project: SProject): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.responsibleAssigned(oldValue, newValue, project)
     }
 
     override fun responsibleAssigned(testNames: Collection<TestName?>, entry: ResponsibilityEntry, project: SProject): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.responsibleAssigned(testNames, entry, project)
     }
 
     override fun buildProblemResponsibleAssigned(buildProblems: Collection<BuildProblemInfo?>, entry: ResponsibilityEntry, project: SProject): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.buildProblemResponsibleAssigned(buildProblems, entry, project)
     }
 
     override fun buildProblemResponsibleChanged(buildProblems: Collection<BuildProblemInfo?>, entry: ResponsibilityEntry, project: SProject): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.buildProblemResponsibleChanged(buildProblems, entry, project)
     }
 
     override fun testsMuted(tests: Collection<STest?>, muteInfo: MuteInfo): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.testsMuted(tests, muteInfo)
     }
 
     override fun testsUnmuted(tests: Collection<STest?>, muteInfo: MuteInfo, user: SUser?): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.testsUnmuted(tests, muteInfo, user)
     }
 
     override fun buildProblemsMuted(buildProblems: Collection<BuildProblemInfo?>, muteInfo: MuteInfo): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.buildProblemsMuted(buildProblems, muteInfo)
     }
 
     override fun buildProblemsUnmuted(buildProblems: Collection<BuildProblemInfo?>, muteInfo: MuteInfo, user: SUser?): MessagePayload {
-        TODO("Not yet implemented")
+        return messageBuilder.buildProblemsUnmuted(buildProblems, muteInfo, user)
     }
 }

@@ -5,7 +5,9 @@ import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormat
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.RelativeWebLinks
 import jetbrains.buildServer.serverSide.mute.MuteInfo
+import org.springframework.stereotype.Service
 
+@Service
 class DetailsFormatter(
         private val format: SlackMessageFormatter,
         private val links: RelativeWebLinks,

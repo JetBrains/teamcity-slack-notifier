@@ -29,7 +29,7 @@ class SimpleMessageBuilder(
     }
 
     override fun buildSuccessful(build: SRunningBuild): MessagePayload {
-        return MessagePayload(":heavy_check_mark: ${detailsFormatter.buildUrl(build)} is successful.")
+        return MessagePayload(":heavy_check_mark: ${detailsFormatter.buildUrl(build)} is successful")
     }
 
     override fun buildFailed(build: SRunningBuild): MessagePayload {
