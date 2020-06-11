@@ -28,6 +28,10 @@ class VerboseMessageBuilder(
 
     override fun buildSuccessful(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildSuccessful(build))
+        addVerboseInfo(build)
+    }
+
+    private fun MessagePayloadBuilder.addVerboseInfo(build: Build) {
         addBranch(build)
         addBuildStatus(build)
         addChanges(build)
@@ -72,37 +76,27 @@ class VerboseMessageBuilder(
 
     override fun buildFailed(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailed(build))
-        addBranch(build)
-        addBuildStatus(build)
-        addChanges(build)
+        addVerboseInfo(build)
     }
 
     override fun buildFailedToStart(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailedToStart(build))
-        addBranch(build)
-        addBuildStatus(build)
-        addChanges(build)
+        addVerboseInfo(build)
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload = messagePayload {
         add(messageBuilder.labelingFailed(build, root, exception))
-        addBranch(build)
-        addBuildStatus(build)
-        addChanges(build)
+        addVerboseInfo(build)
     }
 
     override fun buildFailing(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailing(build))
-        addBranch(build)
-        addBuildStatus(build)
-        addChanges(build)
+        addVerboseInfo(build)
     }
 
     override fun buildProbablyHanging(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildProbablyHanging(build))
-        addBranch(build)
-        addBuildStatus(build)
-        addChanges(build)
+        addVerboseInfo(build)
     }
 
     override fun responsibleChanged(buildType: SBuildType): MessagePayload {
