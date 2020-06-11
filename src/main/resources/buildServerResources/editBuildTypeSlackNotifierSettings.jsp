@@ -173,6 +173,7 @@
     </th>
     <td>
         <props:textProperty name="${properties.maximumNumberOfChangesKey}"/>
+        <span class="error" id="error_${properties.maximumNumberOfChangesKey}"></span>
         <span class="smallNote">
             Maximum number of changes to display in one notification.
         </span>

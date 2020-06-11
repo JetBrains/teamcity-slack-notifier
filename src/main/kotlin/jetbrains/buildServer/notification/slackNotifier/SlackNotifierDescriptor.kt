@@ -26,11 +26,38 @@ class SlackNotifierDescriptor(
         val connection = properties[SlackProperties.connectionProperty.key]
         if (connection.isNullOrEmpty()) {
             invalidProperties.add(
-                InvalidProperty(
-                    SlackProperties.connectionProperty.key,
-                    "Connection must be selected"
-                )
+                    InvalidProperty(
+                            SlackProperties.connectionProperty.key,
+                            "Connection must be selected"
+                    )
             )
+        }
+
+        properties[SlackProperties.maximumNumberOfChangesProperty.key]?.let { maximumNumberOfChanges ->
+            if (maximumNumberOfChanges.isEmpty()) {
+                return@let
+            }
+
+            val asInt = maximumNumberOfChanges.toIntOrNull()
+
+            if (asInt == null) {
+                invalidProperties.add(
+                        InvalidProperty(
+                                SlackProperties.maximumNumberOfChangesProperty.key,
+                                "Maximum number of changes must be integer"
+                        )
+                )
+                return@let
+            }
+
+            if (asInt < 0) {
+                invalidProperties.add(
+                        InvalidProperty(
+                                SlackProperties.maximumNumberOfChangesProperty.key,
+                                "Maximum number of changes must not be less than 0"
+                        )
+                )
+            }
         }
 
         return invalidProperties
