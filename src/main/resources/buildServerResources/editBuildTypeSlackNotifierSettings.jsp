@@ -162,7 +162,7 @@
     <td>
         <props:checkboxProperty name="${properties.addChangesKey}"/>
         <span class="smallNote">
-            When checked, changes (commit message, commiter and date) will be added to the notification messages.
+            When checked, changes (commit message, committer and date) will be added to the notification messages.
         </span>
     </td>
 </tr>

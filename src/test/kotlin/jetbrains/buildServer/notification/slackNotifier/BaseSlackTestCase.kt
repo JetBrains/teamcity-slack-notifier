@@ -140,7 +140,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
     fun `when build finishes with changes`(): SBuild {
         val vcsRoot = myFixture.addVcsRoot("vcs", "")
-        startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "commiter1", vcsRoot, "1"))
+        startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "committer1", vcsRoot, "1"))
         return finishBuild()
     }
 
@@ -164,7 +164,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
     fun `when build fails with changes`(): SBuild {
         val vcsRoot = myFixture.addVcsRoot("vcs", "")
-        startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "commiter1", vcsRoot, "1"))
+        startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "committer1", vcsRoot, "1"))
         return finishBuild(true)
     }
 

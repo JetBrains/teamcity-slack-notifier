@@ -178,7 +178,7 @@ class SlackNotifierTest : BaseSlackTestCase() {
                 )
         )
         val build = `when build finishes with changes`()
-        `then message should contain`("success", build.buildNumber, "commiter1", "Commit message")
+        `then message should contain`("success", build.buildNumber, "committer1", "Commit message")
     }
 
     @Test
@@ -191,7 +191,7 @@ class SlackNotifierTest : BaseSlackTestCase() {
                 )
         )
         val build = `when build fails with changes`()
-        `then message should contain`("fail", build.buildNumber, "commiter1", "Commit message")
+        `then message should contain`("fail", build.buildNumber, "committer1", "Commit message")
     }
 
     @Test
@@ -203,6 +203,6 @@ class SlackNotifierTest : BaseSlackTestCase() {
                 )
         )
         `when build finishes with changes`()
-        `then message should not contain`("commiter1", "Commit message")
+        `then message should not contain`("committer1", "Commit message")
     }
 }
