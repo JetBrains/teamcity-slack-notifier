@@ -60,116 +60,201 @@
                         To receive notifications for a specific project, configure the connection directly in this project's settings instead.
                         <br/>
                     </c:when>
-                <c:otherwise>
-                    <props:selectProperty
-                            name="${properties.connectionKey}"
-                            id="${properties.connectionKey.replace(':', '-')}"
-                            className="longField"
-                    >
-                        <props:option value="">-- Select Slack connection --</props:option>
-                        <c:forEach var="connection" items="${connectionsBean.connections}">
-                            <props:option value="${connection.id}">
-                                <c:out value="${connection.connectionDisplayName}"/>
-                            </props:option>
-                        </c:forEach>
-                    </props:selectProperty>
-                </c:otherwise>
-            </c:choose>
+                    <c:otherwise>
+                        <props:selectProperty
+                                name="${properties.connectionKey}"
+                                id="${properties.connectionKey.replace(':', '-')}"
+                                className="longField"
+                        >
+                            <props:option value="">-- Select Slack connection --</props:option>
+                            <c:forEach var="connection" items="${connectionsBean.connections}">
+                                <props:option value="${connection.id}">
+                                    <c:out value="${connection.connectionDisplayName}"/>
+                                </props:option>
+                            </c:forEach>
+                        </props:selectProperty>
+                    </c:otherwise>
+                </c:choose>
 
-            <span class="error" id="error_${properties.connectionKey}"></span>
-        </td>
-    </tr>
+                <span class="error" id="error_${properties.connectionKey}"></span>
+            </td>
+        </tr>
 
 
-    <tr id="userSection" style="vertical-align: top">
-        <td>
-            <label class="notifierSettingControls__label">
-                User:
-            </label>
-        </td>
+        <tr id="userSection" style="vertical-align: top">
+            <td>
+                <label class="notifierSettingControls__label">
+                    User:
+                </label>
+            </td>
 
-        <td>
-            <span id="signedInUserNote"></span>
-        </td>
+            <td>
+                <span id="signedInUserNote"></span>
+            </td>
 
-        <span style="display: none">
-            <props:textProperty name="${properties.channelKey}" style="display: none; "/>
+            <span style="display: none">
+                <props:textProperty name="${properties.channelKey}" style="display: none; "/>
+            </span>
+        </tr>
+
+        <tr>
+            <td colspan="2" style="padding-top: 6px;">
+                <div id="connectionWarning" class="attentionComment" style="display: none;"></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="vertical-align: top">
+                <label class="notifierSettingControls__label">
+                    Message format:
+                </label>
+            </td>
+            <td>
+                <props:selectProperty name="${properties.messageFormatKey}"
+                                      onchange="BS.UserSlackNotifierSettings.onMessageFormatChange()">
+                    <props:option value="simple">Simple</props:option>
+                    <props:option value="verbose">Verbose</props:option>
+                </props:selectProperty>
+            </td>
+        </tr>
+
+        <tr class="messageFormatOption verboseFormatOption">
+            <td style="vertical-align: top">
+                <label class="notifierSettingControls__label">
+                    Add build status:
+                </label>
+            </td>
+            <td>
+                <props:checkboxProperty name="${properties.addBuildStatusKey}"/>
+                <br/>
+                <span class="smallNote" style="margin-left: 0">
+                    When checked, build status will be added to the notification messages.
+                </span>
+            </td>
+        </tr>
+
+        <tr class="messageFormatOption verboseFormatOption">
+            <td style="vertical-align: top">
+                <label class="notifierSettingControls__label">
+                    Add branch:
+                </label>
+            </td>
+            <td>
+                <props:checkboxProperty name="${properties.addBranchKey}"/>
+                <br/>
+                <span class="smallNote" style="margin-left: 0">
+                    When checked, branch name will be added to the notification messages.
+                </span>
+            </td>
+        </tr>
+
+        <tr class="messageFormatOption verboseFormatOption">
+            <td style="vertical-align: top">
+                <label class="notifierSettingControls__label">
+                    Add changes:
+                </label>
+            </td>
+            <td>
+                <props:checkboxProperty name="${properties.addChangesKey}"/>
+                <br/>
+                <span class="smallNote" style="margin-left: 0">
+                    When checked, changes (commit message, committer and date) will be added to the notification messages.
+                </span>
+            </td>
+        </tr>
+
+        <tr class="messageFormatOption verboseFormatOption">
+            <td style="vertical-align: top">
+                <label class="notifierSettingControls__label">
+                    Changes:
+                </label>
+            </td>
+            <td>
+                <props:textProperty name="${properties.maximumNumberOfChangesKey}"/>
+                <br/>
+                <span class="error" id="error_${properties.maximumNumberOfChangesKey}"></span>
+                <span class="smallNote" style="margin-left: 0">
+                    Maximum number of changes to display in one notification.
+                </span>
+            </td>
+        </tr>
+
+        <span id="singInWithSlackWrapper" style="display:none;">
+            <a rel="noreferrer" class="signInWithSlack btn btn_mini submitButton">
+                Sign In
+            </a>
         </span>
-    </tr>
-    <tr>
-        <td colspan="2" style="padding-top: 6px;">
-            <div id="connectionWarning" class="attentionComment" style="display: none;"></div>
-        </td>
-    </tr>
 
-    <span id="singInWithSlackWrapper" style="display:none;">
-        <a rel="noreferrer" class="signInWithSlack btn btn_mini submitButton">
-            Sign In
-        </a>
-    </span>
+        <script type="text/javascript">
+            $j(document).ready(function () {
+                var connectionId = "#${properties.connectionKey.replace(':', '-')}";
+                var slackUsername = "${util:forJS(slackUsername, true, false)}";
 
-    <script type="text/javascript">
-        $j(document).ready(function() {
-            var connectionId = "#${properties.connectionKey.replace(':', '-')}";
-            var slackUsername = "${util:forJS(slackUsername, true, false)}";
+                var signOutButton = $j("#saveNotifierSettings");
 
-            var signOutButton = $j("#saveNotifierSettings");
+                BS.UserSlackNotifierSettings = {
+                    connections: {},
 
-            BS.UserSlackNotifierSettings = {
-                connections: {},
+                    updateSignInUrl: function (selectedConnectionId) {
+                        var signInButton = $j(".signInWithSlack");
 
-                updateSignInUrl: function (selectedConnectionId) {
-                    var signInButton = $j(".signInWithSlack");
-
-                    var connection = this.connections[selectedConnectionId];
-                    if (!connection) {
-                        $j("#userSection").hide();
-                        signInButton.hide();
-                        signOutButton.attr("value", "Save");
-                        return;
-                    } else {
-                        signOutButton.attr("value", "Sign out");
-
-                        $j("#userSection").show();
-                        if (selectedConnectionId === "${selectedConnection}" && slackUsername) {
-                            $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
-                            signInButton.hide()
-                            signOutButton.show();
+                        var connection = this.connections[selectedConnectionId];
+                        if (!connection) {
+                            $j("#userSection").hide();
+                            signInButton.hide();
+                            signOutButton.attr("value", "Save");
+                            return;
                         } else {
-                            $j("#signedInUserNote").text("You are not signed in.");
-                            signInButton.show();
-                            signOutButton.hide();
+                            signOutButton.attr("value", "Sign out");
+
+                            $j("#userSection").show();
+                            if (selectedConnectionId === "${selectedConnection}" && slackUsername) {
+                                $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
+                                signInButton.hide()
+                                signOutButton.show();
+                            } else {
+                                $j("#signedInUserNote").text("You are not signed in.");
+                                signInButton.show();
+                                signOutButton.hide();
+                            }
                         }
+
+                        var state = encodeURIComponent(JSON.stringify({
+                            userId: "${user.id}",
+                            connectionId: selectedConnectionId
+                        }));
+
+                        var redirectUrl = encodeURIComponent("${rootUrl}/slack/oauth.html");
+                        var clientId = connection.clientId;
+                        var teamDomain = connection.teamDomain;
+
+                        signInButton.attr("href",
+                            "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
+                            "&client_id=" + clientId +
+                            "&state=" + state +
+                            "&redirect_uri=" + redirectUrl
+                        );
+
+                        var projectId = connection.projectId;
+                        if (projectId && projectId !== "_Root") {
+                            $j("#connectionWarning").text("The selected connection is configured for the " + connection.projectName +
+                                " project. You will receive notifications about builds and events in this project and its subprojects.");
+                            $j("#connectionWarning").show();
+                        } else {
+                            $j("#connectionWarning").hide();
+                        }
+                    },
+
+                    onMessageFormatChange: function () {
+                        var select = document.getElementById("${properties.messageFormatKey}")
+                        var selectedFormat = select.options[select.selectedIndex].value;
+
+                        $j(".messageFormatOption").hide();
+                        $j("." + selectedFormat + "FormatOption").show();
                     }
+                };
 
-                    var state = encodeURIComponent(JSON.stringify({
-                        userId: "${user.id}",
-                        connectionId: selectedConnectionId
-                    }));
-
-                    var redirectUrl = encodeURIComponent("${rootUrl}/slack/oauth.html");
-                    var clientId = connection.clientId;
-                    var teamDomain = connection.teamDomain;
-
-                    signInButton.attr("href",
-                        "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
-                        "&client_id=" + clientId +
-                        "&state=" + state +
-                        "&redirect_uri=" + redirectUrl
-                    );
-
-                    var projectId = connection.projectId;
-                    if (projectId && projectId !== "_Root") {
-                        $j("#connectionWarning").text("The selected connection is configured for the " + connection.projectName +
-                            " project. You will receive notifications about builds and events in this project and its subprojects.");
-                        $j("#connectionWarning").show();
-                    } else {
-                        $j("#connectionWarning").hide();
-                    }
-                }
-            };
-
-            <c:forEach items="${connectionsBean.connections}" var="connection">
+                <c:forEach items="${connectionsBean.connections}" var="connection">
                 BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
                     clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
                     team: "${connectionsBean.getTeamForConnection(connection)}",
@@ -177,20 +262,22 @@
                     projectId: "${connection.project.externalId}",
                     projectName: "${connection.project.fullName}"
                 };
-            </c:forEach>
+                </c:forEach>
 
-            BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
-            $j(connectionId).on("change", function () {
-                BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
+                BS.UserSlackNotifierSettings.updateSignInUrl($j(connectionId + " option:selected").val());
+                $j(connectionId).on("change", function () {
+                    BS.UserSlackNotifierSettings.updateSignInUrl(this.value);
+                });
+
+                BS.UserSlackNotifierSettings.onMessageFormatChange();
+
+                var additionalButtons = $j("span#additionalNotifierButtonsBefore");
+                if (additionalButtons.length) {
+                    additionalButtons.empty();
+                    additionalButtons.append($j("span#singInWithSlackWrapper *"));
+                }
             });
-
-            var additionalButtons = $j("span#additionalNotifierButtonsBefore");
-            if (additionalButtons.length) {
-                additionalButtons.empty();
-                additionalButtons.append($j("span#singInWithSlackWrapper *"));
-            }
-        });
-    </script>
+        </script>
     </c:when>
     <c:otherwise>
         <script>
