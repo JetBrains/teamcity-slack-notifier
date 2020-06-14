@@ -205,4 +205,32 @@ class SlackNotifierTest : BaseSlackTestCase() {
         `when build finishes with changes`()
         `then message should not contain`("committer1", "Commit message")
     }
+
+    @Test
+    fun `notification message should limit number of changes in a message`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_SUCCESS,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose",
+                        SlackProperties.addChangesProperty.key to "true",
+                        SlackProperties.maximumNumberOfChangesProperty.key to "2"
+                )
+        )
+        val build = `when build finishes with multiple changes`(4)
+        `then message should contain`("2 more changes", myWebLinks.getViewChangesUrl(build))
+    }
+
+    @Test
+    fun `change word should be in singular when only one commit is present`() {
+        `given build feature is subscribed to`(
+                BUILD_FINISHED_SUCCESS,
+                additionalParameters = mapOf(
+                        SlackProperties.messageFormatProperty.key to "verbose",
+                        SlackProperties.addChangesProperty.key to "true",
+                        SlackProperties.maximumNumberOfChangesProperty.key to "2"
+                )
+        )
+        val build = `when build finishes with multiple changes`(3)
+        `then message should contain`("1 more change>", myWebLinks.getViewChangesUrl(build))
+    }
 }

@@ -16,7 +16,8 @@ import java.text.SimpleDateFormat
 class VerboseMessageBuilder(
         private val messageBuilder: MessageBuilder,
         private val verboseMessagesOptions: VerboseMessagesOptions,
-        private val format: SlackMessageFormatter
+        private val format: SlackMessageFormatter,
+        private val webLinks: RelativeWebLinks
 ) : MessageBuilder {
     private val changeDateFormat = SimpleDateFormat("d MMM HH:mm")
 
@@ -66,11 +67,22 @@ class VerboseMessageBuilder(
             return
         }
 
+        val firstChanges = changes.take(verboseMessagesOptions.maximumNumberOfChanges).toList()
+
         newline()
         add(format.bold("Changes:"))
-        for (change in changes.take(verboseMessagesOptions.maximumNumberOfChanges)) {
+        for (change in firstChanges) {
             newline()
-            add("\"${change.description.trim()}\" by ${change.userName} at ${changeDateFormat.format(change.vcsDate)}")
+            add(format.listElement("\"${change.description.trim()}\" by ${change.userName} at ${changeDateFormat.format(change.vcsDate)}"))
+        }
+
+        if (changes.size > firstChanges.size) {
+            val additionalChangesNumber = changes.size - firstChanges.size
+            val changesUrl = webLinks.getViewChangesUrl(build)
+            val changes = if (additionalChangesNumber > 1) "changes" else "change"
+
+            newline()
+            add(format.listElement("and ${format.url(changesUrl, "$additionalChangesNumber more $changes")}"))
         }
     }
 

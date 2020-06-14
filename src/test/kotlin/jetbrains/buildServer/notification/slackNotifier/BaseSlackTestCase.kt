@@ -68,7 +68,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                         simpleMessageBuilderFactory,
                         VerboseMessageBuilderFactory(
                                 simpleMessageBuilderFactory,
-                                messageFormatter
+                                messageFormatter,
+                                myFixture.webLinks
                         )
                 ),
                 myProjectManager,
@@ -141,6 +142,19 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     fun `when build finishes with changes`(): SBuild {
         val vcsRoot = myFixture.addVcsRoot("vcs", "")
         startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "committer1", vcsRoot, "1"))
+        return finishBuild()
+    }
+
+    fun `when build finishes with multiple changes`(n: Int): SBuild {
+        val vcsRoot = myFixture.addVcsRoot("vcs", "")
+
+        for (i in 0 until n) {
+            publishModifications(
+                    myBuildType,
+                    ModificationDataForTest.forTests("Commit message $i", "committer1", vcsRoot, "$i")
+            )
+        }
+        startBuild()
         return finishBuild()
     }
 
