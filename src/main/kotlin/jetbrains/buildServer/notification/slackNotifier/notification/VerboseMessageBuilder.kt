@@ -1,6 +1,8 @@
 package jetbrains.buildServer.notification.slackNotifier.notification
 
 import jetbrains.buildServer.Build
+import jetbrains.buildServer.notification.NotificationBuildStatusProvider
+import jetbrains.buildServer.notification.TemplateMessageBuilder
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
@@ -14,10 +16,12 @@ import jetbrains.buildServer.vcs.VcsRoot
 import java.text.SimpleDateFormat
 
 class VerboseMessageBuilder(
-        private val messageBuilder: MessageBuilder,
-        private val verboseMessagesOptions: VerboseMessagesOptions,
-        private val format: SlackMessageFormatter,
-        private val webLinks: RelativeWebLinks
+    private val messageBuilder: MessageBuilder,
+    private val verboseMessagesOptions: VerboseMessagesOptions,
+    private val format: SlackMessageFormatter,
+    private val webLinks: RelativeWebLinks,
+    private val notificationBuildStatusProvider: NotificationBuildStatusProvider,
+    private val server: SBuildServer
 ) : MessageBuilder {
     private val changeDateFormat = SimpleDateFormat("d MMM HH:mm")
 
@@ -33,15 +37,23 @@ class VerboseMessageBuilder(
     }
 
     private fun MessagePayloadBuilder.addVerboseInfo(build: Build) {
-        addBranch(build)
-        addBuildStatus(build)
-        addChanges(build)
+        val finishedBuild = server.findBuildInstanceById(build.buildId) ?: build
+        addBranch(finishedBuild)
+        addBuildStatus(finishedBuild)
+        addChanges(finishedBuild)
     }
 
     private fun MessagePayloadBuilder.addBuildStatus(build: Build) {
-        if (verboseMessagesOptions.addBuildStatus) {
+        if (verboseMessagesOptions.addBuildStatus && build is SBuild) {
+            val buildStatistics: BuildStatistics = build.getBuildStatistics(
+                BuildStatisticsOptions(
+                    BuildStatisticsOptions.COMPILATION_ERRORS,
+                    TemplateMessageBuilder.MAX_NUM_OF_STACKTRACES
+                )
+            )
+
             newline()
-            add("${format.bold("Build status:")} ${build.statusDescriptor.text}")
+            add("${format.bold("Build status:")} ${notificationBuildStatusProvider.getText(build, buildStatistics)}")
         }
     }
 

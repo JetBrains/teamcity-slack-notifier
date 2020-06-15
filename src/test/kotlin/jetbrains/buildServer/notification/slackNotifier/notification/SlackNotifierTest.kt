@@ -158,24 +158,38 @@ class SlackNotifierTest : BaseSlackTestCase() {
     @Test
     fun `build feature should send build status in verbose notification about build failure`() {
         `given build feature is subscribed to`(
-                BUILD_FINISHED_FAILURE,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose",
-                        SlackProperties.addBuildStatusProperty.key to "true"
-                )
+            BUILD_FINISHED_FAILURE,
+            additionalParameters = mapOf(
+                SlackProperties.messageFormatProperty.key to "verbose",
+                SlackProperties.addBuildStatusProperty.key to "true"
+            )
         )
         val build = `when build fails with custom status`()
         `then message should contain`("fail", build.buildNumber, "Custom build status")
     }
 
     @Test
+    fun `build feature should send build status in verbose notification`() {
+        `given build feature is subscribed to`(
+            BUILD_FINISHED_SUCCESS,
+            additionalParameters = mapOf(
+                SlackProperties.messageFormatProperty.key to "verbose",
+                SlackProperties.addBuildStatusProperty.key to "true"
+            )
+        )
+        val build = `when build finishes`()
+        `then message should contain`(build.buildNumber, "Success") And
+                `then message should not contain`("Running")
+    }
+
+    @Test
     fun `build feature should send changes in verbose notification about build success`() {
         `given build feature is subscribed to`(
-                BUILD_FINISHED_SUCCESS,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose",
-                        SlackProperties.addChangesProperty.key to "true"
-                )
+            BUILD_FINISHED_SUCCESS,
+            additionalParameters = mapOf(
+                SlackProperties.messageFormatProperty.key to "verbose",
+                SlackProperties.addChangesProperty.key to "true"
+            )
         )
         val build = `when build finishes with changes`()
         `then message should contain`("success", build.buildNumber, "committer1", "Commit message")

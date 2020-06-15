@@ -4,10 +4,7 @@ import jetbrains.buildServer.BuildProblemData
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.messages.DefaultMessagesInfo
 import jetbrains.buildServer.messages.Status
-import jetbrains.buildServer.notification.BaseNotificationRulesTestCase
-import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
-import jetbrains.buildServer.notification.NotificationRule
-import jetbrains.buildServer.notification.NotificatorRegistry
+import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.notification.*
 import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApi
 import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
@@ -67,9 +64,11 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                 ChoosingMessageBuilderFactory(
                         simpleMessageBuilderFactory,
                         VerboseMessageBuilderFactory(
-                                simpleMessageBuilderFactory,
-                                messageFormatter,
-                                myFixture.webLinks
+                            simpleMessageBuilderFactory,
+                            messageFormatter,
+                            myFixture.webLinks,
+                            myFixture.getSingletonService(NotificationBuildStatusProvider::class.java),
+                            myServer
                         )
                 ),
                 myProjectManager,
