@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dsl-add-on kind="buildFeature">
+    <extends>
+        <dsl type="notifications"/>
+    </extends>
+    <params>
+        <param name="notifier" type="compound" dslName="notifierSettings">
+            <option name="slackNotifier" value="jbSlackNotifier">
+                <description>
+                    Send notifications to Slack
+                </description>
+
+                <param name="plugin:notificator:jbSlackNotifier:connection" dslName="connection">
+                    <description>
+                        Slack connection id
+                    </description>
+                </param>
+
+                <param name="plugin:notificator:jbSlackNotifier:channel" dslName="sendTo">
+                    <description>
+                        User or channel to send notifications to
+                    </description>
+                </param>
+
+
+                <param name="plugin:notificator:jbSlackNotifier:messageFormat" dslName="messageFormat" type="compound">
+                    <option name="simpleMessageFormat" value="simple"/>
+                    <option name="verboseMessageFormat" value="verbose">
+                        <param name="plugin:notificator:jbSlackNotifier:addBranch" dslName="addBranch" type="boolean">
+                            <description>
+                                Add branch name to notification message
+                            </description>
+                        </param>
+
+                        <param name="plugin:notificator:jbSlackNotifier:addChanges" dslName="addChanges" type="boolean">
+                            <description>
+                                Add changes, committers and commit date to notifications
+                            </description>
+                        </param>
+                        <param name="plugin:notificator:jbSlackNotifier:addBuildStatus" dslName="addBuildStatus"
+                               type="boolean">
+                            <description>
+                                Add build status to notifications
+                            </description>
+                        </param>
+                        <param name="plugin:notificator:jbSlackNotifier:maximumNumberOfChanges"
+                               dslName="maximumNumberOfChanges" type="int">
+                            <description>
+                                Maximum number of changes to include in notifications
+                            </description>
+                        </param>
+                    </option>
+                </param>
+            </option>
+        </param>
+    </params>
+</dsl-add-on>
