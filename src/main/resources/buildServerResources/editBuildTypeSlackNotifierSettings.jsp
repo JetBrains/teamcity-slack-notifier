@@ -68,7 +68,9 @@
 
 <tr>
     <th>
-        Connection:<l:star/>
+        <label for="${properties.connectionKey}">
+            Connection:<l:star/>
+        </label>
     </th>
     <td>
         <c:choose>
@@ -99,7 +101,9 @@
 
 <tr>
     <th>
-        Channel or user ID:<l:star/>
+        <label for="${properties.channelKey}">
+            Channel or user ID:<l:star/>
+        </label>
     </th>
     <td>
         <props:textProperty
@@ -120,7 +124,9 @@
 
 <tr>
     <th>
-        Message format:
+        <label for="${properties.messageFormatKey}">
+            Message format:
+        </label>
     </th>
     <td>
         <props:selectProperty name="${properties.messageFormatKey}"
