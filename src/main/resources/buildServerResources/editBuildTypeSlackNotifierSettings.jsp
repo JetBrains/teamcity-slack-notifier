@@ -135,13 +135,13 @@
     <th>
     </th>
     <td>
-        <props:checkboxProperty name="${properties.addBuildStatusKey}"/> <label>Add status text</label>
+        <props:checkboxProperty name="${properties.addBuildStatusKey}"/> <label for="${properties.addBuildStatusKey}">Add status text</label>
         <br/>
-        <props:checkboxProperty name="${properties.addBranchKey}"/> <label>Add branch name</label>
+        <props:checkboxProperty name="${properties.addBranchKey}"/> <label for="${properties.addBranchKey}">Add branch name</label>
         <br/>
-        <props:checkboxProperty name="${properties.addChangesKey}"/> <label>Add changes</label>
+        <props:checkboxProperty name="${properties.addChangesKey}"/> <label for="${properties.addChangesKey}">Add changes</label>
         <br/>
-        <label>Maximum number of changes:</label>
+        <label for="${properties.maximumNumberOfChangesKey}">Maximum number of changes:</label>
         <br/>
         <props:textProperty name="${properties.maximumNumberOfChangesKey}"/>
         <span class="error" id="error_${properties.maximumNumberOfChangesKey}"></span>
