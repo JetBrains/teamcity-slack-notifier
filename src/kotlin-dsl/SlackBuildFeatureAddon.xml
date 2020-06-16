@@ -37,10 +37,10 @@
                                 Add changes, committers and commit date to notifications
                             </description>
                         </param>
-                        <param name="plugin:notificator:jbSlackNotifier:addBuildStatus" dslName="addBuildStatus"
+                        <param name="plugin:notificator:jbSlackNotifier:addBuildStatus" dslName="addStatusText"
                                type="boolean">
                             <description>
-                                Add build status to notifications
+                                Add status text to notifications
                             </description>
                         </param>
                         <param name="plugin:notificator:jbSlackNotifier:maximumNumberOfChanges"

@@ -133,50 +133,18 @@
 
 <tr class="messageFormatOption verboseFormatOption">
     <th>
-        Add build status:
     </th>
     <td>
-        <props:checkboxProperty name="${properties.addBuildStatusKey}"/>
-        <span class="smallNote">
-            When checked, build status will be added to the notification messages.
-        </span>
-    </td>
-</tr>
-
-<tr class="messageFormatOption verboseFormatOption">
-    <th>
-        Add branch:
-    </th>
-    <td>
-        <props:checkboxProperty name="${properties.addBranchKey}"/>
-        <span class="smallNote">
-            When checked, branch name will be added to the notification messages.
-        </span>
-    </td>
-</tr>
-
-<tr class="messageFormatOption verboseFormatOption">
-    <th>
-        Add changes:
-    </th>
-    <td>
-        <props:checkboxProperty name="${properties.addChangesKey}"/>
-        <span class="smallNote">
-            When checked, changes (commit message, committer and date) will be added to the notification messages.
-        </span>
-    </td>
-</tr>
-
-<tr class="messageFormatOption verboseFormatOption">
-    <th>
-        Maximum number of changes:
-    </th>
-    <td>
+        <props:checkboxProperty name="${properties.addBuildStatusKey}"/> <label>Add status text</label>
+        <br/>
+        <props:checkboxProperty name="${properties.addBranchKey}"/> <label>Add branch name</label>
+        <br/>
+        <props:checkboxProperty name="${properties.addChangesKey}"/> <label>Add changes</label>
+        <br/>
+        <label>Maximum number of changes:</label>
+        <br/>
         <props:textProperty name="${properties.maximumNumberOfChangesKey}"/>
         <span class="error" id="error_${properties.maximumNumberOfChangesKey}"></span>
-        <span class="smallNote">
-            Maximum number of changes to display in one notification.
-        </span>
     </td>
 </tr>
 

@@ -16,12 +16,16 @@ class VerboseMessageBuilderFactory(
     private val notificationBuildStatusProvider: NotificationBuildStatusProvider,
     private val server: BuildServerEx
 ) : MessageBuilderFactory {
+    companion object {
+        const val defaultMaximumNumberOfChanges = 10
+    }
+
     override fun get(user: SUser): MessageBuilder {
         val addBuildStatus = user.getBooleanProperty(SlackProperties.addBuildStatusProperty)
         val addBranch = user.getBooleanProperty(SlackProperties.addBranchProperty)
         val addChanges = user.getBooleanProperty(SlackProperties.addChangesProperty)
         val maximumNumberOfChanges = user.getPropertyValue(SlackProperties.maximumNumberOfChangesProperty)?.toIntOrNull()
-                ?: 10
+                ?: defaultMaximumNumberOfChanges
         val messageBuilder = simpleMessageBuilderFactory.get(user)
 
         return VerboseMessageBuilder(

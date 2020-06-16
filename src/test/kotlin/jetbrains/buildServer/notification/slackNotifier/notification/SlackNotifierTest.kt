@@ -247,4 +247,20 @@ class SlackNotifierTest : BaseSlackTestCase() {
         val build = `when build finishes with multiple changes`(3)
         `then message should contain`("1 more change>", myWebLinks.getViewChangesUrl(build))
     }
+
+    @Test
+    fun `long change description should be shortened`() {
+        `given build feature is subscribed to`(
+            BUILD_FINISHED_SUCCESS,
+            additionalParameters = mapOf(
+                SlackProperties.messageFormatProperty.key to "verbose",
+                SlackProperties.addChangesProperty.key to "true",
+                SlackProperties.maximumNumberOfChangesProperty.key to "2"
+            )
+        )
+
+        `when build finishes with a long change description`()
+        `then message should contain`("...\"") And
+                `then message should be short`()
+    }
 }

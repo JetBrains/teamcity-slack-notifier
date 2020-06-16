@@ -2,6 +2,7 @@ package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.BasePropertiesBean
+import jetbrains.buildServer.notification.slackNotifier.notification.VerboseMessageBuilderFactory
 import jetbrains.buildServer.notification.slackNotifier.teamcity.findBuildTypeSettingsByExternalId
 import jetbrains.buildServer.serverSide.BuildTypeNotFoundException
 import jetbrains.buildServer.serverSide.ProjectManager
@@ -46,7 +47,12 @@ class BuildTypeSlackNotifierSettingsController(
 
         val feature = buildType.findBuildFeatureById(featureId)
 
-        mv.model["propertiesBean"] = BasePropertiesBean(feature?.parameters)
+        mv.model["propertiesBean"] = BasePropertiesBean(
+            feature?.parameters ?: emptyMap(),
+            mapOf(
+                SlackProperties.maximumNumberOfChangesProperty.key to VerboseMessageBuilderFactory.defaultMaximumNumberOfChanges.toString()
+            )
+        )
         mv.model["properties"] = SlackProperties()
         mv.model["buildTypeId"] = buildTypeId
         mv.model["createConnectionUrl"] =

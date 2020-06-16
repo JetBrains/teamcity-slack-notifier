@@ -157,6 +157,16 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         return finishBuild()
     }
 
+    fun `when build finishes with a long change description`(): SBuild {
+        val vcsRoot = myFixture.addVcsRoot("vcs", "")
+        publishModifications(
+            myBuildType,
+            ModificationDataForTest.forTests("very long message".repeat(100), "committer1", vcsRoot, "1")
+        )
+        startBuild()
+        return finishBuild()
+    }
+
     fun `when build fails`(): SBuild {
         return createFailedBuild()
     }
@@ -260,6 +270,14 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         for (str in strs) {
             assertNotContains(mySlackApi.messages.last().text, str, false)
         }
+    }
+
+    fun `then message should be short`() {
+        waitForAssert(BooleanSupplier {
+            mySlackApi.messages.isNotEmpty()
+        }, 2000L)
+
+        assertTrue(mySlackApi.messages.last().text!!.length < 1000)
     }
 
     fun `then no messages should be sent`() {

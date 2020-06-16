@@ -53,7 +53,7 @@ class VerboseMessageBuilder(
             )
 
             newline()
-            add("${format.bold("Build status:")} ${notificationBuildStatusProvider.getText(build, buildStatistics)}")
+            add("${format.bold("Status:")} ${notificationBuildStatusProvider.getText(build, buildStatistics)}")
         }
     }
 
@@ -85,7 +85,8 @@ class VerboseMessageBuilder(
         add(format.bold("Changes:"))
         for (change in firstChanges) {
             newline()
-            add(format.listElement("\"${change.description.trim()}\" by ${change.userName} at ${changeDateFormat.format(change.vcsDate)}"))
+            val changeDescription = shorten(change.description.trim())
+            add(format.listElement("\"${changeDescription}\" by ${change.userName} at ${changeDateFormat.format(change.vcsDate)}"))
         }
 
         if (changes.size > firstChanges.size) {
@@ -95,6 +96,16 @@ class VerboseMessageBuilder(
 
             newline()
             add(format.listElement("and ${format.url(changesUrl, "$additionalChangesNumber more $changes")}"))
+        }
+    }
+
+    private fun shorten(text: String, maximumLength: Int = 50): String {
+        val postfix = "..."
+        val maximumLengthWithPostfix = maximumLength - postfix.length
+        return if (text.length > maximumLengthWithPostfix) {
+            text.substring(0, maximumLengthWithPostfix) + postfix
+        } else {
+            text
         }
     }
 
