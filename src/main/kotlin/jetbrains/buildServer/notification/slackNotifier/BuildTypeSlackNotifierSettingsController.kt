@@ -47,11 +47,13 @@ class BuildTypeSlackNotifierSettingsController(
 
         val feature = buildType.findBuildFeatureById(featureId)
 
-        mv.model["propertiesBean"] = BasePropertiesBean(
-            feature?.parameters ?: emptyMap(),
-            mapOf(
+        val defaultProperties = mapOf(
                 SlackProperties.maximumNumberOfChangesProperty.key to VerboseMessageBuilderFactory.defaultMaximumNumberOfChanges.toString()
-            )
+        )
+
+        mv.model["propertiesBean"] = BasePropertiesBean(
+            feature?.parameters ?: defaultProperties,
+            defaultProperties
         )
         mv.model["properties"] = SlackProperties()
         mv.model["buildTypeId"] = buildTypeId
