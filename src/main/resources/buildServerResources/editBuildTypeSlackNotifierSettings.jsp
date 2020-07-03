@@ -73,7 +73,7 @@
         showVerboseOptions: function() {
             var maximumNumberOfChanges = document.getElementById("${properties.maximumNumberOfChangesKey}");
             if (!maximumNumberOfChanges.value) {
-                maximumNumberOfChanges.value = "${propertiesBean.properties[properties.maximumNumberOfChangesKey]}";
+                maximumNumberOfChanges.value = "${propertiesBean.defaultProperties[properties.maximumNumberOfChangesKey]}";
             }
             this.onAddChanges();
         },
@@ -177,7 +177,7 @@
         <br/>
         <label for="${properties.maximumNumberOfChangesKey}">Maximum number of changes:</label>
         <br/>
-        <props:textProperty name="${properties.maximumNumberOfChangesKey}"/>
+        <props:textProperty name="${properties.maximumNumberOfChangesKey}" maxlength="4"/>
         <span class="error" id="error_${properties.maximumNumberOfChangesKey}"></span>
     </td>
 </tr>
