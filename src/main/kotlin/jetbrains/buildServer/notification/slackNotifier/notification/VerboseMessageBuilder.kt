@@ -99,7 +99,7 @@ class VerboseMessageBuilder(
         }
     }
 
-    private fun shorten(text: String, maximumLength: Int = 50): String {
+    private fun shorten(text: String, maximumLength: Int = 80): String {
         val postfix = "..."
         val maximumLengthWithPostfix = maximumLength - postfix.length
         return if (text.length > maximumLengthWithPostfix) {
