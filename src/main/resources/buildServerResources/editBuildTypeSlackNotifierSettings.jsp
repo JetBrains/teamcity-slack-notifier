@@ -62,6 +62,34 @@
 
             $j(".messageFormatOption").hide();
             $j("." + selectedFormat + "FormatOption").show();
+
+            if (selectedFormat === "verbose") {
+                this.showVerboseOptions();
+            } else {
+                this.hideVerboseOptions();
+            }
+        },
+
+        showVerboseOptions: function() {
+            var maximumNumberOfChanges = document.getElementById("${properties.maximumNumberOfChangesKey}");
+            if (!maximumNumberOfChanges.value) {
+                maximumNumberOfChanges.value = "${propertiesBean.properties[properties.maximumNumberOfChangesKey]}";
+            }
+            this.onAddChanges();
+        },
+
+        hideVerboseOptions: function() {
+            document.getElementById("${properties.addChangesKey}").checked = false;
+            document.getElementById("${properties.addBranchKey}").checked = false;
+            document.getElementById("${properties.addBuildStatusKey}").checked = false;
+            document.getElementById("${properties.maximumNumberOfChangesKey}").value = "";
+            this.onAddChanges();
+        },
+
+        onAddChanges: function() {
+            var addChanges = document.getElementById("${properties.addChangesKey}");
+            var maximumNumberOfChanges = document.getElementById("${properties.maximumNumberOfChangesKey}");
+            maximumNumberOfChanges.disabled = !addChanges.checked;
         }
     };
 </script>
@@ -145,7 +173,7 @@
         <br/>
         <props:checkboxProperty name="${properties.addBranchKey}"/> <label for="${properties.addBranchKey}">Add branch name</label>
         <br/>
-        <props:checkboxProperty name="${properties.addChangesKey}"/> <label for="${properties.addChangesKey}">Add changes</label>
+        <props:checkboxProperty name="${properties.addChangesKey}" onclick="BS.SlackNotifierSettings.onAddChanges();"/> <label for="${properties.addChangesKey}">Add changes</label>
         <br/>
         <label for="${properties.maximumNumberOfChangesKey}">Maximum number of changes:</label>
         <br/>
@@ -164,4 +192,5 @@
     $j(document.getElementById("${properties.channelKey}")).placeholder();
 
     BS.SlackNotifierSettings.onMessageFormatChange();
+    BS.SlackNotifierSettings.onAddChanges();
 </script>
