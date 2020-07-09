@@ -33,17 +33,17 @@ class VerboseMessageBuilder(
 
     override fun buildSuccessful(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildSuccessful(build))
-        addVerboseInfo(build)
+        addVerboseInfo(build, BuildEvent.BUILD_SUCCESSFUL)
     }
 
-    private fun MessagePayloadBuilder.addVerboseInfo(build: Build) {
+    private fun MessagePayloadBuilder.addVerboseInfo(build: Build, buildEvent: BuildEvent) {
         val finishedBuild = server.findBuildInstanceById(build.buildId) ?: build
         addBranch(finishedBuild)
-        addBuildStatus(finishedBuild)
+        addBuildStatus(finishedBuild, buildEvent)
         addChanges(finishedBuild)
     }
 
-    private fun MessagePayloadBuilder.addBuildStatus(build: Build) {
+    private fun MessagePayloadBuilder.addBuildStatus(build: Build, buildEvent: BuildEvent) {
         if (verboseMessagesOptions.addBuildStatus && build is SBuild) {
             val buildStatistics: BuildStatistics = build.getBuildStatistics(
                 BuildStatisticsOptions(
@@ -53,7 +53,7 @@ class VerboseMessageBuilder(
             )
 
             newline()
-            add("${format.bold("Status:")} ${notificationBuildStatusProvider.getText(build, buildStatistics)}")
+            add("${buildEvent.emoji} ${notificationBuildStatusProvider.getText(build, buildStatistics)}")
         }
     }
 
@@ -112,27 +112,27 @@ class VerboseMessageBuilder(
 
     override fun buildFailed(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailed(build))
-        addVerboseInfo(build)
+        addVerboseInfo(build, BuildEvent.BUILD_FAILED)
     }
 
     override fun buildFailedToStart(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailedToStart(build))
-        addVerboseInfo(build)
+        addVerboseInfo(build, BuildEvent.BUILD_FAILED_TO_START)
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload = messagePayload {
         add(messageBuilder.labelingFailed(build, root, exception))
-        addVerboseInfo(build)
+        addVerboseInfo(build, BuildEvent.LABELING_FAILED)
     }
 
     override fun buildFailing(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildFailing(build))
-        addVerboseInfo(build)
+        addVerboseInfo(build, BuildEvent.BUILD_FAILING)
     }
 
     override fun buildProbablyHanging(build: SRunningBuild): MessagePayload = messagePayload {
         add(messageBuilder.buildProbablyHanging(build))
-        addVerboseInfo(build)
+        addVerboseInfo(build, BuildEvent.BUILD_PROBABLY_HANGING)
     }
 
     override fun responsibleChanged(buildType: SBuildType): MessagePayload {

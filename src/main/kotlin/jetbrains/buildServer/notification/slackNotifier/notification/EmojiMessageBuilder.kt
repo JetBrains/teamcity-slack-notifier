@@ -12,35 +12,35 @@ class EmojiMessageBuilder(
 ) : MessageBuilder by messageBuilder {
     override fun buildSuccessful(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildSuccessful(build)
-        return addEmoji(message, BuildEventEmojis.buildSuccessful)
+        return addEmoji(message, BuildEvent.BUILD_SUCCESSFUL)
     }
 
-    private fun addEmoji(message: MessagePayload, emoji: String): MessagePayload {
-        return message.copy(text = "$emoji ${message.text}")
+    private fun addEmoji(message: MessagePayload, buildEvent: BuildEvent): MessagePayload {
+        return message.copy(text = "${buildEvent.emoji} ${message.text}")
     }
 
     override fun buildFailed(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildFailed(build)
-        return addEmoji(message, BuildEventEmojis.buildFailed)
+        return addEmoji(message, BuildEvent.BUILD_FAILED)
     }
 
     override fun buildFailedToStart(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildFailedToStart(build)
-        return addEmoji(message, BuildEventEmojis.buildFailedToStart)
+        return addEmoji(message, BuildEvent.BUILD_FAILED_TO_START)
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload {
         val message = messageBuilder.labelingFailed(build, root, exception)
-        return addEmoji(message, BuildEventEmojis.labelingFailed)
+        return addEmoji(message, BuildEvent.LABELING_FAILED)
     }
 
     override fun buildFailing(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildFailing(build)
-        return addEmoji(message, BuildEventEmojis.buildFailing)
+        return addEmoji(message, BuildEvent.BUILD_FAILING)
     }
 
     override fun buildProbablyHanging(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildProbablyHanging(build)
-        return addEmoji(message, BuildEventEmojis.buildProbablyHanging)
+        return addEmoji(message, BuildEvent.BUILD_PROBABLY_HANGING)
     }
 }
