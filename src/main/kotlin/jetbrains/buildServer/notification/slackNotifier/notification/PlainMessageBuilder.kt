@@ -11,7 +11,10 @@ import jetbrains.buildServer.tests.TestName
 import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.VcsRoot
 
-class SimpleMessageBuilder(
+/**
+ * Builds plain text notification without any details or emojis
+ */
+class PlainMessageBuilder(
         private val format: SlackMessageFormatter,
         private val links: RelativeWebLinks,
         private val detailsFormatter: DetailsFormatter
@@ -29,20 +32,20 @@ class SimpleMessageBuilder(
     }
 
     override fun buildSuccessful(build: SRunningBuild): MessagePayload {
-        return MessagePayload(":heavy_check_mark: ${detailsFormatter.buildUrl(build)} is successful")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} is successful")
     }
 
     override fun buildFailed(build: SRunningBuild): MessagePayload {
-        return MessagePayload(":x: ${detailsFormatter.buildUrl(build)} failed")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} failed")
     }
 
     override fun buildFailedToStart(build: SRunningBuild): MessagePayload {
-        return MessagePayload(":exclamation: ${detailsFormatter.buildUrl(build)} failed to start")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} failed to start")
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload {
         return MessagePayload(
-                ":x: Labeling failed for root ${root.name}. More details on ${format.url(
+                "Labeling failed for root ${root.name}. More details on ${format.url(
                         links.getViewResultsUrl(
                                 build
                         ), "build result page"
@@ -51,11 +54,11 @@ class SimpleMessageBuilder(
     }
 
     override fun buildFailing(build: SRunningBuild): MessagePayload {
-        return MessagePayload(":x: ${detailsFormatter.buildUrl(build)} is failing")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} is failing")
     }
 
     override fun buildProbablyHanging(build: SRunningBuild): MessagePayload {
-        return MessagePayload(":warning: ${detailsFormatter.buildUrl(build)} is probably hanging")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} is probably hanging")
     }
 
     override fun responsibleChanged(buildType: SBuildType): MessagePayload {

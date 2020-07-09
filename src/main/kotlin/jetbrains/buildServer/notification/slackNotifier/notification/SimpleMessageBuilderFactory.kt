@@ -12,6 +12,6 @@ class SimpleMessageBuilderFactory(
         private val detailsFormatter: DetailsFormatter
 ) : MessageBuilderFactory {
     override fun get(user: SUser): MessageBuilder {
-        return SimpleMessageBuilder(format, links, detailsFormatter)
+        return EmojiMessageBuilder(PlainMessageBuilder(format, links, detailsFormatter))
     }
 }
