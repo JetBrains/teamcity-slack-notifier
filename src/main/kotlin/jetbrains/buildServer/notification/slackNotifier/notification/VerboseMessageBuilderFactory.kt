@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class VerboseMessageBuilderFactory(
-    private val simpleMessageBuilderFactory: SimpleMessageBuilderFactory,
-    private val slackMessageFormatter: SlackMessageFormatter,
-    private val webLinks: RelativeWebLinks,
+    private val detailsFormatter: DetailsFormatter,
+    private val format: SlackMessageFormatter,
+    private val links: RelativeWebLinks,
     private val notificationBuildStatusProvider: NotificationBuildStatusProvider,
     private val server: BuildServerEx
 ) : MessageBuilderFactory {
@@ -26,18 +26,21 @@ class VerboseMessageBuilderFactory(
         val addChanges = user.getBooleanProperty(SlackProperties.addChangesProperty)
         val maximumNumberOfChanges = user.getPropertyValue(SlackProperties.maximumNumberOfChangesProperty)?.toIntOrNull()
                 ?: defaultMaximumNumberOfChanges
-        val messageBuilder = simpleMessageBuilderFactory.get(user)
 
         return VerboseMessageBuilder(
-            messageBuilder,
+            PlainMessageBuilder(
+                format = format,
+                links = links,
+                detailsFormatter = detailsFormatter
+            ),
             VerboseMessagesOptions(
                 addBuildStatus = addBuildStatus,
                 addBranch = addBranch,
                 addChanges = addChanges,
                 maximumNumberOfChanges = maximumNumberOfChanges
             ),
-            slackMessageFormatter,
-            webLinks,
+            format,
+            links,
             notificationBuildStatusProvider,
             server
         )
