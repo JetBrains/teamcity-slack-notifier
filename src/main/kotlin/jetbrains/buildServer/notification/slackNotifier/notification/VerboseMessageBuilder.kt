@@ -100,12 +100,13 @@ class VerboseMessageBuilder(
     }
 
     private fun shorten(text: String, maximumLength: Int = 80): String {
+        val firstLine = text.splitToSequence("\n").firstOrNull() ?: return ""
         val postfix = "..."
         val maximumLengthWithPostfix = maximumLength - postfix.length
-        return if (text.length > maximumLengthWithPostfix) {
-            text.substring(0, maximumLengthWithPostfix) + postfix
+        return if (firstLine.length > maximumLengthWithPostfix) {
+            firstLine.substring(0, maximumLengthWithPostfix) + postfix
         } else {
-            text
+            firstLine
         }
     }
 
