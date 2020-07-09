@@ -113,11 +113,7 @@ class VerboseMessageBuilder(
         actionsBlock {
             val changesUrl = webLinks.getViewChangesUrl(build)
 
-            if (changes.size <= verboseMessagesOptions.maximumNumberOfChanges) {
-                button(text = "View changes", url = changesUrl)
-            } else {
-                button(text = "View all ${changes.size} changes", url = changesUrl)
-            }
+            button(text = "View all ${changes.size} changes in TeamCity", url = changesUrl)
         }
     }
 
