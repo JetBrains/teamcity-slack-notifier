@@ -12,31 +12,35 @@ class EmojiMessageBuilder(
 ) : MessageBuilder by messageBuilder {
     override fun buildSuccessful(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildSuccessful(build)
-        return message.copy(text = ":heavy_check_mark: ${message.text}")
+        return addEmoji(message, BuildEventEmojis.buildSuccessful)
+    }
+
+    private fun addEmoji(message: MessagePayload, emoji: String): MessagePayload {
+        return message.copy(text = "$emoji ${message.text}")
     }
 
     override fun buildFailed(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildFailed(build)
-        return message.copy(text = ":x: ${message.text}")
+        return addEmoji(message, BuildEventEmojis.buildFailed)
     }
 
     override fun buildFailedToStart(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildFailedToStart(build)
-        return message.copy(text = ":exclamation: ${message.text}")
+        return addEmoji(message, BuildEventEmojis.buildFailedToStart)
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload {
         val message = messageBuilder.labelingFailed(build, root, exception)
-        return message.copy(text = ":x: ${message.text}")
+        return addEmoji(message, BuildEventEmojis.labelingFailed)
     }
 
     override fun buildFailing(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildFailing(build)
-        return message.copy(text = ":x: ${message.text}")
+        return addEmoji(message, BuildEventEmojis.buildFailing)
     }
 
     override fun buildProbablyHanging(build: SRunningBuild): MessagePayload {
         val message = messageBuilder.buildProbablyHanging(build)
-        return message.copy(text = ":warning: ${message.text}")
+        return addEmoji(message, BuildEventEmojis.buildProbablyHanging)
     }
 }
