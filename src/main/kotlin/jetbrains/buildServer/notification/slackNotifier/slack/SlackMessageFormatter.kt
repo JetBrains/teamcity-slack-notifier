@@ -11,4 +11,6 @@ class SlackMessageFormatter {
     fun listElement(text: String): String = "- $text"
 
     fun bold(text: String): String = "*${text}*"
+
+    fun italic(text: String): String = "_${text}_"
 }

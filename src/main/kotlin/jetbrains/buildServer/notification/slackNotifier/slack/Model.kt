@@ -306,9 +306,10 @@ data class Message(
     @JsonProperty("username")
     val userName: String? = null,
     val parse: String? = null,
-    val attachments: List<MessageAttachment> = listOf(),
+    val attachments: List<MessageAttachment> = emptyList(),
     @JsonProperty("mrkdwn")
-    val markdown: Boolean = false
+    val markdown: Boolean = false,
+    val blocks: List<MessageBlock> = emptyList()
 )
 
 data class Action(
@@ -332,6 +333,34 @@ data class CommandResponse(
     val responseType: String = "in_channel",
     @JsonProperty("replace_original")
     val replaceOriginal: Boolean = false
+)
+
+interface MessageBlock
+
+data class TextBlock(
+    val type: String = "section",
+    val text: MessageBlockText
+): MessageBlock
+
+data class MessageBlockText(
+    val type: String,
+    val text: String
+)
+
+data class MessageActions(
+    val type: String = "actions",
+    val elements: List<MessageAction>
+): MessageBlock
+
+data class MessageAction(
+    val type: String,
+    val text: MessageActionText,
+    val url: String
+)
+
+data class MessageActionText(
+    val type: String,
+    val text: String
 )
 
 // https://api.slack.com/methods/chat.postMessage

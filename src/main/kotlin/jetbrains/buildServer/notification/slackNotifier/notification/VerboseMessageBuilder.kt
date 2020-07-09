@@ -26,24 +26,33 @@ class VerboseMessageBuilder(
     private val changeDateFormat = SimpleDateFormat("d MMM HH:mm")
 
     override fun buildStarted(build: SRunningBuild): MessagePayload = messagePayload {
-        add(messageBuilder.buildStarted(build))
-        addBranch(build)
-        addChanges(build)
+        textBlock {
+            add(messageBuilder.buildStarted(build))
+            addBranch(build)
+            addChanges(build)
+        }
+
+        addActionsBlock(build)
     }
 
     override fun buildSuccessful(build: SRunningBuild): MessagePayload = messagePayload {
-        add(messageBuilder.buildSuccessful(build))
-        addVerboseInfo(build, BuildEvent.BUILD_SUCCESSFUL)
+        textBlock {
+            add(messageBuilder.buildSuccessful(build))
+            addVerboseInfo(build, BuildEvent.BUILD_SUCCESSFUL)
+        }
+
+        addActionsBlock(build)
     }
 
-    private fun MessagePayloadBuilder.addVerboseInfo(build: Build, buildEvent: BuildEvent) {
+    private fun MessagePayloadBlockBuilder.addVerboseInfo(build: Build, buildEvent: BuildEvent) {
         val finishedBuild = server.findBuildInstanceById(build.buildId) ?: build
+
         addBranch(finishedBuild)
         addBuildStatus(finishedBuild, buildEvent)
         addChanges(finishedBuild)
     }
 
-    private fun MessagePayloadBuilder.addBuildStatus(build: Build, buildEvent: BuildEvent) {
+    private fun MessagePayloadBlockBuilder.addBuildStatus(build: Build, buildEvent: BuildEvent) {
         if (verboseMessagesOptions.addBuildStatus && build is SBuild) {
             val buildStatistics: BuildStatistics = build.getBuildStatistics(
                 BuildStatisticsOptions(
@@ -57,19 +66,19 @@ class VerboseMessageBuilder(
         }
     }
 
-    private fun MessagePayloadBuilder.addBranch(build: Build) {
+    private fun MessagePayloadBlockBuilder.addBranch(build: Build) {
         if (!verboseMessagesOptions.addBranch) {
             return
         }
 
         if (build is SBuild) {
             build.branch?.displayName?.let { branch ->
-                add(" in branch ${format.bold(branch)}")
+                add(" in branch \"$branch\"")
             }
         }
     }
 
-    private fun MessagePayloadBuilder.addChanges(build: Build) {
+    private fun MessagePayloadBlockBuilder.addChanges(build: Build) {
         if (!verboseMessagesOptions.addChanges) {
             return
         }
@@ -82,20 +91,33 @@ class VerboseMessageBuilder(
         val firstChanges = changes.take(verboseMessagesOptions.maximumNumberOfChanges).toList()
 
         newline()
-        add(format.bold("Changes:"))
+        add("Changes:")
         for (change in firstChanges) {
             newline()
             val changeDescription = shorten(change.description.trim())
-            add(format.listElement("\"${changeDescription}\" by ${change.userName} at ${changeDateFormat.format(change.vcsDate)}"))
+            val username = change.userName?.let {
+                " by ${it.trim()} "
+            } ?: ""
+            val changeAdditionalInfo = "${username}at ${changeDateFormat.format(change.vcsDate)}"
+
+            add("$changeDescription ${format.italic(changeAdditionalInfo)}")
+        }
+    }
+
+    private fun MessagePayloadBuilder.addActionsBlock(build: Build) {
+        val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
+        if (changes.isEmpty()) {
+            return
         }
 
-        if (changes.size > firstChanges.size) {
-            val additionalChangesNumber = changes.size - firstChanges.size
+        actionsBlock {
             val changesUrl = webLinks.getViewChangesUrl(build)
-            val changes = if (additionalChangesNumber > 1) "changes" else "change"
 
-            newline()
-            add(format.listElement("and ${format.url(changesUrl, "$additionalChangesNumber more $changes")}"))
+            if (changes.size <= verboseMessagesOptions.maximumNumberOfChanges) {
+                button(text = "View changes", url = changesUrl)
+            } else {
+                button(text = "View all ${changes.size} changes", url = changesUrl)
+            }
         }
     }
 
@@ -111,28 +133,48 @@ class VerboseMessageBuilder(
     }
 
     override fun buildFailed(build: SRunningBuild): MessagePayload = messagePayload {
-        add(messageBuilder.buildFailed(build))
-        addVerboseInfo(build, BuildEvent.BUILD_FAILED)
+        textBlock {
+            add(messageBuilder.buildFailed(build))
+            addVerboseInfo(build, BuildEvent.BUILD_FAILED)
+        }
+
+        addActionsBlock(build)
     }
 
     override fun buildFailedToStart(build: SRunningBuild): MessagePayload = messagePayload {
-        add(messageBuilder.buildFailedToStart(build))
-        addVerboseInfo(build, BuildEvent.BUILD_FAILED_TO_START)
+        textBlock {
+            add(messageBuilder.buildFailedToStart(build))
+            addVerboseInfo(build, BuildEvent.BUILD_FAILED_TO_START)
+        }
+
+        addActionsBlock(build)
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload = messagePayload {
-        add(messageBuilder.labelingFailed(build, root, exception))
-        addVerboseInfo(build, BuildEvent.LABELING_FAILED)
+        textBlock {
+            add(messageBuilder.labelingFailed(build, root, exception))
+            addVerboseInfo(build, BuildEvent.LABELING_FAILED)
+        }
+
+        addActionsBlock(build)
     }
 
     override fun buildFailing(build: SRunningBuild): MessagePayload = messagePayload {
-        add(messageBuilder.buildFailing(build))
-        addVerboseInfo(build, BuildEvent.BUILD_FAILING)
+        textBlock {
+            add(messageBuilder.buildFailing(build))
+            addVerboseInfo(build, BuildEvent.BUILD_FAILING)
+        }
+
+        addActionsBlock(build)
     }
 
     override fun buildProbablyHanging(build: SRunningBuild): MessagePayload = messagePayload {
-        add(messageBuilder.buildProbablyHanging(build))
-        addVerboseInfo(build, BuildEvent.BUILD_PROBABLY_HANGING)
+        textBlock {
+            add(messageBuilder.buildProbablyHanging(build))
+            addVerboseInfo(build, BuildEvent.BUILD_PROBABLY_HANGING)
+        }
+
+        addActionsBlock(build)
     }
 
     override fun responsibleChanged(buildType: SBuildType): MessagePayload {

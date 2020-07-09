@@ -28,19 +28,19 @@ class PlainMessageBuilder(
         } else {
             ""
         }
-        return MessagePayload("${detailsFormatter.buildUrl(build)} started${prefix}")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} ${format.bold("started")}${prefix}")
     }
 
     override fun buildSuccessful(build: SRunningBuild): MessagePayload {
-        return MessagePayload("${detailsFormatter.buildUrl(build)} is successful")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} ${format.bold("is successful")}")
     }
 
     override fun buildFailed(build: SRunningBuild): MessagePayload {
-        return MessagePayload("${detailsFormatter.buildUrl(build)} failed")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} ${format.bold("failed")}")
     }
 
     override fun buildFailedToStart(build: SRunningBuild): MessagePayload {
-        return MessagePayload("${detailsFormatter.buildUrl(build)} failed to start")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} ${format.bold("failed to start")}")
     }
 
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload {
@@ -54,11 +54,11 @@ class PlainMessageBuilder(
     }
 
     override fun buildFailing(build: SRunningBuild): MessagePayload {
-        return MessagePayload("${detailsFormatter.buildUrl(build)} is failing")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} ${format.bold("is failing")}")
     }
 
     override fun buildProbablyHanging(build: SRunningBuild): MessagePayload {
-        return MessagePayload("${detailsFormatter.buildUrl(build)} is probably hanging")
+        return MessagePayload("${detailsFormatter.buildUrl(build)} ${format.bold("is probably hanging")}")
     }
 
     override fun responsibleChanged(buildType: SBuildType): MessagePayload {
