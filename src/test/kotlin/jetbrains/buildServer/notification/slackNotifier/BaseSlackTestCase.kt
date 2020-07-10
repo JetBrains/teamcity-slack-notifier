@@ -6,6 +6,7 @@ import jetbrains.buildServer.messages.DefaultMessagesInfo
 import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.notification.*
+import jetbrains.buildServer.notification.slackNotifier.slack.MessageActions
 import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApi
 import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
@@ -64,11 +65,11 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                 ChoosingMessageBuilderFactory(
                         simpleMessageBuilderFactory,
                         VerboseMessageBuilderFactory(
-                            simpleMessageBuilderFactory,
-                            messageFormatter,
-                            myFixture.webLinks,
-                            myFixture.getSingletonService(NotificationBuildStatusProvider::class.java),
-                            myServer
+                                detailsFormatter,
+                                messageFormatter,
+                                myFixture.webLinks,
+                                myFixture.getSingletonService(NotificationBuildStatusProvider::class.java),
+                                myServer
                         )
                 ),
                 myProjectManager,
@@ -79,13 +80,13 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myFixture.addService(myNotifier)
 
         myConnection = myConnectionManager.addConnection(
-            myProject,
-            SlackConnection.type,
-            mapOf(
-                "secure:token" to "test_token",
-                "clientId" to "test_clientId",
-                "secure:clientSecret" to "test_clientSecret"
-            )
+                myProject,
+                SlackConnection.type,
+                mapOf(
+                        "secure:token" to "test_token",
+                        "clientId" to "test_clientId",
+                        "secure:clientSecret" to "test_clientSecret"
+                )
         )
 
         myUser = createUser("test_user")
@@ -160,8 +161,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     fun `when build finishes with a long change description`(): SBuild {
         val vcsRoot = myFixture.addVcsRoot("vcs", "")
         publishModifications(
-            myBuildType,
-            ModificationDataForTest.forTests("very long message".repeat(100), "committer1", vcsRoot, "1")
+                myBuildType,
+                ModificationDataForTest.forTests("very long message".repeat(100), "committer1", vcsRoot, "1")
         )
         startBuild()
         return finishBuild()
@@ -201,32 +202,32 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         val build = startBuild()
 
         myFixture.logBuildMessages(
-            build,
-            listOf(
-                DefaultMessagesInfo.createBlockStart(
-                    "test1",
-                    DefaultMessagesInfo.BLOCK_TYPE_TEST
+                build,
+                listOf(
+                        DefaultMessagesInfo.createBlockStart(
+                                "test1",
+                                DefaultMessagesInfo.BLOCK_TYPE_TEST
+                        )
                 )
-            )
         )
         myFixture.logBuildMessages(
-            build,
-            listOf(
-                DefaultMessagesInfo.createTestFailure(
-                    "test1",
-                    Exception("test1 failed")
+                build,
+                listOf(
+                        DefaultMessagesInfo.createTestFailure(
+                                "test1",
+                                Exception("test1 failed")
+                        )
                 )
-            )
         )
 
         myFixture.logBuildMessages(
-            build,
-            listOf(
-                DefaultMessagesInfo.createBlockEnd(
-                    "test1",
-                    DefaultMessagesInfo.BLOCK_TYPE_TEST
+                build,
+                listOf(
+                        DefaultMessagesInfo.createBlockEnd(
+                                "test1",
+                                DefaultMessagesInfo.BLOCK_TYPE_TEST
+                        )
                 )
-            )
         )
 
 
@@ -234,6 +235,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
         return build
     }
+
     fun `when build hangs`(): SBuild {
         val build = startBuild()
         makeProjectAccessible(myUser, myBuildType.projectId)
@@ -243,7 +245,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
     fun `when build problem occurs`(): SBuild {
         return build().`in`(myBuildType).withProblem(
-            BuildProblemData.createBuildProblem("1", "TC_COMPILATION_ERROR_TYPE", "compilation error")
+                BuildProblemData.createBuildProblem("1", "TC_COMPILATION_ERROR_TYPE", "compilation error")
         ).finish()
     }
 
@@ -253,31 +255,39 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     }
 
     fun `then message should contain`(vararg strs: String) {
-        waitForAssert(BooleanSupplier {
-            mySlackApi.messages.isNotEmpty()
-        }, 2000L)
-
+        waitForMessage()
         for (str in strs) {
             assertContains(mySlackApi.messages.last().text, str)
         }
     }
 
     fun `then message should not contain`(vararg strs: String) {
-        waitForAssert(BooleanSupplier {
-            mySlackApi.messages.isNotEmpty()
-        }, 2000L)
-
+        waitForMessage()
         for (str in strs) {
             assertNotContains(mySlackApi.messages.last().text, str, false)
         }
     }
 
+    fun `then view changes button should contain`(vararg strs: String) {
+        waitForMessage()
+        for (str in strs) {
+            val actionsBlock = mySlackApi.messages.last().blocks.last()
+            if (actionsBlock !is MessageActions) {
+                throw IllegalStateException("Last block ${actionsBlock} is not MessageActions")
+            }
+            assertContains(actionsBlock.elements.first().text.text, str)
+        }
+    }
+
     fun `then message should be short`() {
+        waitForMessage()
+        assertTrue(mySlackApi.messages.last().text!!.length < 1000)
+    }
+
+    private fun waitForMessage() {
         waitForAssert(BooleanSupplier {
             mySlackApi.messages.isNotEmpty()
         }, 2000L)
-
-        assertTrue(mySlackApi.messages.last().text!!.length < 1000)
     }
 
     fun `then no messages should be sent`() {

@@ -230,8 +230,8 @@ class SlackNotifierTest : BaseSlackTestCase() {
                         SlackProperties.maximumNumberOfChangesProperty.key to "2"
                 )
         )
-        val build = `when build finishes with multiple changes`(4)
-        `then message should contain`("2 more changes", myWebLinks.getViewChangesUrl(build))
+        `when build finishes with multiple changes`(4)
+        `then view changes button should contain`("View all 4 changes")
     }
 
     @Test
@@ -244,8 +244,8 @@ class SlackNotifierTest : BaseSlackTestCase() {
                         SlackProperties.maximumNumberOfChangesProperty.key to "2"
                 )
         )
-        val build = `when build finishes with multiple changes`(3)
-        `then message should contain`("1 more change>", myWebLinks.getViewChangesUrl(build))
+        `when build finishes with multiple changes`(1)
+        `then view changes button should contain`("View 1 change in TeamCity")
     }
 
     @Test
@@ -260,7 +260,6 @@ class SlackNotifierTest : BaseSlackTestCase() {
         )
 
         `when build finishes with a long change description`()
-        `then message should contain`("...\"") And
-                `then message should be short`()
+        `then message should be short`()
     }
 }
