@@ -16,12 +16,12 @@ import jetbrains.buildServer.vcs.VcsRoot
 import java.text.SimpleDateFormat
 
 class VerboseMessageBuilder(
-    private val messageBuilder: MessageBuilder,
-    private val verboseMessagesOptions: VerboseMessagesOptions,
-    private val format: SlackMessageFormatter,
-    private val webLinks: RelativeWebLinks,
-    private val notificationBuildStatusProvider: NotificationBuildStatusProvider,
-    private val server: SBuildServer
+        private val messageBuilder: MessageBuilder,
+        private val verboseMessagesOptions: VerboseMessagesOptions,
+        private val format: SlackMessageFormatter,
+        private val webLinks: RelativeWebLinks,
+        private val notificationBuildStatusProvider: NotificationBuildStatusProvider,
+        private val server: SBuildServer
 ) : MessageBuilder {
     private val changeDateFormat = SimpleDateFormat("d MMM HH:mm")
 
@@ -55,10 +55,10 @@ class VerboseMessageBuilder(
     private fun MessagePayloadBlockBuilder.addBuildStatus(build: Build, buildEvent: BuildEvent) {
         if (verboseMessagesOptions.addBuildStatus && build is SBuild) {
             val buildStatistics: BuildStatistics = build.getBuildStatistics(
-                BuildStatisticsOptions(
-                    BuildStatisticsOptions.COMPILATION_ERRORS,
-                    TemplateMessageBuilder.MAX_NUM_OF_STACKTRACES
-                )
+                    BuildStatisticsOptions(
+                            BuildStatisticsOptions.COMPILATION_ERRORS,
+                            TemplateMessageBuilder.MAX_NUM_OF_STACKTRACES
+                    )
             )
 
             newline()
@@ -113,7 +113,13 @@ class VerboseMessageBuilder(
         actionsBlock {
             val changesUrl = webLinks.getViewChangesUrl(build)
 
-            button(text = "View all ${changes.size} changes in TeamCity", url = changesUrl)
+            val text = if (changes.size == 1) {
+                "View 1 change in TeamCity"
+            } else {
+                "View all ${changes.size} changes in TeamCity"
+            }
+
+            button(text = text, url = changesUrl)
         }
     }
 
