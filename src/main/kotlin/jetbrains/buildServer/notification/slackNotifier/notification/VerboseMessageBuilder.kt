@@ -105,6 +105,10 @@ class VerboseMessageBuilder(
     }
 
     private fun MessagePayloadBuilder.addActionsBlock(build: Build) {
+        if (!verboseMessagesOptions.addChanges) {
+            return
+        }
+
         val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
         if (changes.isEmpty()) {
             return
