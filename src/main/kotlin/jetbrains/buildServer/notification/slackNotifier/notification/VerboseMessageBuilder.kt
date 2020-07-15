@@ -91,6 +91,7 @@ class VerboseMessageBuilder(
         val firstChanges = changes.take(verboseMessagesOptions.maximumNumberOfChanges).toList()
 
         newline()
+        newline()
         add("Changes:")
         for (change in firstChanges) {
             newline()
@@ -120,7 +121,7 @@ class VerboseMessageBuilder(
             val text = if (changes.size == 1) {
                 "View 1 change in TeamCity"
             } else {
-                "View all ${changes.size} changes in TeamCity"
+                "View ${changes.size} changes in TeamCity"
             }
 
             button(text = text, url = changesUrl)
