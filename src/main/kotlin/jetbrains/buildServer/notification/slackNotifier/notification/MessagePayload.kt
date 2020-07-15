@@ -1,6 +1,7 @@
 package jetbrains.buildServer.notification.slackNotifier.notification
 
 import jetbrains.buildServer.notification.slackNotifier.slack.*
+import java.lang.IllegalStateException
 
 data class MessagePayload(
     val text: String,
@@ -22,7 +23,14 @@ data class MessagePayload(
 }
 
 class MessagePayloadBuilder {
+    private val messageText = StringBuilder()
     private val blocks = mutableListOf<MessageBlock>()
+
+    fun text(block: MessagePayloadBlockBuilder.() -> Unit) {
+        val builder = MessagePayloadBlockBuilder()
+        builder.block()
+        messageText.append(builder.build().text.text)
+    }
 
     fun textBlock(block: MessagePayloadBlockBuilder.() -> Unit) {
         val builder = MessagePayloadBlockBuilder()
@@ -37,6 +45,14 @@ class MessagePayloadBuilder {
     }
 
     fun build(): MessagePayload {
+        val text = messageText.toString()
+        if (text.isNotEmpty() && blocks.isNotEmpty()) {
+            throw IllegalStateException("Can't send message with both text and blocks")
+        }
+        if (text.isNotEmpty()) {
+            return MessagePayload(text = text)
+        }
+
         return MessagePayload(text = getTextFromBlocks(), blocks = blocks)
     }
 
