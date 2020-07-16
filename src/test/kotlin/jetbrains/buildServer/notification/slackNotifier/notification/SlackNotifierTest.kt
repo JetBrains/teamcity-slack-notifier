@@ -231,7 +231,7 @@ class SlackNotifierTest : BaseSlackTestCase() {
                 )
         )
         `when build finishes with multiple changes`(4)
-        `then view changes button should contain`("View all 4 changes")
+        `then message should contain`("View all 4 changes in TeamCity")
     }
 
     @Test
@@ -245,7 +245,7 @@ class SlackNotifierTest : BaseSlackTestCase() {
                 )
         )
         `when build finishes with multiple changes`(1)
-        `then view changes button should contain`("View 1 change in TeamCity")
+        `then message should contain`("View 1 change in TeamCity")
     }
 
     @Test
