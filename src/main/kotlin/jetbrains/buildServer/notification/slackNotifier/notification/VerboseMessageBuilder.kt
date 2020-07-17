@@ -4,13 +4,7 @@ import jetbrains.buildServer.Build
 import jetbrains.buildServer.notification.NotificationBuildStatusProvider
 import jetbrains.buildServer.notification.TemplateMessageBuilder
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
-import jetbrains.buildServer.responsibility.ResponsibilityEntry
-import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
 import jetbrains.buildServer.serverSide.*
-import jetbrains.buildServer.serverSide.mute.MuteInfo
-import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
-import jetbrains.buildServer.tests.TestName
-import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.vcs.SelectPrevBuildPolicy
 import jetbrains.buildServer.vcs.VcsRoot
 import java.text.SimpleDateFormat
@@ -88,7 +82,7 @@ class VerboseMessageBuilder(
 
         newline()
         newline()
-        add(format.bold("Changes:"))
+        add(format.bold("Changes"))
         for (change in firstChanges) {
             newline()
             newline()
