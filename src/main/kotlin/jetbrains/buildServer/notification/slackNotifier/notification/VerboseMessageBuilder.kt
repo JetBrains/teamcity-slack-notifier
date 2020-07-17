@@ -88,16 +88,20 @@ class VerboseMessageBuilder(
 
         newline()
         newline()
-        add("Changes:")
+        add(format.bold("Changes:"))
         for (change in firstChanges) {
             newline()
+            newline()
             val changeDescription = shorten(change.description.trim())
-            val username = change.userName?.let {
-                " by ${it.trim()} "
-            } ?: ""
-            val changeAdditionalInfo = "${username}at ${changeDateFormat.format(change.vcsDate)}"
+            val date = changeDateFormat.format(change.vcsDate)
+            val username = change.userName
+            val prefix = if (username != null) {
+                "${format.bold(username)} at $date"
+            } else {
+                "At $date"
+            }
 
-            add("$changeDescription ${format.italic(changeAdditionalInfo)}")
+            add("${prefix}: $changeDescription")
         }
 
         newline()
