@@ -17,7 +17,7 @@ class VerboseMessageBuilder(
         private val notificationBuildStatusProvider: NotificationBuildStatusProvider,
         private val server: SBuildServer
 ) : MessageBuilder by messageBuilder {
-    private val changeDateFormat = SimpleDateFormat("d MMM HH:mm")
+    private val changeDateFormat = SimpleDateFormat("d MMM HH∶mm")
 
     override fun buildStarted(build: SRunningBuild): MessagePayload = messagePayload {
         text {
@@ -95,7 +95,10 @@ class VerboseMessageBuilder(
                 "At $date"
             }
 
-            add("${prefix}: $changeDescription")
+            // Use different colon symbol here since the date is in format hh:mm
+            // and that could lead to Slack interpreting message like '...19:42: ...'
+            // as :42: meaning emoji
+            add("${prefix}∶ $changeDescription")
         }
 
         newline()
