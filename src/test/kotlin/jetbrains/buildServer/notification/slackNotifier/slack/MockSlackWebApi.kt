@@ -22,8 +22,9 @@ class MockSlackWebApi : SlackWebApi {
         return ChannelsList(
                 ok = true,
                 channels = listOf(
-                        Channel("CHANNEL_ID_1", "test_channel"),
-                        Channel("CHANNEL_ID_2", "anotherChannel")
+                    Channel("CHANNEL_ID_1", "test_channel"),
+                    Channel("CHANNEL_ID_2", "anotherChannel"),
+                    Channel("CHANNEL_ID_3", "big_conversation")
                 )
         )
     }
@@ -70,7 +71,7 @@ class MockSlackWebApi : SlackWebApi {
         return MaybeBot(ok = false, error = "no_bot_found")
     }
 
-    override fun conversationsMembers(token: String, channelId: String): ConversationMembers {
+    override fun conversationsMembers(token: String, channelId: String, cursor: String?): ConversationMembers {
         if (incorrectToken(token)) {
             return ConversationMembers(ok = false)
         }
@@ -81,6 +82,30 @@ class MockSlackWebApi : SlackWebApi {
 
         if (channelId == "CHANNEL_ID_2") {
             return ConversationMembers(ok = true, members = listOf("user_1"))
+        }
+
+        if (channelId == "CHANNEL_ID_3") {
+            when (cursor) {
+                null -> {
+                    return ConversationMembers(
+                        ok = true,
+                        members = listOf("user_1", "user_2"),
+                        meta = CursorMetaData(nextCursor = "123")
+                    )
+                }
+                "123" -> {
+                    return ConversationMembers(
+                        ok = true,
+                        members = listOf("botId", "user_3")
+                    )
+                }
+                else -> {
+                    return ConversationMembers(
+                        ok = false,
+                        error = "invalid_cursor"
+                    )
+                }
+            }
         }
 
         return ConversationMembers(ok = false, error = "no_channel_found")

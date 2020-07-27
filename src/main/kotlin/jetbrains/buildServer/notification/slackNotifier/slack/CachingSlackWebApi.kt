@@ -13,7 +13,6 @@ class CachingSlackWebApi(
     private val authTestCache = createCache<String, AuthTestResult>()
     private val botsInfoCache = createCache<String, MaybeBot>()
     private val usersInfoCache = createCache<String, MaybeUser>()
-    private val conversationMembersCache = createCache<String, ConversationMembers>()
     private val userIdentityCache = createCache<String, UserIdentity>()
     private val teamInfoCache = createCache<String, MaybeTeam>()
 
@@ -58,16 +57,23 @@ class CachingSlackWebApi(
         }
     }
 
-    override fun conversationsMembers(token: String, channelId: String): ConversationMembers {
-        return conversationMembersCache.get("$token;;$channelId") {
-            slackApi.conversationsMembers(token, channelId)
-        }
+    /**
+     * All conversation members should be cached, not only the ones for the given cursor
+     * See [AggregatedSlackApi]
+     */
+    override fun conversationsMembers(token: String, channelId: String, cursor: String?): ConversationMembers {
+        return slackApi.conversationsMembers(token, channelId, cursor)
     }
 
     /**
      * OAuth access happens rarely for the same code, so it doesn't make sense to cache it
      */
-    override fun oauthAccess(clientId: String, clientSecret: String, code: String, redirectUrl: String): OauthAccessToken {
+    override fun oauthAccess(
+        clientId: String,
+        clientSecret: String,
+        code: String,
+        redirectUrl: String
+    ): OauthAccessToken {
         return slackApi.oauthAccess(clientId, clientSecret, code, redirectUrl)
     }
 

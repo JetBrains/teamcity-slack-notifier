@@ -95,15 +95,23 @@ class SlackWebApiImpl(
         }
     }
 
-    override fun conversationsMembers(token: String, channelId: String): ConversationMembers = readOnlyRequest {
-        val response = request("conversations.members", token, parameters = listOf(Pair("channel", channelId)))
+    override fun conversationsMembers(token: String, channelId: String, cursor: String?): ConversationMembers =
+        readOnlyRequest {
+            val response = request(
+                "conversations.members",
+                token,
+                parameters = listOf(
+                    Pair("channel", channelId),
+                    Pair("cursor", cursor)
+                )
+            )
 
-        if (response.isException || response.message == null) {
-            ConversationMembers(ok = false, error = unknownError)
-        } else {
-            mapper.readValue(response.message, ConversationMembers::class.java)
+            if (response.isException || response.message == null) {
+                ConversationMembers(ok = false, error = unknownError)
+            } else {
+                mapper.readValue(response.message, ConversationMembers::class.java)
+            }
         }
-    }
 
     override fun usersIdentity(token: String): UserIdentity = readOnlyRequest {
         val response = request("users.identity", token)

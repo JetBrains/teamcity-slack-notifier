@@ -24,7 +24,7 @@ interface SlackWebApi {
     fun usersInfo(token: String, userId: String): MaybeUser
 
     // https://api.slack.com/methods/conversations.members
-    fun conversationsMembers(token: String, channelId: String): ConversationMembers
+    fun conversationsMembers(token: String, channelId: String, cursor: String? = null): ConversationMembers
 
     // https://api.slack.com/methods/oauth.access
     fun oauthAccess(clientId: String, clientSecret: String, code: String, redirectUrl: String): OauthAccessToken
