@@ -482,8 +482,12 @@ data class EmojiList(
 ) : MaybeError
 
 data class ConversationMembers(
-    override val ok: Boolean = false,
-    override val error: String = "",
-    override val needed: String = "",
-    val members: List<String> = emptyList()
-) : MaybeError
+        override val ok: Boolean = false,
+        override val error: String = "",
+        override val needed: String = "",
+        val members: List<String> = emptyList(),
+        @JsonProperty("response_metadata") val meta: CursorMetaData = noCursorMeta
+) : MaybeError, SlackList<String> {
+    override val data = members
+    override val nextCursor = meta.nextCursor
+}

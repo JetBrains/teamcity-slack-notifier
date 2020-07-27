@@ -32,6 +32,15 @@ class AggregatedSlackApi(
             .weigher { _: String, users: List<User> -> users.size }
             .build<String, List<User>>()
 
+    private val myConversationMembersCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(
+                    TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
+                    TimeUnit.SECONDS
+            )
+            .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumConversationMembersToCache, 50_000))
+            .weigher { _: String, members: List<String> -> members.size }
+            .build<String, List<String>>()
+
     // Main bot info (like id or team id) doesn't change over time, so it's safe to cache them indefinitely
     // If some changing info (like display name) should be cached, Guava expirable cache should be used instead
     private val myBotCache: MutableMap<String, AggregatedBot> = Collections.synchronizedMap(WeakHashMap())
@@ -48,6 +57,14 @@ class AggregatedSlackApi(
         return myUsersCache.get(token) {
             getList { cursor ->
                 slackApi.usersList(token, cursor)
+            }
+        }
+    }
+
+    fun getConversationMembers(token: String, channelId: String): List<String> {
+        return myConversationMembersCache.get(token) {
+            getList { cursor ->
+                slackApi.conversationsMembers(token, channelId, cursor)
             }
         }
     }

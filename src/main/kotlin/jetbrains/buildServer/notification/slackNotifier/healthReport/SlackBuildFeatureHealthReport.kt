@@ -125,19 +125,9 @@ class SlackBuildFeatureHealthReport(
                 )
             }
 
-            val members = slackApi.conversationsMembers(token, channel.id)
-            if (!members.ok) {
-                return generateHealthStatus(
-                    feature,
-                    type,
-                    buildType,
-                    "Can't get members of channel $receiverName." +
-                            " Error: ${members.error}"
-                )
-            }
+            val members = aggregatedSlackApi.getConversationMembers(token, channel.id)
 
-
-            if (!members.members.contains(bot.userId)) {
+            if (!members.contains(bot.userId)) {
                 val botName = slackApi.botsInfo(token, bot.botId).bot.name
 
                 return generateHealthStatus(

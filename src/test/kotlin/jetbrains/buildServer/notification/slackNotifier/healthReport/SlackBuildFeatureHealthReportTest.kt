@@ -5,6 +5,7 @@ import jetbrains.buildServer.notification.slackNotifier.And
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.serverSide.impl.NotificationsBuildFeature
+import jetbrains.buildServer.util.TestFor
 import org.testng.annotations.Test
 
 class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFeatureHealthReport>() {
@@ -57,6 +58,15 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
         `then report should contain no errors`()
     }
 
+    @Test
+    @TestFor(issues = ["TW-67015"])
+    fun `test should not report error if there are a lot of members in channel`() {
+        `given build type is in scope`() And
+                `given build feature has channel with a lot of users`()
+        `when health is reported`()
+        `then report should contain no errors`()
+    }
+
     private fun `given build feature is missing connection`() {
         addBuildFeature()
     }
@@ -79,6 +89,15 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
             mapOf(
                 SlackProperties.connectionProperty.key to myConnection.id,
                 SlackProperties.channelProperty.key to "#anotherChannel"
+            )
+        )
+    }
+
+    private fun `given build feature has channel with a lot of users`() {
+        addBuildFeature(
+            mapOf(
+                SlackProperties.connectionProperty.key to myConnection.id,
+                SlackProperties.channelProperty.key to "#big_conversation"
             )
         )
     }
