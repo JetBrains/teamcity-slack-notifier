@@ -59,6 +59,7 @@ class SlackOauthController(
             ?: return errorMessage(request, "Can't find connection with id '${connectionId}")
 
         val code = request.getParameter("code")
+                ?: return errorMessage(request, "Slack auth returned error: ${request.getParameter("error")}")
         val redirectUrl = WebUtil.getRootUrl(request) + PATH
 
         val clientId = connection.parameters["clientId"]
