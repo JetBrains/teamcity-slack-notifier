@@ -22,7 +22,10 @@ class SlackNotifierChannelCompletionControllerTest :
 
     override fun createController(): SlackNotifierChannelCompletionController {
 
-        val oauthManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
+        val oauthManager = OAuthConnectionsManager(
+            myFixture.getSingletonService(ExtensionHolder::class.java),
+            myFixture.webLinks
+        )
         myConnection = oauthManager.addConnection(myProject, "test_type", mapOf("secure:token" to "test_token"))
         myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
 
@@ -30,7 +33,7 @@ class SlackNotifierChannelCompletionControllerTest :
             myFixture.securityContext,
             myFixture.getSingletonService(WebControllerManager::class.java),
             myFixture.projectManager,
-            OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java)),
+            oauthManager,
             myDescriptor,
             AggregatedSlackApi(MockSlackWebApiFactory())
         )

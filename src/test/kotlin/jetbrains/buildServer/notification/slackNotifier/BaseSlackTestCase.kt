@@ -39,17 +39,20 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myFixture.notificationProcessor.setBuildFailingDelay(700)
         myFixture.notificationProcessor.setCheckHangedBuildsInterval(50)
 
-        myConnectionManager = OAuthConnectionsManager(myFixture.getSingletonService(ExtensionHolder::class.java))
+        myConnectionManager = OAuthConnectionsManager(
+            myFixture.getSingletonService(ExtensionHolder::class.java),
+            myFixture.webLinks
+        )
 
         mySlackApiFactory =
-                MockSlackWebApiFactory()
+            MockSlackWebApiFactory()
         mySlackApi = mySlackApiFactory.createSlackWebApi()
 
         val messageFormatter = SlackMessageFormatter()
         val detailsFormatter = DetailsFormatter(
-                messageFormatter,
-                myFixture.webLinks,
-                myFixture.projectManager
+            messageFormatter,
+            myFixture.webLinks,
+            myFixture.projectManager
         )
 
         val simpleMessageBuilderFactory = SimpleMessageBuilderFactory(
