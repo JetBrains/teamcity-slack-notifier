@@ -12,6 +12,7 @@ import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFac
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.SBuild
+import jetbrains.buildServer.serverSide.SimpleParameter
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
@@ -107,13 +108,27 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
     fun `given build feature is subscribed to`(vararg events: NotificationRule.Event, additionalParameters: Map<String, String> = emptyMap()) {
         myBuildType.addBuildFeature(
-                FeatureProviderNotificationRulesHolder.FEATURE_NAME,
-                mapOf(
-                        "notifier" to myNotifier.notificatorType,
-                        SlackProperties.channelProperty.key to "#test_channel",
-                        SlackProperties.connectionProperty.key to myConnection.id,
-                        *(events.map { NotificationRulesConstants.getName(it) to "true" }).toTypedArray()
-                ) + additionalParameters
+            FeatureProviderNotificationRulesHolder.FEATURE_NAME,
+            mapOf(
+                "notifier" to myNotifier.notificatorType,
+                SlackProperties.channelProperty.key to "#test_channel",
+                SlackProperties.connectionProperty.key to myConnection.id,
+                *(events.map { NotificationRulesConstants.getName(it) to "true" }).toTypedArray()
+            ) + additionalParameters
+        )
+    }
+
+    fun `given build feature has parameterized receiver`() {
+        myBuildType.addParameter(SimpleParameter("slack_channel", "#test_channel"))
+
+        myBuildType.addBuildFeature(
+            FeatureProviderNotificationRulesHolder.FEATURE_NAME,
+            mapOf(
+                "notifier" to myNotifier.notificatorType,
+                SlackProperties.channelProperty.key to "%slack_channel%",
+                SlackProperties.connectionProperty.key to myConnection.id,
+                NotificationRulesConstants.BUILD_FINISHED_SUCCESS to "true"
+            )
         )
     }
 

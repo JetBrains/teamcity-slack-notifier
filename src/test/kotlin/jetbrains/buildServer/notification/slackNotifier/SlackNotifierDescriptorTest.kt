@@ -17,15 +17,19 @@ class SlackNotifierDescriptorTest : BaseSlackTestCase() {
     @Test
     fun `should check for channel property`() {
         assertContains(
-                descriptor.validate(emptyMap()),
-                invalidProperty(SlackProperties.channelProperty.key)
+            descriptor.validate(emptyMap()),
+            invalidProperty(SlackProperties.channelProperty.key)
         )
         assertContains(
-                descriptor.validate(mapOf(SlackProperties.channelProperty.key to "")),
-                invalidProperty(SlackProperties.channelProperty.key)
+            descriptor.validate(mapOf(SlackProperties.channelProperty.key to "")),
+            invalidProperty(SlackProperties.channelProperty.key)
         )
         assertNotContains(
-                descriptor.validate(mapOf(SlackProperties.channelProperty.key to "#some-channel")),
+            descriptor.validate(mapOf(SlackProperties.channelProperty.key to "#some-channel")),
+            invalidProperty(SlackProperties.channelProperty.key)
+        )
+        assertNotContains(
+            descriptor.validate(mapOf(SlackProperties.channelProperty.key to "%slack_channel%")),
             invalidProperty(SlackProperties.channelProperty.key)
         )
     }

@@ -262,4 +262,11 @@ class SlackNotifierTest : BaseSlackTestCase() {
         `when build finishes with a long change description`()
         `then message should be short`()
     }
+
+    @Test
+    fun `build feature should send notification to the parameterized receiver`() {
+        `given build feature has parameterized receiver`()
+        `when build finishes`()
+        `then message should contain`("success")
+    }
 }
