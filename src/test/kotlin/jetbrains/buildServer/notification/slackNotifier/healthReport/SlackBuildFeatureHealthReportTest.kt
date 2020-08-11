@@ -67,6 +67,15 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
         `then report should contain no errors`()
     }
 
+    @Test
+    @TestFor(issues = ["TW-66242"])
+    fun `test should not report error if receiver is parameterized`() {
+        `given build type is in scope`() And
+                `given build feature has parameterized receiver`()
+        `when health is reported`()
+        `then report should contain no errors`()
+    }
+
     private fun `given build feature is missing connection`() {
         addBuildFeature()
     }

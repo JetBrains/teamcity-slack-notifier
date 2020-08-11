@@ -84,7 +84,8 @@ class SlackBuildFeatureHealthReport(
         type: String
     ): HealthStatusItem?
             where T : BuildTypeSettings,
-                  T : BuildTypeIdentity {
+                  T : BuildTypeIdentity,
+                  T : ParametersSupport {
         val connectionId = feature.parameters[SlackProperties.connectionProperty.key]
             ?: return generateHealthStatus(feature, type, buildType, "Slack connection is not selected")
 
@@ -101,8 +102,9 @@ class SlackBuildFeatureHealthReport(
                 "Can't find Slack connection with id '${connectionId}' in project ${buildTypeSettings.project.fullName}"
             )
 
-        val receiverName = feature.parameters[SlackProperties.channelProperty.key]
-            ?: return generateHealthStatus(feature, type, buildType, "Channel or user id is missing")
+        val receiverName =
+            feature.parameters[SlackProperties.channelProperty.key]?.let { buildType.valueResolver.resolve(it).result }
+                ?: return generateHealthStatus(feature, type, buildType, "Channel or user id is missing")
 
         // Missing token is reported by [SlackConnectionHealthReport]
         val token = connection.parameters["secure:token"] ?: return null
