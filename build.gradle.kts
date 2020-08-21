@@ -40,8 +40,8 @@ dependencies {
     implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
 
     provided(fileTree(mapOf("dir" to teamcityLibs, "include" to arrayOf("*.jar"))))
-    provided("org.jetbrains.teamcity:server-api:2020.1-SNAPSHOT")
-    provided("org.jetbrains.teamcity:oauth:2020.1-SNAPSHOT")
+    provided("org.jetbrains.teamcity:server-api:2020.2-SNAPSHOT")
+    provided("org.jetbrains.teamcity:oauth:2020.2-SNAPSHOT")
 
     testImplementation(fileTree(mapOf("dir" to teamcityTestLibs, "include" to arrayOf("*.jar"))))
     testImplementation("org.assertj:assertj-core:1.7.1")
@@ -64,7 +64,7 @@ java {
 }
 
 teamcity {
-    version = "2019.2"
+    version = "2020.1"
 
     server {
         descriptor = file("teamcity-plugin.xml")
