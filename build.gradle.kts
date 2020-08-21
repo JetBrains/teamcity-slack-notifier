@@ -14,16 +14,12 @@ val teamcityVersion =
         project.property("TeamCityVersion")
     } else "SNAPSHOT"
 
+extra["teamcityVersion"] = teamcityVersion
+
 val teamcityLibs =
     if (project.hasProperty("TeamCityLibs")) {
         project.property("TeamCityLibs")
     } else "../../.idea_artifacts/web-deployment/WEB-INF/lib"
-
-val teamcityTestLibs =
-    if (project.hasProperty("TeamCityTestLibs")) {
-        project.property("TeamCityTestLibs")
-    } else "../../.idea_artifacts/dist_openapi_integration/tests"
-
 
 allprojects {
     repositories {
@@ -43,7 +39,6 @@ dependencies {
     provided("org.jetbrains.teamcity:server-api:2020.2-SNAPSHOT")
     provided("org.jetbrains.teamcity:oauth:2020.2-SNAPSHOT")
 
-    testImplementation(fileTree(mapOf("dir" to teamcityTestLibs, "include" to arrayOf("*.jar"))))
     testImplementation("org.assertj:assertj-core:1.7.1")
     testImplementation("org.testng:testng:6.8")
     testImplementation("io.mockk:mockk:1.10.0")
@@ -80,12 +75,6 @@ teamcity {
 
 fun Project.teamcity(configuration: com.github.rodm.teamcity.TeamCityPluginExtension.() -> Unit) {
     configure(configuration)
-}
-
-tasks.getByName<Test>("test") {
-    useTestNG {
-        suites("src/test/testng-slack-notifier.xml")
-    }
 }
 
 tasks.register<Copy>("renameDist") {

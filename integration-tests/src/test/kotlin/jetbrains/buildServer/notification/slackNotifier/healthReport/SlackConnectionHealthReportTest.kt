@@ -1,8 +1,8 @@
 package jetbrains.buildServer.notification.slackNotifier.healthReport
 
 import jetbrains.buildServer.notification.slackNotifier.And
-import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
 import jetbrains.buildServer.notification.slackNotifier.SlackConnection
+import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
 import org.testng.annotations.Test
 
 class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectionHealthReport>() {
