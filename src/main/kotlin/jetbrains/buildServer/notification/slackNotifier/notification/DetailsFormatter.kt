@@ -22,10 +22,10 @@ class DetailsFormatter(
 
     fun buildUrl(build: Build): String {
         val projectName =
-                projectManager.findProjectByExternalId(build.projectExternalId)?.fullName ?: "<deleted project>"
+                format.escape(projectManager.findProjectByExternalId(build.projectExternalId)?.fullName ?: "<deleted project>")
 
         val buildType = build.buildType
-        val buildTypeName = buildType?.name ?: ""
+        val buildTypeName = format.escape(buildType?.name ?: "")
 
         val buildName = "$buildTypeName ${number(build)}"
         return "$projectName / ${format.url(links.getViewResultsUrl(build), buildName)}"

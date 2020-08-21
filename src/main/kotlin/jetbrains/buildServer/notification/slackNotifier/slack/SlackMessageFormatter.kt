@@ -4,6 +4,14 @@ import org.springframework.stereotype.Service
 
 @Service
 class SlackMessageFormatter {
+    private val escapingSymbols = mapOf(
+        "&" to "&amp;",
+        "<" to "&lt;",
+        ">" to "&gt;"
+    )
+
+    private val escapingSymbolsRegex = Regex("[${escapingSymbols.keys.joinToString("")}]")
+
     fun url(url: String, text: String = ""): String {
         return "<${url}|${text}>"
     }
@@ -13,4 +21,10 @@ class SlackMessageFormatter {
     fun bold(text: String): String = "*${text}*"
 
     fun italic(text: String): String = "_${text}_"
+
+    fun escape(text: String): String {
+        return text.replace(escapingSymbolsRegex) {
+            escapingSymbols[it.value] ?: it.value
+        }
+    }
 }
