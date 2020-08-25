@@ -8,10 +8,7 @@ group = "org.jetbrains.teamcity"
 val pluginVersion = "${if (project.hasProperty("PluginVersion")) project.property("PluginVersion") else "SNAPSHOT"}"
 version = pluginVersion
 
-val teamcityVersion =
-    if (project.hasProperty("TeamCityVersion")) {
-        project.property("TeamCityVersion")
-    } else "2020.2-SNAPSHOT"
+val teamcityVersion = "2020.2-SNAPSHOT"
 
 extra["teamcityVersion"] = teamcityVersion
 
