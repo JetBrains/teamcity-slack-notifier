@@ -8,18 +8,12 @@ group = "org.jetbrains.teamcity"
 val pluginVersion = "${if (project.hasProperty("PluginVersion")) project.property("PluginVersion") else "SNAPSHOT"}"
 version = pluginVersion
 
-
 val teamcityVersion =
     if (project.hasProperty("TeamCityVersion")) {
         project.property("TeamCityVersion")
-    } else "SNAPSHOT"
+    } else "2020.2-SNAPSHOT"
 
 extra["teamcityVersion"] = teamcityVersion
-
-val teamcityLibs =
-    if (project.hasProperty("TeamCityLibs")) {
-        project.property("TeamCityLibs")
-    } else "../../.idea_artifacts/web-deployment/WEB-INF/lib"
 
 allprojects {
     repositories {
@@ -35,9 +29,11 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
     implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
 
-    provided(fileTree(mapOf("dir" to teamcityLibs, "include" to arrayOf("*.jar"))))
-    provided("org.jetbrains.teamcity:server-api:2020.2-SNAPSHOT")
-    provided("org.jetbrains.teamcity:oauth:2020.2-SNAPSHOT")
+    provided("org.jetbrains.teamcity:server-api:${teamcityVersion}")
+    provided("org.jetbrains.teamcity:oauth:${teamcityVersion}")
+    provided("org.jetbrains.teamcity:server-web-api:${teamcityVersion}")
+    provided("org.jetbrains.teamcity.internal:server:${teamcityVersion}")
+    provided("org.jetbrains.teamcity.internal:web:${teamcityVersion}")
 
     testImplementation("org.assertj:assertj-core:1.7.1")
     testImplementation("org.testng:testng:6.8")
