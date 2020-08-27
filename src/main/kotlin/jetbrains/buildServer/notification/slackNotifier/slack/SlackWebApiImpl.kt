@@ -202,6 +202,8 @@ class SlackWebApiImpl(
                         .addParameters(parameters)
                         .withRetryCount(maxNumberOfRetries)
                         .onErrorResponse(HTTPRequestBuilder.ResponseConsumer {
+                            logger.warn("Slack API returned non-ok response. Status code: ${it.statusCode}, body: ${it.bodyAsString?.replace("\n", " ")}")
+
                             response = it.bodyAsString
                         })
                         .onSuccess {
