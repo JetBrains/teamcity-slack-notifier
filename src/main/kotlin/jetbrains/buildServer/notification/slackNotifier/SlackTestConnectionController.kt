@@ -19,7 +19,6 @@ package jetbrains.buildServer.notification.slackNotifier
 import jetbrains.buildServer.controllers.ActionErrors
 import jetbrains.buildServer.controllers.BaseFormXmlController
 import jetbrains.buildServer.controllers.BasePropertiesBean
-import jetbrains.buildServer.controllers.FormUtil
 import jetbrains.buildServer.controllers.admin.projects.PluginPropertiesUtil
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.InvalidProperty

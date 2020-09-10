@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service
 @Conditional(SlackNotifierEnabled::class)
 class SlackConnectionHealthReport(
     private val oAuthConnectionsManager: OAuthConnectionsManager,
-    private val slackApiFactory: SlackWebApiFactory
+    slackApiFactory: SlackWebApiFactory
 ) : HealthStatusReport() {
     private val api = slackApiFactory.createSlackWebApi()
 

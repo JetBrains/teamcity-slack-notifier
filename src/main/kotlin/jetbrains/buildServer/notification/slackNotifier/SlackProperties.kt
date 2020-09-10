@@ -40,7 +40,7 @@ class SlackProperties {
         val maximumNumberOfChangesProperty = property(maximumNumberOfChanges)
 
         private fun property(name: String): PluginPropertyKey {
-            return PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, name)
+            return PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.notifierType, name)
         }
     }
 

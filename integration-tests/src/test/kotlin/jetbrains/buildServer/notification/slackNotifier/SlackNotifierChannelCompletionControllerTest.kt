@@ -31,10 +31,10 @@ import org.testng.annotations.Test
 
 class SlackNotifierChannelCompletionControllerTest :
     BaseControllerTestCase<SlackNotifierChannelCompletionController>() {
-    lateinit var myConnection: OAuthConnectionDescriptor
-    lateinit var myDescriptor: SlackNotifierDescriptor
+    private lateinit var myConnection: OAuthConnectionDescriptor
+    private lateinit var myDescriptor: SlackNotifierDescriptor
 
-    lateinit var myCompletions: Array<Completion>
+    private lateinit var myCompletions: Array<Completion>
 
     override fun createController(): SlackNotifierChannelCompletionController {
 

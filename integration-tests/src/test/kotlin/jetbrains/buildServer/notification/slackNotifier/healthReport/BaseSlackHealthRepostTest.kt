@@ -26,7 +26,7 @@ import org.testng.annotations.BeforeMethod
 
 abstract class BaseSlackHealthReportTest<T : HealthStatusReport> : BaseSlackTestCase() {
     private val itemsConsumer = StubHealthStatusItemConsumer()
-    protected lateinit var healthReport: T
+    private lateinit var healthReport: T
     private lateinit var scope: HealthStatusScope
     protected lateinit var result: List<HealthStatusItem>
 

@@ -288,26 +288,26 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         return myUser
     }
 
-    fun `then message should contain`(vararg strs: String) {
+    fun `then message should contain`(vararg strings: String) {
         waitForMessage()
-        for (str in strs) {
+        for (str in strings) {
             assertContains(mySlackApi.messages.last().text, str)
         }
     }
 
-    fun `then message should not contain`(vararg strs: String) {
+    fun `then message should not contain`(vararg strings: String) {
         waitForMessage()
-        for (str in strs) {
+        for (str in strings) {
             assertNotContains(mySlackApi.messages.last().text, str, false)
         }
     }
 
-    fun `then view changes button should contain`(vararg strs: String) {
+    fun `then view changes button should contain`(vararg strings: String) {
         waitForMessage()
-        for (str in strs) {
+        for (str in strings) {
             val actionsBlock = mySlackApi.messages.last().blocks.last()
             if (actionsBlock !is MessageActions) {
-                throw IllegalStateException("Last block ${actionsBlock} is not MessageActions")
+                throw IllegalStateException("Last block $actionsBlock is not MessageActions")
             }
             assertContains(actionsBlock.elements.first().text.text, str)
         }

@@ -48,6 +48,6 @@ class SlackConnectionSelectOptionsProvider(
     }
 
     override fun getId(): String {
-        return PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.type, "connectionSelectOptionsProvider").key
+        return PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.notifierType, "connectionSelectOptionsProvider").key
     }
 }

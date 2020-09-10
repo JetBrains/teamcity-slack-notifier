@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
 
 @Service
 class AggregatedSlackApi(
-    private val slackWebApiFactory: SlackWebApiFactory
+    slackWebApiFactory: SlackWebApiFactory
 ) {
     private val slackApi = slackWebApiFactory.createSlackWebApi()
 

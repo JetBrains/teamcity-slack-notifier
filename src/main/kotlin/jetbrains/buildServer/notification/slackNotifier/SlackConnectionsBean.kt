@@ -18,7 +18,6 @@ package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedBot
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
-import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApi
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 
 class SlackConnectionsBean(

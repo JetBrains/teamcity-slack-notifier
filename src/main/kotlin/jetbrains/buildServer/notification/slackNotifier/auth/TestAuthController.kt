@@ -37,7 +37,7 @@ class TestAuthController(
         private val pluginDescriptor: PluginDescriptor
 ) : BaseController() {
     private val slackApi = slackWebApiFactory.createSlackWebApi()
-    private val LOG = Logger.getInstance(TestAuthController::class.java.name)
+    private val log = Logger.getInstance(TestAuthController::class.java.name)
 
     companion object {
         const val PATH = "/admin/slack/auth/test.html"
@@ -79,7 +79,7 @@ class TestAuthController(
     }
 
     private fun warnBadRedirectUriInfo(request: HttpServletRequest) {
-        LOG.warn("Internal error: bad_redirect_uri '${request.requestURL}'")
+        log.warn("Internal error: bad_redirect_uri '${request.requestURL}'")
     }
 
     private fun authResult(success: Boolean, message: String): ModelAndView {

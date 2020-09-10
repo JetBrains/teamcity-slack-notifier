@@ -80,7 +80,6 @@ interface MessageBuilder {
     /**
      * Called when responsibility for configuration changed.
      * @param buildType configuration.
-     * @param users users to be notified.
      */
     fun responsibleChanged(buildType: SBuildType): MessagePayload
 
@@ -143,7 +142,6 @@ interface MessageBuilder {
      * @param buildProblems affected build problems
      * @param entry new responsibility entry
      * @param project corresponding project
-     * @param users users to be notified
      */
     fun buildProblemResponsibleAssigned(
             buildProblems: Collection<BuildProblemInfo?>,
@@ -192,7 +190,6 @@ interface MessageBuilder {
      *
      * @param buildProblems the muted problems
      * @param muteInfo mute info
-     * @param users users to be notified
      */
     fun buildProblemsMuted(
             buildProblems: Collection<BuildProblemInfo?>,

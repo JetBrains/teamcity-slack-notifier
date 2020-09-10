@@ -44,7 +44,7 @@ class SlackOauthController(
     private val userModel: UserModel,
     private val projectManager: ProjectManager,
     private val oAuthConnectionsManager: OAuthConnectionsManager,
-    private val slackWebApiFactory: SlackWebApiFactory
+    slackWebApiFactory: SlackWebApiFactory
 ) : BaseController() {
     companion object {
         const val PATH = "/slack/oauth.html"
