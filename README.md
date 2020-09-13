@@ -2,6 +2,8 @@
 
 [![official project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub) 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Hits-of-Code](https://hitsofcode.com/github/jetbrains/teamcity-slack-notifier?branch=master)](https://hitsofcode.com/view/github/jetbrains/teamcity-slack-notifier?branch=master)
+
 
 The plugin is bundled in TeamCity and requires no manual installation.
 
