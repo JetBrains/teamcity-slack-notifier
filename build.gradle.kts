@@ -55,6 +55,7 @@ teamcity {
     version = "2020.1"
 
     server {
+        archiveName = "slack.zip"
         descriptor = file("teamcity-plugin.xml")
         tokens = mapOf("Version" to pluginVersion)
 
@@ -69,10 +70,3 @@ teamcity {
 fun Project.teamcity(configuration: com.github.rodm.teamcity.TeamCityPluginExtension.() -> Unit) {
     configure(configuration)
 }
-
-tasks.register<Copy>("renameDist") {
-    from("build/distributions/teamcity-slack-plugin-${pluginVersion}.zip")
-    into("build/distributions")
-    rename("teamcity-slack-plugin-${pluginVersion}.zip", "slack.zip")
-}
-
