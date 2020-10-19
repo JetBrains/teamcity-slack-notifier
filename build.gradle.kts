@@ -46,11 +46,6 @@ tasks {
     }
 }
 
-java {
-    sourceSets.getByName("main").java.srcDir("src/main/kotlin")
-    sourceSets.getByName("test").java.srcDir("src/test/kotlin")
-}
-
 teamcity {
     version = "2020.1"
 
@@ -65,8 +60,4 @@ teamcity {
             }
         }
     }
-}
-
-fun Project.teamcity(configuration: com.github.rodm.teamcity.TeamCityPluginExtension.() -> Unit) {
-    configure(configuration)
 }
