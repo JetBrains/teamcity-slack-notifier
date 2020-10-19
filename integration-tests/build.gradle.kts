@@ -11,6 +11,9 @@ val canDownloadSpacePackages = spacePackagesToken != null ||
         (spacePackagesUsername != null && spacePackagesPassword != null)
 
 repositories {
+    mavenCentral()
+    maven(url = "https://download.jetbrains.com/teamcity-repository")
+
     if (canDownloadSpacePackages) {
         maven(url = "https://packages.jetbrains.team/maven/p/tc/maven") {
             if (spacePackagesToken != null) {

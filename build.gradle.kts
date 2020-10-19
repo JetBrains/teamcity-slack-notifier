@@ -1,24 +1,16 @@
 plugins {
     kotlin("jvm") version "1.3.72"
-    id("com.github.rodm.teamcity-server") version "1.2"
-    id("com.github.rodm.teamcity-environments") version "1.2"
+    id("com.github.rodm.teamcity-server") version "1.3.1"
+    id("com.github.rodm.teamcity-environments") version "1.3.1"
 }
 
 group = "org.jetbrains.teamcity"
-val pluginVersion = "${if (project.hasProperty("PluginVersion")) project.property("PluginVersion") else "SNAPSHOT"}"
+val pluginVersion = project.findProperty("PluginVersion") ?: "SNAPSHOT"
 version = pluginVersion
 
 val teamcityVersion = "2020.2-SNAPSHOT"
 
 extra["teamcityVersion"] = teamcityVersion
-
-allprojects {
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven(url = "https://download.jetbrains.com/teamcity-repository")
-    }
-}
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -46,15 +38,11 @@ tasks {
     }
 }
 
-java {
-    sourceSets.getByName("main").java.srcDir("src/main/kotlin")
-    sourceSets.getByName("test").java.srcDir("src/test/kotlin")
-}
-
 teamcity {
     version = "2020.1"
 
     server {
+        archiveName = "slack.zip"
         descriptor = file("teamcity-plugin.xml")
         tokens = mapOf("Version" to pluginVersion)
 
@@ -65,14 +53,3 @@ teamcity {
         }
     }
 }
-
-fun Project.teamcity(configuration: com.github.rodm.teamcity.TeamCityPluginExtension.() -> Unit) {
-    configure(configuration)
-}
-
-tasks.register<Copy>("renameDist") {
-    from("build/distributions/teamcity-slack-plugin-${pluginVersion}.zip")
-    into("build/distributions")
-    rename("teamcity-slack-plugin-${pluginVersion}.zip", "slack.zip")
-}
-
