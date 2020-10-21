@@ -12,6 +12,11 @@ val teamcityVersion = "2020.2-SNAPSHOT"
 
 extra["teamcityVersion"] = teamcityVersion
 
+repositories {
+    maven(url="https://cache-redirector.jetbrains.com/maven-central")
+    maven(url="https://cache-redirector.jetbrains.com/jcenter")
+}
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
