@@ -27,11 +27,13 @@ import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.serverSide.impl.SecondaryNodeSecurityManager
 import jetbrains.buildServer.util.FuncThrow
 import jetbrains.buildServer.util.HTTPRequestBuilder
+import jetbrains.buildServer.util.ssl.SSLTrustStoreProvider
 import java.nio.charset.Charset
 import java.util.*
 
 class SlackWebApiImpl(
-        private val requestHandler: HTTPRequestBuilder.RequestHandler
+        private val requestHandler: HTTPRequestBuilder.RequestHandler,
+        private val sslTrustStoreProvider: SSLTrustStoreProvider
 ) : SlackWebApi {
     private val baseUrl = "https://slack.com/api"
 
@@ -217,6 +219,7 @@ class SlackWebApiImpl(
                         )
                         .addParameters(parameters)
                         .withRetryCount(maxNumberOfRetries)
+                        .withTrustStore(sslTrustStoreProvider.trustStore)
                         .onErrorResponse(HTTPRequestBuilder.ResponseConsumer {
                             logger.warn("Slack API returned non-ok response. Status code: ${it.statusCode}, body: ${it.bodyAsString?.replace("\n", " ")}")
 

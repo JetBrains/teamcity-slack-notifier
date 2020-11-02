@@ -17,6 +17,7 @@
 package jetbrains.buildServer.notification.slackNotifier.slack
 
 import jetbrains.buildServer.BaseTestCase
+import jetbrains.buildServer.util.ssl.SSLTrustStoreProvider
 import org.testng.annotations.Test
 
 class SlackWebApiImplTest : BaseTestCase() {
@@ -52,19 +53,22 @@ class SlackWebApiImplTest : BaseTestCase() {
 
     private fun `given slack is responding correctly`() {
         slackApi = SlackWebApiImpl(
-                MockRequestHandler(standardResponse)
+                MockRequestHandler(standardResponse),
+                SSLTrustStoreProvider { null }
         )
     }
 
     private fun `given slack fails on first request`() {
         slackApi = SlackWebApiImpl(
-                FailingFirstRequestMockHandler(standardResponse)
+                FailingFirstRequestMockHandler(standardResponse),
+                SSLTrustStoreProvider { null }
         )
     }
 
     private fun `given slack always fails`() {
         slackApi = SlackWebApiImpl(
-                AlwaysFailingMockRequestHandler()
+                AlwaysFailingMockRequestHandler(),
+                SSLTrustStoreProvider { null }
         )
     }
 
