@@ -20,10 +20,13 @@ import jetbrains.buildServer.controllers.ActionErrors
 import jetbrains.buildServer.controllers.BaseFormXmlController
 import jetbrains.buildServer.controllers.BasePropertiesBean
 import jetbrains.buildServer.controllers.admin.projects.PluginPropertiesUtil
+import jetbrains.buildServer.notification.slackNotifier.slack.AuthTestResult
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
+import jetbrains.buildServer.serverSide.IOGuard
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.SBuildServer
+import jetbrains.buildServer.util.FuncThrow
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import org.jdom.Element
 import org.springframework.context.annotation.Conditional
@@ -64,7 +67,8 @@ class SlackTestConnectionController(
     private fun getPropertiesProcessor(): PropertiesProcessor = PropertiesProcessor {
         val errors = mutableListOf<InvalidProperty>()
         val botToken = it["secure:token"] ?: return@PropertiesProcessor errors
-        val authTest = slackApi.authTest(botToken)
+
+        val authTest = IOGuard.allowNetworkCall<AuthTestResult, Exception> { slackApi.authTest(botToken) }
         if (!authTest.ok) {
             errors.add(
                     InvalidProperty(
