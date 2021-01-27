@@ -49,8 +49,6 @@
 <jsp:useBean id="editConnectionUrl" scope="request" type="java.lang.String"/>
 <jsp:useBean id="rootProject" scope="request" type="jetbrains.buildServer.serverSide.SProject"/>
 
-<c:set var="autocompletionUrl" value="/admin/notifications/jbSlackNotifier/autocompleteUserId.html"/>
-
 <c:choose>
     <c:when test="${displaySettings}">
         <tr>

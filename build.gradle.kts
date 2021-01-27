@@ -11,6 +11,7 @@ version = pluginVersion
 val teamcityVersion = "2020.2-SNAPSHOT"
 
 extra["teamcityVersion"] = teamcityVersion
+extra["downloadsDir"] = project.findProperty("downloads.dir") ?: "${rootDir}/downloads"
 
 repositories {
     maven(url="https://cache-redirector.jetbrains.com/maven-central")
@@ -44,7 +45,7 @@ tasks {
 }
 
 teamcity {
-    version = "2020.1"
+    version = "2020.2"
 
     server {
         archiveName = "slack.zip"
@@ -55,6 +56,14 @@ teamcity {
             into("kotlin-dsl") {
                 from("src/kotlin-dsl")
             }
+        }
+    }
+    environments {
+        baseHomeDir = "teamcity/servers"
+        baseDataDir = "${rootDir}/data"
+
+        create("teamcity2020.2") {
+            version = "2020.2.2"
         }
     }
 }
