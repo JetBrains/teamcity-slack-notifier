@@ -39,6 +39,9 @@ class SlackProperties {
         val addChangesProperty = property(addChanges)
         val maximumNumberOfChangesProperty = property(maximumNumberOfChanges)
 
+        // Properties that are related to the notification itself
+        val notificationProperties = listOf(messageFormatProperty, addBuildStatusProperty, addBranchProperty, addChangesProperty, maximumNumberOfChangesProperty)
+
         private fun property(name: String): PluginPropertyKey {
             return PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.notifierType, name)
         }
