@@ -18,11 +18,14 @@ package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.BasePropertiesBean
+import jetbrains.buildServer.log.Loggers
+import jetbrains.buildServer.notification.slackNotifier.notification.VerboseMessageBuilderFactory
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.WebLinks
 import jetbrains.buildServer.serverSide.auth.Permission
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
+import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.users.UserModel
 import jetbrains.buildServer.web.NotificationRulesExtension
 import jetbrains.buildServer.web.openapi.PluginDescriptor
@@ -47,10 +50,13 @@ class UserSlackNotifierSettingsController(
     private val aggregatedSlackApi: AggregatedSlackApi,
     private val webLinks: WebLinks
 ) : BaseController() {
+    private val userNotificationSettingsURL = pluginDescriptor.getPluginResourcesPath("userNotificationSettingsURL.html")
+
     init {
         webControllerManager.registerController(descriptor.editParametersUrl, this)
 
         registerUserSettingsPageExtension()
+        registerUserNotificationSettingsController()
     }
 
     private fun registerUserSettingsPageExtension() {
@@ -75,20 +81,24 @@ class UserSlackNotifierSettingsController(
         })
     }
 
+    private fun registerUserNotificationSettingsController() {
+        webControllerManager.registerController(userNotificationSettingsURL, object : BaseController() {
+            override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
+                val user = getUser(request, response) ?: return null
+                for (property in SlackProperties.notificationProperties) {
+                    val value = request.getParameter(property.key)
+                    user.setUserProperty(property, value)
+
+                    Loggers.SERVER.warn("${property.key} - $value")
+                }
+                return null
+            }
+        })
+    }
+
     override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
         val mv = ModelAndView(pluginDescriptor.getPluginResourcesPath("editUserSlackNotifierSettings.jsp"))
-
-        val userId = request.getParameter("holderId")
-        if (userId == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "'holderId' parameter is required")
-            return null
-        }
-
-        val user = userModel.findUserById(userId.toLong())
-        if (user == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User with id '$userId' not found")
-            return null
-        }
+        val user = getUser(request, response) ?: return null
 
         val currentUser = SessionUser.getUser(request)
         if (currentUser == null) {
@@ -122,13 +132,16 @@ class UserSlackNotifierSettingsController(
             }
         }
 
+        val defaultProperties = mapOf(
+            SlackProperties.maximumNumberOfChangesProperty.key to VerboseMessageBuilderFactory.defaultMaximumNumberOfChanges.toString()
+        )
 
         mv.model["connectionsBean"] = SlackConnectionsBean(availableConnections, aggregatedSlackApi)
         mv.model["propertiesBean"] = BasePropertiesBean(user.properties.filter {
             it.key != SlackProperties.channelProperty
         }.map {
             it.key.key to it.value
-        }.toMap())
+        }.toMap(), defaultProperties)
         mv.model["properties"] = SlackProperties()
         mv.model["user"] = user
         mv.model["slackUsername"] = slackUsername ?: ""
@@ -136,8 +149,25 @@ class UserSlackNotifierSettingsController(
         mv.model["displaySettings"] = currentUser.id == user.id
         mv.model["rootUrl"] = WebUtil.getRootUrl(request)
         mv.model["editConnectionUrl"] = webLinks.getEditProjectPageUrl("_Root") + "&tab=oauthConnections"
+        mv.model["editNotificationSettingsUrl"] = userNotificationSettingsURL
         mv.model["rootProject"] = projectManager.rootProject
 
         return mv
+    }
+
+    private fun getUser(request: HttpServletRequest, response: HttpServletResponse): SUser? {
+        val userId = request.getParameter("holderId")
+        if (userId == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "'holderId' parameter is required")
+            return null
+        }
+
+        val user = userModel.findUserById(userId.toLong())
+        if (user == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User with id '$userId' not found")
+            return null
+        }
+
+        return user
     }
 }

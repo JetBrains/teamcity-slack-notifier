@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.jetbrains.teamcity"
-val pluginVersion = project.findProperty("PluginVersion") ?: "SNAPSHOT"
+val pluginVersion = project.findProperty("PluginVersion") ?: "999999-snapshot"
 version = pluginVersion
 
 val teamcityVersion = "2020.2-SNAPSHOT"
