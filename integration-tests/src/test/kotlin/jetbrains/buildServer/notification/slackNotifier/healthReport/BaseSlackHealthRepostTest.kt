@@ -28,7 +28,7 @@ abstract class BaseSlackHealthReportTest<T : HealthStatusReport> : BaseSlackTest
     private val itemsConsumer = StubHealthStatusItemConsumer()
     private lateinit var healthReport: T
     private lateinit var scope: HealthStatusScope
-    protected lateinit var result: List<HealthStatusItem>
+    private lateinit var result: List<HealthStatusItem>
 
     @BeforeMethod(alwaysRun = true)
     override fun setUp() {
