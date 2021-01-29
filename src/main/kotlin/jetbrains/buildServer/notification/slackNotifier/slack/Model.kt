@@ -70,11 +70,7 @@ data class User(
     override val displayName: String
         @JsonIgnore
         get() {
-            return if (profile.displayName.isNotEmpty()) {
-                profile.displayName
-            } else {
-                name
-            }
+            return profile.displayName.ifEmpty { name }
         }
     override val hasRealName: Boolean
         get() = true
