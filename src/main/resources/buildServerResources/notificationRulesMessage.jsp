@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 
 <%--
   ~  Copyright 2000-2021 JetBrains s.r.o.
@@ -38,4 +39,6 @@
     </c:choose>
     <br/>
     To receive notifications for a specific project, configure the connection directly in this project's settings instead.
+    <br/>
+    Consider using <em>Notifications</em> build feature to receive channel-leven notifications. <bs:help file="Notifications"/>
 </p>
