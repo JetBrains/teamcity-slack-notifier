@@ -40,5 +40,5 @@
     <br/>
     To receive notifications for a specific project, configure the connection directly in this project's settings instead.
     <br/>
-    Consider using <em>Notifications</em> build feature to receive channel-leven notifications. <bs:help file="Notifications"/>
+    Consider using <em>Notifications</em> build feature to receive channel-level notifications. <bs:help file="Notifications"/>
 </p>
