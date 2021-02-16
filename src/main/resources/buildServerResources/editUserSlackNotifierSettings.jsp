@@ -72,7 +72,7 @@
                                 Root project's settings.
                             </c:otherwise>
                         </c:choose>
-                        To receive notifications for a specific project, configure the connection directly in this project's settings instead.
+                        To receive notifications for a specific project, configure the connection directly in that project's settings instead.
                         <br/>
                     </c:when>
                     <c:otherwise>
