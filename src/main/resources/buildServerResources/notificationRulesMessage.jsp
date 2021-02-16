@@ -38,7 +38,8 @@
         </c:otherwise>
     </c:choose>
     <br/>
-    To receive notifications for a specific project, configure the connection directly in this project's settings instead.
+    To receive notifications for a specific project, configure the connection directly in that project's settings instead.
     <br/>
-    Consider using <em>Notifications</em> build feature to receive channel-level notifications. <bs:help file="Notifications"/>
+    To receive notifications via a Slack channel, consider configuring the <em>Notifications</em> build feature instead.
+    <bs:help file="Notifications"/>
 </p>
