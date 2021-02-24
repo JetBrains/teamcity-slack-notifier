@@ -26,7 +26,8 @@ class SlackMessageFormatter {
         ">" to "&gt;"
     )
 
-    private val escapingSymbolsRegex = Regex("[${escapingSymbols.keys.joinToString("")}]")
+    private val escapingSymbolsStr = "[${escapingSymbols.keys.joinToString("")}]"
+    private val escapingSymbolsRegex = Regex(escapingSymbolsStr)
 
     fun url(url: String, text: String = ""): String {
         return "<${url}|${text}>"

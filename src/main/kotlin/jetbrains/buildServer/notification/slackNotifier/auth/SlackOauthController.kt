@@ -57,7 +57,7 @@ class SlackOauthController(
         webControllerManager.registerController(PATH, this)
     }
 
-    override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
+    override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
         val state = Gson().fromJson<SlackOAuthState>(request.getParameter("state"))
         val userId = state.userId.toLong()
         val currentUser = SessionUser.getUser(request.session)

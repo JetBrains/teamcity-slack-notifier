@@ -22,6 +22,7 @@ import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
 import jetbrains.buildServer.serverSide.TeamCityProperties
 import java.util.concurrent.TimeUnit
 
+@Suppress("UnstableApiUsage")
 class CachingSlackWebApi(
         private val slackApi: SlackWebApi,
         private val defaultTimeoutSeconds: Long = 300

@@ -47,7 +47,7 @@ class TestAuthController(
         webControllerManager.registerController(PATH, this)
     }
 
-    override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
+    override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
         val code = request.getParameter("code")
         val clientId = request.session.getAttribute("slack.clientId") as? String?
                 ?: return authResult(false, "Unexpected error: can't find client id in session")

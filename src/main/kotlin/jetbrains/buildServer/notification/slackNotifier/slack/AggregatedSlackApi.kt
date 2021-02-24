@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+@Suppress("UnstableApiUsage")
 @Service
 class AggregatedSlackApi(
     slackWebApiFactory: SlackWebApiFactory

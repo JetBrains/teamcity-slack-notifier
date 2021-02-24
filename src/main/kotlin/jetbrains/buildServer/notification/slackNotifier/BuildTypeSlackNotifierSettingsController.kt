@@ -47,7 +47,7 @@ class BuildTypeSlackNotifierSettingsController(
         webControllerManager.registerController(descriptor.editParametersUrl, this)
     }
 
-    override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
+    override fun doHandle(request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
         val mv = ModelAndView(pluginDescriptor.getPluginResourcesPath("editBuildTypeSlackNotifierSettings.jsp"))
 
         val buildTypeId = request.getParameter("buildTypeId")
