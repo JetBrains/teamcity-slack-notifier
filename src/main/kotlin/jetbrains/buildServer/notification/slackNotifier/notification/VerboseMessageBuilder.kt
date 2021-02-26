@@ -79,7 +79,7 @@ class VerboseMessageBuilder(
 
         if (build is SBuild) {
             build.branch?.displayName?.let { branch ->
-                add(" in branch \"$branch\"")
+                add(" in branch `$branch`")
             }
         }
     }
