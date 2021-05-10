@@ -134,65 +134,35 @@ class SlackNotifierTest : BaseSlackTestCase() {
 
     @Test
     fun `build feature should send verbose notification about build success`() {
-        `given build feature is subscribed to`(
-                BUILD_FINISHED_SUCCESS,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose",
-                        SlackProperties.addBranchProperty.key to "true"
-                )
-        )
+        `given build feature with verbose branch is subscribed to`(BUILD_FINISHED_SUCCESS)
         val build = `when build finishes in master`()
         `then message should contain`("success", build.buildNumber, "master")
     }
 
     @Test
     fun `build feature should send verbose notification about build failure`() {
-        `given build feature is subscribed to`(
-                BUILD_FINISHED_FAILURE,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose",
-                        SlackProperties.addBranchProperty.key to "true"
-                )
-        )
+        `given build feature with verbose branch is subscribed to`(BUILD_FINISHED_FAILURE)
         val build = `when build fails in master`()
         `then message should contain`("fail", build.buildNumber, "master")
     }
 
     @Test
     fun `build feature should send build status in verbose notification about build success`() {
-        `given build feature is subscribed to`(
-                BUILD_FINISHED_SUCCESS,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose",
-                        SlackProperties.addBuildStatusProperty.key to "true"
-                )
-        )
+        `given build feature with verbose build status is subscribed to`(BUILD_FINISHED_SUCCESS)
         val build = `when build finishes with custom status`()
         `then message should contain`("success", build.buildNumber, "Custom build status")
     }
 
     @Test
     fun `build feature should send build status in verbose notification about build failure`() {
-        `given build feature is subscribed to`(
-            BUILD_FINISHED_FAILURE,
-            additionalParameters = mapOf(
-                SlackProperties.messageFormatProperty.key to "verbose",
-                SlackProperties.addBuildStatusProperty.key to "true"
-            )
-        )
+        `given build feature with verbose build status is subscribed to`(BUILD_FINISHED_FAILURE)
         val build = `when build fails with custom status`()
         `then message should contain`("fail", build.buildNumber, "Custom build status")
     }
 
     @Test
     fun `build feature should send build status in verbose notification`() {
-        `given build feature is subscribed to`(
-            BUILD_FINISHED_SUCCESS,
-            additionalParameters = mapOf(
-                SlackProperties.messageFormatProperty.key to "verbose",
-                SlackProperties.addBuildStatusProperty.key to "true"
-            )
-        )
+        `given build feature with verbose build status is subscribed to`(BUILD_FINISHED_SUCCESS)
         val build = `when build finishes`()
         `then message should contain`(build.buildNumber, "Success") And
                 `then message should not contain`("Running")
@@ -200,81 +170,42 @@ class SlackNotifierTest : BaseSlackTestCase() {
 
     @Test
     fun `build feature should send changes in verbose notification about build success`() {
-        `given build feature is subscribed to`(
-            BUILD_FINISHED_SUCCESS,
-            additionalParameters = mapOf(
-                SlackProperties.messageFormatProperty.key to "verbose",
-                SlackProperties.addChangesProperty.key to "true"
-            )
-        )
+        `given build feature with verbose changes is subscribed to`(BUILD_FINISHED_SUCCESS)
         val build = `when build finishes with changes`()
         `then message should contain`("success", build.buildNumber, "committer1", "Commit message")
     }
 
     @Test
     fun `build feature should send changes in verbose notification about build failure`() {
-        `given build feature is subscribed to`(
-                BUILD_FINISHED_FAILURE,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose",
-                        SlackProperties.addChangesProperty.key to "true"
-                )
-        )
+        `given build feature with verbose changes is subscribed to`(BUILD_FINISHED_FAILURE)
         val build = `when build fails with changes`()
         `then message should contain`("fail", build.buildNumber, "committer1", "Commit message")
     }
 
     @Test
     fun `build feature should not send changes in verbose notification if no options are provided`() {
-        `given build feature is subscribed to`(
-                BUILD_FINISHED_SUCCESS,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose"
-                )
-        )
+        `given build feature with verbose without settings is subscribed to`(BUILD_FINISHED_SUCCESS)
         `when build finishes with changes`()
         `then message should not contain`("committer1", "Commit message")
     }
 
     @Test
     fun `notification message should limit number of changes in a message`() {
-        `given build feature is subscribed to`(
-                BUILD_FINISHED_SUCCESS,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose",
-                        SlackProperties.addChangesProperty.key to "true",
-                        SlackProperties.maximumNumberOfChangesProperty.key to "2"
-                )
-        )
+        `given build feature with 2 max changes is subscribed to`(BUILD_FINISHED_SUCCESS)
         `when build finishes with multiple changes`(4)
         `then message should contain`("View all 4 changes in TeamCity")
     }
 
     @Test
     fun `change word should be in singular when only one commit is present`() {
-        `given build feature is subscribed to`(
-                BUILD_FINISHED_SUCCESS,
-                additionalParameters = mapOf(
-                        SlackProperties.messageFormatProperty.key to "verbose",
-                        SlackProperties.addChangesProperty.key to "true",
-                        SlackProperties.maximumNumberOfChangesProperty.key to "2"
-                )
-        )
+        `given build feature with 2 max changes is subscribed to`(BUILD_FINISHED_SUCCESS)
         `when build finishes with multiple changes`(1)
         `then message should contain`("View 1 change in TeamCity")
     }
 
     @Test
     fun `long change description should be shortened`() {
-        `given build feature is subscribed to`(
-            BUILD_FINISHED_SUCCESS,
-            additionalParameters = mapOf(
-                SlackProperties.messageFormatProperty.key to "verbose",
-                SlackProperties.addChangesProperty.key to "true",
-                SlackProperties.maximumNumberOfChangesProperty.key to "2"
-            )
-        )
-
+        `given build feature with 2 max changes is subscribed to`(BUILD_FINISHED_SUCCESS)
         `when build finishes with a long change description`()
         `then message should be short`()
     }

@@ -122,7 +122,46 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         storeRules(myUser, myNotifier, newRule(*events))
     }
 
-    fun `given build feature is subscribed to`(vararg events: NotificationRule.Event, additionalParameters: Map<String, String> = emptyMap()) {
+    fun `given build feature is subscribed to`(vararg events: NotificationRule.Event) {
+        addBuildFeature(*events)
+    }
+
+    fun `given build feature with verbose branch is subscribed to`(vararg events: NotificationRule.Event) {
+        addBuildFeature(*events, additionalParameters = mapOf(
+            SlackProperties.messageFormatProperty.key to "verbose",
+            SlackProperties.addBranchProperty.key to "true"
+        ))
+    }
+
+    fun `given build feature with verbose build status is subscribed to`(vararg events: NotificationRule.Event) {
+        addBuildFeature(*events, additionalParameters = mapOf(
+            SlackProperties.messageFormatProperty.key to "verbose",
+            SlackProperties.addBuildStatusProperty.key to "true"
+        ))
+    }
+
+    fun `given build feature with verbose changes is subscribed to`(vararg events: NotificationRule.Event) {
+        addBuildFeature(*events, additionalParameters = mapOf(
+            SlackProperties.messageFormatProperty.key to "verbose",
+            SlackProperties.addChangesProperty.key to "true"
+        ))
+    }
+
+    fun `given build feature with 2 max changes is subscribed to`(vararg events: NotificationRule.Event) {
+        addBuildFeature(*events, additionalParameters = mapOf(
+            SlackProperties.messageFormatProperty.key to "verbose",
+            SlackProperties.addChangesProperty.key to "true",
+            SlackProperties.maximumNumberOfChangesProperty.key to "2"
+        ))
+    }
+
+    fun `given build feature with verbose without settings is subscribed to`(vararg events: NotificationRule.Event) {
+        addBuildFeature(*events, additionalParameters = mapOf(
+            SlackProperties.messageFormatProperty.key to "verbose"
+        ))
+    }
+
+    private fun addBuildFeature(vararg events: NotificationRule.Event, additionalParameters: Map<String, String> = emptyMap()) {
         myBuildType.addBuildFeature(
             FeatureProviderNotificationRulesHolder.FEATURE_NAME,
             mapOf(
