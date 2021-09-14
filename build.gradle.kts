@@ -8,7 +8,7 @@ group = "org.jetbrains.teamcity"
 val pluginVersion = project.findProperty("PluginVersion") ?: "999999-snapshot"
 version = pluginVersion
 
-val teamcityVersion = "2020.2-SNAPSHOT"
+val teamcityVersion = "2021.1.3-SNAPSHOT"
 
 extra["teamcityVersion"] = teamcityVersion
 extra["downloadsDir"] = project.findProperty("downloads.dir") ?: "${rootDir}/downloads"
@@ -23,6 +23,7 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
     implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.0.3")
 
     provided("org.jetbrains.teamcity:server-api:${teamcityVersion}")
     provided("org.jetbrains.teamcity:oauth:${teamcityVersion}")

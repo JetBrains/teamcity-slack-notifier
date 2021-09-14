@@ -16,9 +16,13 @@
 
 package jetbrains.buildServer.notification.slackNotifier.slack
 
-class MockSlackWebApiFactory : SlackWebApiFactory {
-    private val slackWebApi = MockSlackWebApi()
-    override fun createSlackWebApi(): MockSlackWebApi {
-        return slackWebApi
+import jetbrains.buildServer.util.HTTPRequestBuilder
+import java.util.concurrent.TimeoutException
+
+class AlwaysFailingRequestHandler : HTTPRequestBuilder.RequestHandler {
+    override fun doRequest(request: HTTPRequestBuilder.Request) {
+        for (i in 0..request.retryCount) {
+            request.onException.accept(TimeoutException("Slack request timeout"))
+        }
     }
 }

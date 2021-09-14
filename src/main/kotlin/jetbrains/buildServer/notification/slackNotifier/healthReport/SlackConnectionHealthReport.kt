@@ -24,6 +24,7 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
+import java.util.concurrent.TimeoutException
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
@@ -72,7 +73,11 @@ class SlackConnectionHealthReport(
             return
         }
 
-        val permissions = api.authTest(token)
+        val permissions = try {
+            api.authTest(token)
+        } catch (e: TimeoutException) {
+            return
+        }
         if (!permissions.ok) {
             val error = permissions.error
             val reason = if (error == "not_authed" || error == "invalid_auth") {

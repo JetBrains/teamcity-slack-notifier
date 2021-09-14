@@ -16,17 +16,16 @@
 
 package jetbrains.buildServer.notification.slackNotifier.slack
 
+
 const val slackToken = "test_token"
 
-class MockSlackWebApi : SlackWebApi {
-    val messages = mutableListOf<Message>()
+class SlackWebApiStub : SlackWebApi {
 
     override fun postMessage(token: String, payload: Message): MaybeMessage {
         if (incorrectToken(token)) {
             return MaybeMessage(ok = false)
         }
 
-        messages.add(payload)
         return MaybeMessage(ok = true)
     }
 

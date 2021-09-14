@@ -23,7 +23,7 @@ import jetbrains.buildServer.controllers.BaseControllerTestCase
 import jetbrains.buildServer.controllers.Completion
 import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
-import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
+import jetbrains.buildServer.notification.slackNotifier.slack.StoringMessagesSlackWebApiFactoryStub
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.web.openapi.WebControllerManager
@@ -39,8 +39,7 @@ class SlackNotifierChannelCompletionControllerTest :
     override fun createController(): SlackNotifierChannelCompletionController {
 
         val oauthManager = OAuthConnectionsManager(
-            myFixture.getSingletonService(ExtensionHolder::class.java),
-            myFixture.webLinks
+            myFixture.getSingletonService(ExtensionHolder::class.java)
         )
         myConnection = oauthManager.addConnection(myProject, "test_type", mapOf("secure:token" to "test_token"))
         myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
@@ -51,7 +50,7 @@ class SlackNotifierChannelCompletionControllerTest :
             myFixture.projectManager,
             oauthManager,
             myDescriptor,
-            AggregatedSlackApi(MockSlackWebApiFactory())
+            AggregatedSlackApi(StoringMessagesSlackWebApiFactoryStub(), myFixture.executorServices)
         )
     }
 

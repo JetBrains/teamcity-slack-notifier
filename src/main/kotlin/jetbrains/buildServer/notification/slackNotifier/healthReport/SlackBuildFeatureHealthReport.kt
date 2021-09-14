@@ -23,11 +23,13 @@ import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.notification.slackNotifier.slack.CachingSlackWebApi
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.*
+import jetbrains.buildServer.serverSide.executors.ExecutorServices
 import jetbrains.buildServer.serverSide.healthStatus.*
 import jetbrains.buildServer.serverSide.impl.NotificationsBuildFeature
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
+import java.util.concurrent.TimeoutException
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
@@ -35,9 +37,11 @@ class SlackBuildFeatureHealthReport(
     private val descriptor: SlackNotifierDescriptor,
     private val oAuthConnectionsManager: OAuthConnectionsManager,
     slackWebApiFactory: SlackWebApiFactory,
-    private val aggregatedSlackApi: AggregatedSlackApi
+    private val aggregatedSlackApi: AggregatedSlackApi,
+    executorServices: ExecutorServices
 ) : HealthStatusReport() {
-    private val slackApi = CachingSlackWebApi(slackWebApiFactory.createSlackWebApi(), defaultTimeoutSeconds = 60)
+    private val slackApi = CachingSlackWebApi(slackWebApiFactory.createSlackWebApi(),
+        defaultTimeoutSeconds = 60, executorServices = executorServices)
 
     companion object {
         const val type = "slackBuildFeatureReport"
@@ -70,7 +74,11 @@ class SlackBuildFeatureHealthReport(
     private fun report(buildType: SBuildType, consumer: HealthStatusItemConsumer) {
         val features = getFeatures(buildType)
         for (feature in features) {
-            val statusItem = getHealthStatus(feature, buildType, "buildType")
+            val statusItem = try {
+                getHealthStatus(feature, buildType, "buildType")
+            } catch (e: TimeoutException) {
+                null
+            }
             if (statusItem != null) {
                 consumer.consumeForBuildType(buildType, statusItem)
             }
@@ -80,7 +88,11 @@ class SlackBuildFeatureHealthReport(
     private fun report(buildTemplate: BuildTypeTemplate, consumer: HealthStatusItemConsumer) {
         val features = getFeatures(buildTemplate)
         for (feature in features) {
-            val statusItem = getHealthStatus(feature, buildTemplate, "template")
+            val statusItem = try {
+                getHealthStatus(feature, buildTemplate, "template")
+            } catch (e: TimeoutException) {
+                null
+            }
             if (statusItem != null) {
                 consumer.consumeForTemplate(buildTemplate, statusItem)
             }
@@ -127,13 +139,16 @@ class SlackBuildFeatureHealthReport(
 
         if (receiverName.startsWith("#")) {
             val bot = slackApi.authTest(token)
-
             val channels = aggregatedSlackApi.getChannelsList(token)
             val channel = channels.find {
                 "#${it.name}" == receiverName
             }
             if (channel == null) {
-                val botName = slackApi.botsInfo(token, bot.botId).bot.name
+                val botName = try {
+                    slackApi.botsInfo(token, bot.botId).bot.name
+                } catch (e: TimeoutException) {
+                    return null
+                }
 
                 return generateHealthStatus(
                         feature,

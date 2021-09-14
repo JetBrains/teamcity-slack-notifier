@@ -30,7 +30,8 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
             myDescriptor,
             myConnectionManager,
             mySlackApiFactory,
-            AggregatedSlackApi(mySlackApiFactory)
+            AggregatedSlackApi(mySlackApiFactory, myFixture.executorServices),
+            myFixture.executorServices
         )
     }
 
@@ -67,7 +68,7 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
     }
 
     @Test
-    fun `test should not report if build feature is configured correctly`() {
+    fun `test should not report error if build feature is configured correctly`() {
         `given build type is in scope`() And
                 `given build features is configured correctly`()
         `when health is reported`()
@@ -88,6 +89,42 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
     fun `test should not report error if receiver is parameterized`() {
         `given build type is in scope`() And
                 `given build feature has parameterized receiver`()
+        `when health is reported`()
+        `then report should contain no errors`()
+    }
+
+    @Test(timeOut = 10_000)
+    fun `test should not report error if authTest is hanging`() {
+        `given build type is in scope`() And
+                `given build features is configured correctly`() And
+                `given authTest api method is hanging`()
+        `when health is reported`()
+        `then report should contain no errors`()
+    }
+
+    @Test(timeOut = 10_000)
+    fun `test should not report error if channelsList is hanging`() {
+        `given build type is in scope`() And
+                `given build features is configured correctly`() And
+                `given conversationsList api method is hanging`()
+        `when health is reported`()
+        `then report should contain no errors`()
+    }
+
+    @Test(timeOut = 10_000)
+    fun `test should report invalid channel if botsInfo hanging`() {
+        `given build type is in scope`() And
+                `given build feature has invalid channel`() And
+                `given botsInfo api method is hanging`()
+        `when health is reported`()
+        `then report should contain no errors`()
+    }
+
+    @Test(timeOut = 10_000)
+    fun `test should not report error if getConversationMembers hanging`() {
+        `given build type is in scope`() And
+                `given build features is configured correctly`() And
+                `given conversationsMembers api method is hanging`()
         `when health is reported`()
         `then report should contain no errors`()
     }

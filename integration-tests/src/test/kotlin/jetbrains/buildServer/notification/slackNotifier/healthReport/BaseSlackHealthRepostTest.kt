@@ -26,15 +26,12 @@ import org.testng.annotations.BeforeMethod
 
 abstract class BaseSlackHealthReportTest<T : HealthStatusReport> : BaseSlackTestCase() {
     private val itemsConsumer = StubHealthStatusItemConsumer()
-    private lateinit var healthReport: T
     private lateinit var scope: HealthStatusScope
     private lateinit var result: List<HealthStatusItem>
 
     @BeforeMethod(alwaysRun = true)
     override fun setUp() {
         super.setUp()
-
-        healthReport = getReport()
     }
 
     abstract fun getReport(): T
@@ -53,7 +50,7 @@ abstract class BaseSlackHealthReportTest<T : HealthStatusReport> : BaseSlackTest
 
     protected fun `when health is reported`() {
         itemsConsumer.reset()
-        healthReport.report(scope, itemsConsumer)
+        getReport().report(scope, itemsConsumer)
         result = itemsConsumer.consumedItems
     }
 

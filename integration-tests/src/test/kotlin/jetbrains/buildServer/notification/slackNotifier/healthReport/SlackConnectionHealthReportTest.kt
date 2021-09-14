@@ -18,19 +18,18 @@ package jetbrains.buildServer.notification.slackNotifier.healthReport
 
 import jetbrains.buildServer.notification.slackNotifier.And
 import jetbrains.buildServer.notification.slackNotifier.SlackConnection
-import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
 import org.testng.annotations.Test
 
 class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectionHealthReport>() {
     override fun getReport(): SlackConnectionHealthReport {
         return SlackConnectionHealthReport(
             myConnectionManager,
-                MockSlackWebApiFactory()
+            mySlackApiFactory
         )
     }
 
     @Test
-    fun `test should report missing token`() {
+    fun `should report missing token`() {
         `given project is in scope`() And
                 `given connection is missing token`()
         `when health is reported`()
@@ -38,7 +37,7 @@ class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectio
     }
 
     @Test
-    fun `test should report invalid token`() {
+    fun `should report invalid token`() {
         `given project is in scope`() And
                 `given connection has invalid token`()
         `when health is reported`()
@@ -46,13 +45,21 @@ class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectio
     }
 
     @Test
-    fun `test should report no errors for correct connection`() {
+    fun `should report no errors for correct connection`() {
         `given project is in scope`() And
                 `given connection is configured correctly`()
         `when health is reported`()
         `then report should contain no errors`()
     }
 
+    @Test(timeOut = 10_000)
+    fun `should report no errors if authTest is hanging`() {
+        `given project is in scope`() And
+                `given connection is configured correctly`() And
+                `given authTest api method is hanging`()
+        `when health is reported`()
+        `then report should contain no errors`()
+    }
 
     private fun `given connection is missing token`() {
         myConnection = myConnectionManager.addConnection(

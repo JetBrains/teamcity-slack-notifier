@@ -16,15 +16,22 @@
 
 package jetbrains.buildServer.notification.slackNotifier.slack
 
+import com.github.benmanes.caffeine.cache.AsyncCache
+import com.github.benmanes.caffeine.cache.AsyncLoadingCache
+import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
+import jetbrains.buildServer.notification.slackNotifier.concurrency.getAsync
 import jetbrains.buildServer.serverSide.TeamCityProperties
+import jetbrains.buildServer.serverSide.executors.ExecutorServices
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
-@Suppress("UnstableApiUsage")
 class CachingSlackWebApi(
         private val slackApi: SlackWebApi,
+        private val executorServices: ExecutorServices,
         private val defaultTimeoutSeconds: Long = 300
 ) : SlackWebApi {
     private val authTestCache = createCache<String, AuthTestResult>()
@@ -32,6 +39,8 @@ class CachingSlackWebApi(
     private val usersInfoCache = createCache<String, MaybeUser>()
     private val userIdentityCache = createCache<String, UserIdentity>()
     private val teamInfoCache = createCache<String, MaybeTeam>()
+
+    private val readTimeoutMs = 1_000L
 
     /**
      * Posts new message every time, makes no sense to cache
@@ -57,19 +66,19 @@ class CachingSlackWebApi(
     }
 
     override fun authTest(token: String): AuthTestResult {
-        return authTestCache.get(token) {
+        return authTestCache.getAsync(token, readTimeoutMs) {
             slackApi.authTest(token)
         }
     }
 
     override fun botsInfo(token: String, botId: String): MaybeBot {
-        return botsInfoCache.get("$token;;$botId") {
+        return botsInfoCache.getAsync("$token;;$botId", readTimeoutMs) {
             slackApi.botsInfo(token, botId)
         }
     }
 
     override fun usersInfo(token: String, userId: String): MaybeUser {
-        return usersInfoCache.get("$token;;$userId") {
+        return usersInfoCache.getAsync("$token;;$userId", readTimeoutMs) {
             slackApi.usersInfo(token, userId)
         }
     }
@@ -95,24 +104,22 @@ class CachingSlackWebApi(
     }
 
     override fun usersIdentity(token: String): UserIdentity {
-        return userIdentityCache.get(token) {
+        return userIdentityCache.getAsync(token, readTimeoutMs) {
             slackApi.usersIdentity(token)
         }
     }
 
     override fun teamInfo(token: String, team: String): MaybeTeam {
-        return teamInfoCache.get("$token;;$team") {
+        return teamInfoCache.getAsync("$token;;$team", readTimeoutMs) {
             slackApi.teamInfo(token, team)
         }
     }
 
-    private fun <K, V> createCache(): Cache<K, V> {
-        return CacheBuilder.newBuilder()
-                .expireAfterWrite(
-                        TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, defaultTimeoutSeconds),
-                        TimeUnit.SECONDS
-                )
-                .maximumSize(1000)
-                .build()
+    private fun <K, V> createCache(): AsyncCache<K, V> {
+        return Caffeine.newBuilder()
+            .maximumSize(100)
+            .expireAfterWrite(defaultTimeoutSeconds, TimeUnit.SECONDS)
+            .executor(executorServices.lowPriorityExecutorService)
+            .buildAsync<K, V>()
     }
 }

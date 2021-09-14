@@ -16,54 +16,61 @@
 
 package jetbrains.buildServer.notification.slackNotifier.slack
 
-import com.google.common.cache.CacheBuilder
+import com.github.benmanes.caffeine.cache.Caffeine
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
+import jetbrains.buildServer.notification.slackNotifier.concurrency.getAsync
 import jetbrains.buildServer.serverSide.TeamCityProperties
+import jetbrains.buildServer.serverSide.executors.ExecutorServices
 import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-@Suppress("UnstableApiUsage")
 @Service
 class AggregatedSlackApi(
-    slackWebApiFactory: SlackWebApiFactory
+    slackWebApiFactory: SlackWebApiFactory,
+    executorServices: ExecutorServices
 ) {
     private val slackApi = slackWebApiFactory.createSlackWebApi()
 
-    // Minor copy-paste here, but de-duplicating it takes twice as much lines
-    private val myChannelsCache = CacheBuilder.newBuilder()
+    // Minor copy-paste here, but de-duplicating it takes twice as many lines
+    private val myChannelsCache = Caffeine.newBuilder()
         .expireAfterWrite(
             TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
             TimeUnit.SECONDS
         )
+        .executor(executorServices.lowPriorityExecutorService)
         .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumChannelsToCache, 50_000))
         .weigher { _: String, channels: List<Channel> -> channels.size }
-        .build<String, List<Channel>>()
+        .buildAsync<String, List<Channel>>()
 
-    private val myUsersCache = CacheBuilder.newBuilder()
+    private val myUsersCache = Caffeine.newBuilder()
             .expireAfterWrite(
                     TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
                     TimeUnit.SECONDS
             )
+            .executor(executorServices.lowPriorityExecutorService)
             .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumUsersToCache, 50_000))
             .weigher { _: String, users: List<User> -> users.size }
-            .build<String, List<User>>()
+            .buildAsync<String, List<User>>()
 
-    private val myConversationMembersCache = CacheBuilder.newBuilder()
+    private val myConversationMembersCache = Caffeine.newBuilder()
             .expireAfterWrite(
                     TeamCityProperties.getLong(SlackNotifierProperties.cacheExpire, 300),
                     TimeUnit.SECONDS
             )
+            .executor(executorServices.lowPriorityExecutorService)
             .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumConversationMembersToCache, 50_000))
             .weigher { _: String, members: List<String> -> members.size }
-            .build<String, List<String>>()
+            .buildAsync<String, List<String>>()
 
     // Main bot info (like id or team id) doesn't change over time, so it's safe to cache them indefinitely
     // If some changing info (like display name) should be cached, Guava expirable cache should be used instead
     private val myBotCache: MutableMap<String, AggregatedBot> = Collections.synchronizedMap(WeakHashMap())
 
+    private val readTimeoutMs = 5_000L
+
     fun getChannelsList(token: String): List<Channel> {
-        return myChannelsCache.get(token) {
+        return myChannelsCache.getAsync(token, readTimeoutMs) {
             getList { cursor ->
                 slackApi.conversationsList(token, cursor)
             }
@@ -71,7 +78,7 @@ class AggregatedSlackApi(
     }
 
     fun getUsersList(token: String): List<User> {
-        return myUsersCache.get(token) {
+        return myUsersCache.getAsync(token, readTimeoutMs) {
             getList { cursor ->
                 slackApi.usersList(token, cursor)
             }
@@ -79,7 +86,7 @@ class AggregatedSlackApi(
     }
 
     fun getConversationMembers(token: String, channelId: String): List<String> {
-        return myConversationMembersCache.get(token) {
+        return myConversationMembersCache.getAsync(token, readTimeoutMs) {
             getList { cursor ->
                 slackApi.conversationsMembers(token, channelId, cursor)
             }

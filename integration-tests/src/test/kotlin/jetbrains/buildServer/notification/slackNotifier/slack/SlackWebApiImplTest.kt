@@ -53,21 +53,21 @@ class SlackWebApiImplTest : BaseTestCase() {
 
     private fun `given slack is responding correctly`() {
         slackApi = SlackWebApiImpl(
-                MockRequestHandler(standardResponse),
+                RequestHandlerStub(standardResponse),
                 SSLTrustStoreProvider { null }
         )
     }
 
     private fun `given slack fails on first request`() {
         slackApi = SlackWebApiImpl(
-                FailingFirstRequestMockHandler(standardResponse),
+                FailingFirstRequestHandler(standardResponse),
                 SSLTrustStoreProvider { null }
         )
     }
 
     private fun `given slack always fails`() {
         slackApi = SlackWebApiImpl(
-                AlwaysFailingMockRequestHandler(),
+                AlwaysFailingRequestHandler(),
                 SSLTrustStoreProvider { null }
         )
     }

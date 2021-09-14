@@ -22,10 +22,7 @@ import jetbrains.buildServer.messages.DefaultMessagesInfo
 import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.notification.*
-import jetbrains.buildServer.notification.slackNotifier.slack.MessageActions
-import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApi
-import jetbrains.buildServer.notification.slackNotifier.slack.MockSlackWebApiFactory
-import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
+import jetbrains.buildServer.notification.slackNotifier.slack.*
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.SBuild
 import jetbrains.buildServer.serverSide.SimpleParameter
@@ -38,8 +35,8 @@ import org.testng.annotations.BeforeMethod
 import java.util.function.BooleanSupplier
 
 open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
-    protected lateinit var mySlackApiFactory: MockSlackWebApiFactory
-    private lateinit var mySlackApi: MockSlackWebApi
+    protected lateinit var mySlackApiFactory: StoringMessagesSlackWebApiFactory
+    private lateinit var mySlackApi: StoringMessagesSlackWebApi
     protected lateinit var myDescriptor: SlackNotifierDescriptor
     private lateinit var myNotifier: SlackNotifier
     private lateinit var myUser: SUser
@@ -47,6 +44,10 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
     protected lateinit var myConnectionManager: OAuthConnectionsManager
     protected lateinit var myConnection: OAuthConnectionDescriptor
+
+    private lateinit var messageFormatter: SlackMessageFormatter
+    private lateinit var detailsFormatter: DetailsFormatter
+    private lateinit var simpleMessageBuilderFactory: SimpleMessageBuilderFactory
 
     @BeforeMethod(alwaysRun = true)
     override fun setUp() {
@@ -57,47 +58,28 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myFixture.notificationProcessor.setCheckHangedBuildsInterval(50)
 
         myConnectionManager = OAuthConnectionsManager(
-            myFixture.getSingletonService(ExtensionHolder::class.java),
-            myFixture.webLinks
+            myFixture.getSingletonService(ExtensionHolder::class.java)
         )
 
         mySlackApiFactory =
-            MockSlackWebApiFactory()
+            StoringMessagesSlackWebApiFactoryStub()
         mySlackApi = mySlackApiFactory.createSlackWebApi()
 
-        val messageFormatter = SlackMessageFormatter()
-        val detailsFormatter = DetailsFormatter(
+        messageFormatter = SlackMessageFormatter()
+        detailsFormatter = DetailsFormatter(
             messageFormatter,
             myFixture.webLinks,
             myFixture.projectManager
         )
 
-        val simpleMessageBuilderFactory = SimpleMessageBuilderFactory(
+        simpleMessageBuilderFactory = SimpleMessageBuilderFactory(
                 messageFormatter,
                 myFixture.webLinks,
                 detailsFormatter
         )
 
         myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
-        myNotifier = SlackNotifier(
-                myFixture.notificatorRegistry,
-                mySlackApiFactory,
-                ChoosingMessageBuilderFactory(
-                        simpleMessageBuilderFactory,
-                        VerboseMessageBuilderFactory(
-                                detailsFormatter,
-                                messageFormatter,
-                                myFixture.webLinks,
-                                myFixture.getSingletonService(NotificationBuildStatusProvider::class.java),
-                                myServer
-                        )
-                ),
-                myProjectManager,
-                myConnectionManager,
-                myDescriptor
-        )
-
-        myFixture.addService(myNotifier)
+        myNotifier = createNotifier()
 
         myConnection = myConnectionManager.addConnection(
                 myProject,
@@ -116,6 +98,30 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
         myAssignerUser = createUser("investigation_assigner")
         makeProjectAccessible(myUser, myProject.projectId)
+    }
+
+    private fun createNotifier(): SlackNotifier {
+        val notifier = SlackNotifier(
+            myFixture.notificatorRegistry,
+            mySlackApiFactory,
+            ChoosingMessageBuilderFactory(
+                simpleMessageBuilderFactory,
+                VerboseMessageBuilderFactory(
+                    detailsFormatter,
+                    messageFormatter,
+                    myFixture.webLinks,
+                    myFixture.getSingletonService(NotificationBuildStatusProvider::class.java),
+                    myServer
+                )
+            ),
+            myProjectManager,
+            myConnectionManager,
+            myDescriptor
+        )
+
+        myFixture.addService(notifier)
+
+        return notifier
     }
 
     fun `given user is subscribed to`(vararg events: NotificationRule.Event) {
@@ -186,6 +192,29 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
             )
         )
     }
+
+    fun `given authTest api method is hanging`() {
+        initHangingSlackWebApi("authTest")
+    }
+
+    fun `given conversationsList api method is hanging`() {
+        initHangingSlackWebApi("conversationsList")
+    }
+
+    fun `given botsInfo api method is hanging`() {
+        initHangingSlackWebApi("botsInfo")
+    }
+
+    fun `given conversationsMembers api method is hanging`() {
+        initHangingSlackWebApi("conversationsMembers")
+    }
+
+    private fun initHangingSlackWebApi(methodThatAreHanging: String) {
+        mySlackApiFactory =
+            HangingSlackWebApiFactoryStub(methodThatAreHanging, mySlackApi, myFixture.executorServices)
+        mySlackApi = mySlackApiFactory.createSlackWebApi()
+    }
+
 
     fun `when build starts`(): SBuild = startBuild()
     fun `when build is triggered manually`(): SBuild {

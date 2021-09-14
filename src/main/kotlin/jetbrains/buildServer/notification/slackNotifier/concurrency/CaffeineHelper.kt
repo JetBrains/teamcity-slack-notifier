@@ -14,15 +14,22 @@
  *  limitations under the License.
  */
 
-package jetbrains.buildServer.notification.slackNotifier.slack
+package jetbrains.buildServer.notification.slackNotifier.concurrency
 
-import jetbrains.buildServer.util.HTTPRequestBuilder
-import java.util.concurrent.TimeoutException
+import com.github.benmanes.caffeine.cache.AsyncCache
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
-class AlwaysFailingMockRequestHandler : HTTPRequestBuilder.RequestHandler {
-    override fun doRequest(request: HTTPRequestBuilder.Request) {
-        for (i in 0..request.retryCount) {
-            request.onException.accept(TimeoutException("Slack request timeout"))
+fun <K, V> AsyncCache<K, V>.getAsync(key: K, timeoutMs: Long, mapper: () -> V): V {
+    return get(key) { _, executor ->
+        val result = CompletableFuture<V>()
+        executor.execute {
+            try {
+                result.complete(mapper())
+            } catch (e: Throwable) {
+                result.completeExceptionally(e)
+            }
         }
-    }
+        result
+    }.get(timeoutMs, TimeUnit.MILLISECONDS)
 }
