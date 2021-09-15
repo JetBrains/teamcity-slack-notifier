@@ -93,7 +93,7 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
         `then report should contain no errors`()
     }
 
-    @Test(timeOut = 10_000)
+    @Test(timeOut = 20_000)
     fun `test should not report error if authTest is hanging`() {
         `given build type is in scope`() And
                 `given build features is configured correctly`() And
@@ -111,8 +111,8 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
         `then report should contain no errors`()
     }
 
-    @Test(timeOut = 10_000)
-    fun `test should report invalid channel if botsInfo hanging`() {
+    @Test(timeOut = 20_000)
+    fun `test should not report error if botsInfo hanging`() {
         `given build type is in scope`() And
                 `given build feature has invalid channel`() And
                 `given botsInfo api method is hanging`()

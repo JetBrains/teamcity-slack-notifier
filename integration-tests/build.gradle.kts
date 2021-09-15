@@ -10,6 +10,10 @@ val spacePackagesPassword = rootProject.findProperty("spacePackagesPassword") as
 val canDownloadSpacePackages = spacePackagesToken != null ||
         (spacePackagesUsername != null && spacePackagesPassword != null)
 
+if (!canDownloadSpacePackages) {
+    println("Not running integration tests, can't authorize to Space")
+}
+
 repositories {
     mavenCentral()
     maven(url = "https://download.jetbrains.com/teamcity-repository")
