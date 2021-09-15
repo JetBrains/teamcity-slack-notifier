@@ -29,6 +29,7 @@ import jetbrains.buildServer.serverSide.impl.NotificationsBuildFeature
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 
 @Service
@@ -78,6 +79,8 @@ class SlackBuildFeatureHealthReport(
                 getHealthStatus(feature, buildType, "buildType")
             } catch (e: TimeoutException) {
                 null
+            } catch (e: ExecutionException) {
+                null
             }
             if (statusItem != null) {
                 consumer.consumeForBuildType(buildType, statusItem)
@@ -91,6 +94,8 @@ class SlackBuildFeatureHealthReport(
             val statusItem = try {
                 getHealthStatus(feature, buildTemplate, "template")
             } catch (e: TimeoutException) {
+                null
+            } catch (e: ExecutionException) {
                 null
             }
             if (statusItem != null) {

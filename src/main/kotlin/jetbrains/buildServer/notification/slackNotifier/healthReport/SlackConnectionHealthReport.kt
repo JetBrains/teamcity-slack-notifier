@@ -24,6 +24,7 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 
 @Service
@@ -76,6 +77,8 @@ class SlackConnectionHealthReport(
         val permissions = try {
             api.authTest(token)
         } catch (e: TimeoutException) {
+            return
+        } catch (e: ExecutionException) {
             return
         }
         if (!permissions.ok) {
