@@ -23,7 +23,7 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
     implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
-    implementation("com.github.ben-manes.caffeine:caffeine:3.0.3")
+    implementation("com.github.ben-manes.caffeine:caffeine:2.9.2")
 
     provided("org.jetbrains.teamcity:server-api:${teamcityVersion}")
     provided("org.jetbrains.teamcity:oauth:${teamcityVersion}")
