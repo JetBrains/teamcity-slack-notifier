@@ -15,7 +15,6 @@ extra["downloadsDir"] = project.findProperty("downloads.dir") ?: "${rootDir}/dow
 
 repositories {
     maven(url="https://cache-redirector.jetbrains.com/maven-central")
-    maven(url="https://cache-redirector.jetbrains.com/jcenter")
 }
 
 dependencies {
