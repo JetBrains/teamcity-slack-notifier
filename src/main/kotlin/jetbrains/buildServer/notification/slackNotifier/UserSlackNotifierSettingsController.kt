@@ -21,6 +21,7 @@ import jetbrains.buildServer.controllers.BasePropertiesBean
 import jetbrains.buildServer.log.Loggers
 import jetbrains.buildServer.notification.slackNotifier.notification.VerboseMessageBuilderFactory
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
+import jetbrains.buildServer.notification.slackNotifier.slack.User
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.WebLinks
 import jetbrains.buildServer.serverSide.auth.Permission
@@ -35,6 +36,8 @@ import jetbrains.buildServer.web.util.WebUtil
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.ModelAndView
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeoutException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -119,7 +122,13 @@ class UserSlackNotifierSettingsController(
 
         val slackUsername = selectedConnection?.let { connection ->
             connection.parameters["secure:token"]?.let { token ->
-                val users = aggregatedSlackApi.getUsersList(token)
+                val users = try {
+                    aggregatedSlackApi.getUsersList(token)
+                } catch (e: TimeoutException) {
+                    emptyList<User>()
+                } catch (e: ExecutionException) {
+                    emptyList<User>()
+                }
                 val slackUser = users.find {
                     it.id == slackUserId
                 }
