@@ -91,8 +91,6 @@ class UserSlackNotifierSettingsController(
                 for (property in SlackProperties.notificationProperties) {
                     val value = request.getParameter(property.key)
                     user.setUserProperty(property, value)
-
-                    Loggers.SERVER.warn("${property.key} - $value")
                 }
                 return null
             }
