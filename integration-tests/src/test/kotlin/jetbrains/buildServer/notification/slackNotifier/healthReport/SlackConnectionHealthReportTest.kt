@@ -45,6 +45,22 @@ class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectio
     }
 
     @Test
+    fun `should report missing client secret`() {
+        `given project is in scope`() And
+                `given connection is missing client secret`()
+        `when health is reported`()
+        `then report should contain error about missing client secret`()
+    }
+
+    @Test
+    fun `should report missing clientId`() {
+        `given project is in scope`() And
+                `given connection is missing client id`()
+        `when health is reported`()
+        `then report should contain error about missing client id`()
+    }
+
+    @Test
     fun `should report no errors for correct connection`() {
         `given project is in scope`() And
                 `given connection is configured correctly`()
@@ -61,6 +77,14 @@ class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectio
         `then report should contain no errors`()
     }
 
+    private fun `given connection is missing client secret`() {
+        myConnection = myConnectionManager.addConnection(
+            myProject,
+            SlackConnection.type,
+            mapOf("secure:token" to "test_token", "clientId" to "test_clientId")
+        )
+    }
+
     private fun `given connection is missing token`() {
         myConnection = myConnectionManager.addConnection(
             myProject,
@@ -73,6 +97,18 @@ class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectio
             myConnectionManager.addConnection(
                 myProject,
                 SlackConnection.type, mapOf("secure:token" to "invalid_token")
+            )
+    }
+
+    private fun `given connection is missing client id`() {
+        myConnection =
+            myConnectionManager.addConnection(
+                myProject,
+                SlackConnection.type,
+                mapOf(
+                    "secure:token" to "test_token",
+                    "secure:clientSecret" to "test_clientSecret"
+                )
             )
     }
 
@@ -92,15 +128,37 @@ class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectio
 
     private fun `then report should contain error about missing token`() {
         assertResultContains {
+            val reason = it.additionalData["reason"] as String
             it.category == SlackConnectionHealthReport.invalidConnectionCategory &&
-                    (it.additionalData["reason"] as String).contains("missing")
+                    reason.contains("missing") &&
+                    reason.contains("bot token")
         }
     }
 
     private fun `then report should contain error about invalid token`() {
         assertResultContains {
+            val reason = it.additionalData["reason"] as String
             it.category == SlackConnectionHealthReport.invalidConnectionCategory &&
-                    (it.additionalData["reason"] as String).contains("invalid")
+                    reason.contains("invalid") &&
+                    reason.contains("token")
+        }
+    }
+
+    private fun `then report should contain error about missing client secret`() {
+        assertResultContains {
+            val reason = it.additionalData["reason"] as String
+            it.category == SlackConnectionHealthReport.invalidConnectionCategory &&
+                    reason.contains("missing")  &&
+                    reason.contains("client secret")
+        }
+    }
+
+    private fun `then report should contain error about missing client id`() {
+        assertResultContains {
+            val reason = it.additionalData["reason"] as String
+            it.category == SlackConnectionHealthReport.invalidConnectionCategory &&
+                    reason.contains("missing")  &&
+                    reason.contains("client id")
         }
     }
 
