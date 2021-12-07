@@ -24,7 +24,7 @@ class FailingFirstRequestHandler(
         private val response: String
 ) : HTTPRequestBuilder.RequestHandler {
     override fun doRequest(request: HTTPRequestBuilder.Request) {
-        request.onException.accept(TimeoutException("Request to Slack timeout"))
+        request.onException.accept(TimeoutException("Request to Slack timeout"), request)
         request.onSuccess.consume(HTTPResponseMock(200, response))
     }
 }

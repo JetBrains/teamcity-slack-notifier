@@ -30,6 +30,7 @@ import jetbrains.buildServer.util.HTTPRequestBuilder
 import jetbrains.buildServer.util.ssl.SSLTrustStoreProvider
 import java.nio.charset.Charset
 import java.util.*
+import java.util.function.Consumer
 
 class SlackWebApiImpl(
         private val requestHandler: HTTPRequestBuilder.RequestHandler,
@@ -228,12 +229,12 @@ class SlackWebApiImpl(
                         .onSuccess {
                             response = it.bodyAsString
                         }
-                        .onException {
+                        .onException(Consumer<Exception> {
                             logger.warn(
                                     "Exception occurred when sending request to Slack: ${it.message}"
                             )
                             exceptions.add(it)
-                        }
+                        })
                         .build()
 
         requestHandler.doRequest(post)
