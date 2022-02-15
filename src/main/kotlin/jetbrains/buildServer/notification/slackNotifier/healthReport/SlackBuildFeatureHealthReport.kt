@@ -21,6 +21,7 @@ import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.notification.slackNotifier.slack.CachingSlackWebApi
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackResponseError
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.executors.ExecutorServices
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
+import com.intellij.openapi.diagnostic.Logger
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
@@ -46,6 +48,8 @@ class SlackBuildFeatureHealthReport(
 
     companion object {
         const val type = "slackBuildFeatureReport"
+
+        val logger = Logger.getInstance(SlackBuildFeatureHealthReport::class.java.name)
 
         val invalidBuildFeatureCategory =
             ItemCategory(
@@ -81,6 +85,9 @@ class SlackBuildFeatureHealthReport(
                 null
             } catch (e: ExecutionException) {
                 null
+            } catch (e: SlackResponseError) {
+                logger.error("Error while generating health report: ${e.message}")
+                null
             }
             if (statusItem != null) {
                 consumer.consumeForBuildType(buildType, statusItem)
@@ -96,6 +103,9 @@ class SlackBuildFeatureHealthReport(
             } catch (e: TimeoutException) {
                 null
             } catch (e: ExecutionException) {
+                null
+            } catch (e: SlackResponseError) {
+                logger.error("Error while generating health report: ${e.message}")
                 null
             }
             if (statusItem != null) {
