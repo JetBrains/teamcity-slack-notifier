@@ -21,6 +21,7 @@ import jetbrains.buildServer.controllers.BasePropertiesBean
 import jetbrains.buildServer.log.Loggers
 import jetbrains.buildServer.notification.slackNotifier.notification.VerboseMessageBuilderFactory
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
+import jetbrains.buildServer.notification.slackNotifier.slack.SlackResponseError
 import jetbrains.buildServer.notification.slackNotifier.slack.User
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.WebLinks
@@ -125,6 +126,8 @@ class UserSlackNotifierSettingsController(
                 } catch (e: TimeoutException) {
                     emptyList<User>()
                 } catch (e: ExecutionException) {
+                    emptyList<User>()
+                } catch (e: SlackResponseError) {
                     emptyList<User>()
                 }
                 val slackUser = users.find {
