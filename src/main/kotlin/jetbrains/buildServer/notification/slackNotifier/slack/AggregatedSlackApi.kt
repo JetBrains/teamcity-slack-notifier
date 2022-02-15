@@ -106,17 +106,20 @@ class AggregatedSlackApi(
         }
     }
 
-    private fun <T> getList(dataProvider: (String?) -> SlackList<T>): List<T> {
+    private fun <T, D> getList(dataProvider: (String?) -> D): List<T> where D : SlackList<T>, D : MaybeError {
         val result = mutableListOf<T>()
         var cursor: String? = null
         var prevCursor: String?
 
         do {
             val data = dataProvider(cursor)
+            if (!data.ok) {
+                throw SlackResponseError(data.error)
+            }
             prevCursor = cursor
             cursor = data.nextCursor
             result.addAll(data.data)
-        } while (cursor != "" && cursor != null && cursor != prevCursor)
+        } while (cursor != "" && cursor != prevCursor)
 
         return result
     }
