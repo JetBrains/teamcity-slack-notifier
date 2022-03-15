@@ -18,10 +18,12 @@ package jetbrains.buildServer.notification.slackNotifier.notification
 
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
+import jetbrains.buildServer.log.Loggers
 import jetbrains.buildServer.notification.NotificatorAdapter
 import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptor
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.logging.ThrottlingLogger
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
@@ -252,6 +254,13 @@ class SlackNotifier(
     }
 
     private fun sendMessage(message: MessagePayload, user: SUser, project: SProject) {
+        if (!TeamCityProperties.getBooleanOrTrue(SlackNotifierProperties.sendNotifications)) {
+            if (Loggers.SERVER.isDebugEnabled) {
+                Loggers.SERVER.debug("Slack notifications are disabled. Not sending $message to user with id '${user.id}'.")
+            }
+            return
+        }
+
         val sendTo = user.getPropertyValue(SlackProperties.channelProperty)
         if (sendTo == null) {
             throttlingLogger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.channelProperty} property")
