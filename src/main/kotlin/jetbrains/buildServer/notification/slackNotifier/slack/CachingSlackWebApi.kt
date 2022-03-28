@@ -17,16 +17,9 @@
 package jetbrains.buildServer.notification.slackNotifier.slack
 
 import com.github.benmanes.caffeine.cache.AsyncCache
-import com.github.benmanes.caffeine.cache.AsyncLoadingCache
 import com.github.benmanes.caffeine.cache.Caffeine
-import com.google.common.cache.Cache
-import com.google.common.cache.CacheBuilder
-import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
 import jetbrains.buildServer.notification.slackNotifier.concurrency.getAsync
-import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.serverSide.executors.ExecutorServices
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class CachingSlackWebApi(

@@ -14,10 +14,11 @@
  *  limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package jetbrains.buildServer.notification.slackNotifier.notification
 
 import jetbrains.buildServer.notification.slackNotifier.slack.*
-import java.lang.IllegalStateException
 
 data class MessagePayload(
     val text: String,

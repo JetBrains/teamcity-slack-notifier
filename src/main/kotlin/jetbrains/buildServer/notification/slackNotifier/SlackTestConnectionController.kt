@@ -26,7 +26,6 @@ import jetbrains.buildServer.serverSide.IOGuard
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.SBuildServer
-import jetbrains.buildServer.util.FuncThrow
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import org.jdom.Element
 import org.springframework.context.annotation.Conditional

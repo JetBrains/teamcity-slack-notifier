@@ -37,8 +37,6 @@ class SlackMessageFormatter {
 
     fun bold(text: String): String = "*${text}*"
 
-    fun italic(text: String): String = "_${text}_"
-
     fun escape(text: String): String {
         return text.replace(escapingSymbolsRegex) {
             escapingSymbols[it.value] ?: it.value

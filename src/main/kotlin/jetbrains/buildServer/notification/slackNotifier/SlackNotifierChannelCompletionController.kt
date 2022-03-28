@@ -35,7 +35,6 @@ class SlackNotifierChannelCompletionController(
     webControllerManager: WebControllerManager,
     private val projectManager: ProjectManager,
     private val oAuthConnectionsManager: OAuthConnectionsManager,
-    private val descriptor: SlackNotifierDescriptor,
     private val aggregatedSlackApi: AggregatedSlackApi
 ) : BaseAutocompletionController(securityContext) {
 

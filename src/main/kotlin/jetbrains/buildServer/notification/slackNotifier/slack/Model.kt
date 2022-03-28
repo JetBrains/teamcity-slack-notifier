@@ -14,6 +14,8 @@
  *  limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package jetbrains.buildServer.notification.slackNotifier.slack
 
 import com.fasterxml.jackson.annotation.JsonIgnore

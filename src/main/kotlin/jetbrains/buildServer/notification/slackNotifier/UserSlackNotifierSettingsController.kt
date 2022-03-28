@@ -18,7 +18,6 @@ package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.controllers.BaseController
 import jetbrains.buildServer.controllers.BasePropertiesBean
-import jetbrains.buildServer.log.Loggers
 import jetbrains.buildServer.notification.slackNotifier.notification.VerboseMessageBuilderFactory
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackResponseError
