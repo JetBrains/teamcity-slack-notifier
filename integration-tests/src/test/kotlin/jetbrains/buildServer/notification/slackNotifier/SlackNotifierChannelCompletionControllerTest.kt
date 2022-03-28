@@ -49,8 +49,9 @@ class SlackNotifierChannelCompletionControllerTest :
             myFixture.getSingletonService(WebControllerManager::class.java),
             myFixture.projectManager,
             oauthManager,
-            myDescriptor,
-            AggregatedSlackApi(StoringMessagesSlackWebApiFactoryStub(), myFixture.executorServices)
+            AggregatedSlackApi(StoringMessagesSlackWebApiFactoryStub(),
+            myFixture.executorServices
+            )
         )
     }
 
