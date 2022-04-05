@@ -26,6 +26,7 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.web.openapi.WebControllerManager
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
+import java.util.concurrent.TimeoutException
 import javax.servlet.http.HttpServletRequest
 
 @Service
@@ -98,7 +99,12 @@ class SlackNotifierChannelCompletionController(
     }
 
     private fun getChannelsCompletion(term: String, token: String): List<Completion> {
-        val channelsList = aggregatedSlackApi.getChannelsList(token)
+        val channelsList = try {
+            aggregatedSlackApi.getChannelsList(token)
+        } catch (e: TimeoutException) {
+            log.warnAndDebugDetails("Timeout while getting channels list for term $term", e)
+            return emptyList()
+        }
         val lowercaseTerm = term.toLowerCase()
 
         return channelsList.filter {
