@@ -16,8 +16,10 @@
 
 package jetbrains.buildServer.notification.slackNotifier.healthReport
 
+import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierDescriptor
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
+import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.notification.slackNotifier.slack.CachingSlackWebApi
@@ -32,7 +34,6 @@ import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
-import com.intellij.openapi.diagnostic.Logger
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
@@ -166,25 +167,27 @@ class SlackBuildFeatureHealthReport(
                 }
 
                 return generateHealthStatus(
-                        feature,
-                        type,
-                        buildType,
-                        "Can't find channel $receiverName. If it's private, you should add bot '${botName}' to this channel before it can post messages there"
-                )
-            }
-
-            val members = aggregatedSlackApi.getConversationMembers(token, channel.id)
-
-            if (!members.contains(bot.userId)) {
-                val botName = slackApi.botsInfo(token, bot.botId).bot.name
-
-                return generateHealthStatus(
                     feature,
                     type,
                     buildType,
-                    "Bot '$botName' is not added to $receiverName channel. Bot should be added to the channel to be able to post messages",
-                    category = botIsNotConfiguredCategory
+                    "Can't find channel $receiverName. If it's private, you should add bot '${botName}' to this channel before it can post messages there"
                 )
+            }
+
+            if (TeamCityProperties.getBooleanOrTrue(SlackNotifierProperties.enableBotAddedHealthReport)) {
+                val members = aggregatedSlackApi.getConversationMembers(token, channel.id)
+
+                if (!members.contains(bot.userId) && !members.contains(bot.botId)) {
+                    val botName = slackApi.botsInfo(token, bot.botId).bot.name
+
+                    return generateHealthStatus(
+                        feature,
+                        type,
+                        buildType,
+                        "Bot '$botName' is not added to $receiverName channel. Bot should be added to the channel to be able to post messages",
+                        category = botIsNotConfiguredCategory
+                    )
+                }
             }
         } else {
             aggregatedSlackApi.getUsersList(token).find {
