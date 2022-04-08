@@ -257,4 +257,16 @@ class PlainMessageBuilder(
             MessagePayload("$username unmuted ${buildProblems.size} problems in $project.")
         }
     }
+
+    override fun queuedBuildWaitingForApproval(
+            queuedBuild: SQueuedBuild
+    ): MessagePayload {
+        val triggeredBy = queuedBuild.triggeredBy
+        val prefix = if (triggeredBy.isTriggeredByUser) {
+            ", triggered by ${triggeredBy.user!!.descriptiveName}"
+        } else {
+            ""
+        }
+        return MessagePayload("${detailsFormatter.buildUrl(queuedBuild)} ${format.bold("is waiting for approval")}${prefix}")
+    }
 }

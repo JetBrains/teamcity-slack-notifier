@@ -92,6 +92,12 @@ class SlackNotifier(
         }
     }
 
+    override fun notifyQueuedBuildWaitingForApproval(queuedBuild: SQueuedBuild, users: MutableSet<SUser>) {
+        forReceiver(users) { receiver, messageBuilder ->
+            sendMessage(messageBuilder.queuedBuildWaitingForApproval(queuedBuild), receiver, queuedBuild)
+        }
+    }
+
     override fun notifyLabelingFailed(build: Build, root: VcsRoot, exception: Throwable, users: Set<SUser>) {
         forReceiver(users) { receiver, messageBuilder ->
             sendMessage(messageBuilder.labelingFailed(build, root, exception), receiver, build)
@@ -247,6 +253,20 @@ class SlackNotifier(
                     "Won't send notification because can't find project for build" +
                             " ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
                             " by external id ${build.buildType?.projectExternalId}."
+            )
+            return
+        }
+        sendMessage(message, user, project)
+    }
+
+    private fun sendMessage(message: MessagePayload, user: SUser, queuedBuild: SQueuedBuild) {
+        val buildType = queuedBuild.buildType
+        val project = projectManager.findProjectByExternalId(buildType.projectExternalId)
+        if (project == null) {
+            logger.error(
+                    "Won't send notification because can't find project for queued build" +
+                            " ${buildType.buildTypeId ?: ""}/${queuedBuild.buildPromotion.id}" +
+                            " by external id ${buildType.projectExternalId}."
             )
             return
         }

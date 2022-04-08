@@ -22,5 +22,6 @@ enum class BuildEvent(val emoji: String) {
     BUILD_FAILED_TO_START(":exclamation:"),
     LABELING_FAILED(":x:"),
     BUILD_FAILING(":x:"),
-    BUILD_PROBABLY_HANGING(":warning:")
+    BUILD_PROBABLY_HANGING(":warning:"),
+    QUEUED_BUILD_WAITING_APPROVAL(":grey_exclamation:")
 }

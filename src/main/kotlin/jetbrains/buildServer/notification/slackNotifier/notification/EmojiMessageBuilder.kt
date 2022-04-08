@@ -59,4 +59,9 @@ class EmojiMessageBuilder(
         val message = messageBuilder.buildProbablyHanging(build)
         return addEmoji(message, BuildEvent.BUILD_PROBABLY_HANGING)
     }
+
+    override fun queuedBuildWaitingForApproval(queuedBuild: SQueuedBuild): MessagePayload {
+        val message = messageBuilder.queuedBuildWaitingForApproval(queuedBuild)
+        return addEmoji(message, BuildEvent.QUEUED_BUILD_WAITING_APPROVAL)
+    }
 }

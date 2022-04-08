@@ -19,10 +19,7 @@ package jetbrains.buildServer.notification.slackNotifier.notification
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
-import jetbrains.buildServer.serverSide.SBuildType
-import jetbrains.buildServer.serverSide.SProject
-import jetbrains.buildServer.serverSide.SRunningBuild
-import jetbrains.buildServer.serverSide.STest
+import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.mute.MuteInfo
 import jetbrains.buildServer.serverSide.problems.BuildProblemInfo
 import jetbrains.buildServer.tests.TestName
@@ -207,5 +204,15 @@ interface MessageBuilder {
             buildProblems: Collection<BuildProblemInfo?>,
             muteInfo: MuteInfo,
             user: SUser?
+    ): MessagePayload
+
+    /**
+     * Called when a build that requires manual approval is added into the queue.
+     *
+     * @param queuedBuild the unmuted problems
+     * @param user user who is elibigle to approve build
+     */
+    fun queuedBuildWaitingForApproval(
+            queuedBuild: SQueuedBuild
     ): MessagePayload
 }

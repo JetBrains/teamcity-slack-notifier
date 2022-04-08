@@ -22,6 +22,7 @@ import jetbrains.buildServer.notification.TemplateMessageBuilder
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
 import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.vcs.SelectPrevBuildPolicy
+import jetbrains.buildServer.vcs.VcsModification
 import jetbrains.buildServer.vcs.VcsRoot
 import java.text.SimpleDateFormat
 
@@ -58,6 +59,11 @@ class VerboseMessageBuilder(
         addChanges(finishedBuild)
     }
 
+    private fun MessagePayloadBlockBuilder.addVerboseInfo(queuedBuild: SQueuedBuild) {
+        addBranch(queuedBuild)
+        addChanges(queuedBuild)
+    }
+
     private fun MessagePayloadBlockBuilder.addBuildStatus(build: Build, buildEvent: BuildEvent) {
         if (verboseMessagesOptions.addBuildStatus && build is SBuild) {
             val buildStatistics: BuildStatistics = build.getBuildStatistics(
@@ -84,16 +90,17 @@ class VerboseMessageBuilder(
         }
     }
 
-    private fun MessagePayloadBlockBuilder.addChanges(build: Build) {
-        if (!verboseMessagesOptions.addChanges) {
+    private fun MessagePayloadBlockBuilder.addBranch(queuedBuild: SQueuedBuild) {
+        if (!verboseMessagesOptions.addBranch) {
             return
         }
 
-        val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
-        if (changes.isEmpty()) {
-            return
+        queuedBuild.buildPromotion.branch?.displayName.let { branch ->
+            add(" in branch `$branch`")
         }
+    }
 
+    private fun MessagePayloadBlockBuilder.addChangesDescription(changes: List<VcsModification>) {
         val firstChanges = changes.take(verboseMessagesOptions.maximumNumberOfChanges).toList()
 
         newline()
@@ -118,15 +125,46 @@ class VerboseMessageBuilder(
         }
 
         newline()
+    }
 
-        val text = if (changes.size == 1) {
+    private fun getChangesLinkText(changes: List<VcsModification>): String {
+        return if (changes.size == 1) {
             "View 1 change in TeamCity"
         } else {
             "View all ${changes.size} changes in TeamCity"
         }
+    }
+
+    private fun MessagePayloadBlockBuilder.addChanges(build: Build) {
+        if (!verboseMessagesOptions.addChanges) {
+            return
+        }
+
+        val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
+        if (changes.isEmpty()) {
+            return
+        }
+
+        addChangesDescription(changes)
 
         val changesUrl = webLinks.getViewChangesUrl(build)
-        add(format.url(url = changesUrl, text = text))
+        add(format.url(url = changesUrl, text = getChangesLinkText(changes)))
+    }
+
+    private fun MessagePayloadBlockBuilder.addChanges(queuedBuild: SQueuedBuild) {
+        if (!verboseMessagesOptions.addChanges) {
+            return
+        }
+
+        val changes = queuedBuild.buildPromotion.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
+        if (changes.isEmpty()) {
+            return
+        }
+
+        addChangesDescription(changes)
+
+        val changesUrl = webLinks.getViewQueuedChangesUrl(queuedBuild)
+        add(format.url(url = changesUrl, text = getChangesLinkText(changes)))
     }
 
     private fun shorten(text: String, maximumLength: Int = 80): String {
@@ -172,6 +210,13 @@ class VerboseMessageBuilder(
         text {
             add(messageBuilder.buildProbablyHanging(build))
             addVerboseInfo(build, BuildEvent.BUILD_PROBABLY_HANGING)
+        }
+    }
+
+    override fun queuedBuildWaitingForApproval(queuedBuild: SQueuedBuild): MessagePayload = messagePayload {
+        text {
+            add(messageBuilder.queuedBuildWaitingForApproval(queuedBuild))
+            addVerboseInfo(queuedBuild)
         }
     }
 }

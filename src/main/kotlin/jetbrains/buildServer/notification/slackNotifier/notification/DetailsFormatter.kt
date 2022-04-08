@@ -20,6 +20,7 @@ import jetbrains.buildServer.Build
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.RelativeWebLinks
+import jetbrains.buildServer.serverSide.SQueuedBuild
 import jetbrains.buildServer.serverSide.mute.MuteInfo
 import org.springframework.stereotype.Service
 
@@ -47,5 +48,18 @@ class DetailsFormatter(
         return "$projectName / ${format.url(links.getViewResultsUrl(build), buildName)}"
     }
 
+    fun buildUrl(queuedBuild: SQueuedBuild): String {
+        val buildType = queuedBuild.buildType
+        val projectName =
+                format.escape(projectManager.findProjectByExternalId(buildType.projectExternalId)?.fullName ?: "<deleted project>")
+
+        val buildTypeName = format.escape(buildType.name ?: "")
+
+        val buildName = "$buildTypeName ${number(queuedBuild)}"
+        return "$projectName / ${format.url(links.getQueuedBuildUrl(queuedBuild), buildName)}"
+    }
+
     private fun number(build: Build) = "#${build.buildNumber}"
+
+    private fun number(queuedBuild: SQueuedBuild) = "#${queuedBuild.orderNumber}"
 }
