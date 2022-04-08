@@ -33,7 +33,7 @@ class CachingSlackWebApi(
     private val userIdentityCache = createCache<String, UserIdentity>()
     private val teamInfoCache = createCache<String, MaybeTeam>()
 
-    private val readTimeoutMs = 1_000L
+    private val readTimeoutMs = 5_000L
 
     /**
      * Posts new message every time, makes no sense to cache
