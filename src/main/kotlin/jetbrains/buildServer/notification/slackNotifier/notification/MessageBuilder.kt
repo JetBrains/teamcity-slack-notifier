@@ -210,7 +210,6 @@ interface MessageBuilder {
      * Called when a build that requires manual approval is added into the queue.
      *
      * @param queuedBuild the unmuted problems
-     * @param user user who is elibigle to approve build
      */
     fun queuedBuildWaitingForApproval(
             queuedBuild: SQueuedBuild
