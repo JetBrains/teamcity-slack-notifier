@@ -68,7 +68,7 @@ class SlackConnectionHealthReportTest : BaseSlackHealthReportTest<SlackConnectio
         `then report should contain no errors`()
     }
 
-    @Test(timeOut = 10_000)
+    @Test(timeOut = 30_000)
     fun `should report no errors if authTest is hanging`() {
         `given project is in scope`() And
                 `given connection is configured correctly`() And
