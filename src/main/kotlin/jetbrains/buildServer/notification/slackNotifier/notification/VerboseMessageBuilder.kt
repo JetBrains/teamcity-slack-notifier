@@ -21,6 +21,7 @@ import jetbrains.buildServer.notification.NotificationBuildStatusProvider
 import jetbrains.buildServer.notification.TemplateMessageBuilder
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
 import jetbrains.buildServer.serverSide.*
+import jetbrains.buildServer.vcs.SVcsModification
 import jetbrains.buildServer.vcs.SelectPrevBuildPolicy
 import jetbrains.buildServer.vcs.VcsModification
 import jetbrains.buildServer.vcs.VcsRoot
@@ -51,7 +52,7 @@ class VerboseMessageBuilder(
         }
     }
 
-    private fun MessagePayloadBlockBuilder.addVerboseInfo(build: Build, buildEvent: BuildEvent) {
+    private fun MessagePayloadBlockBuilder.addVerboseInfo(build: SBuild, buildEvent: BuildEvent) {
         val finishedBuild = server.findBuildInstanceById(build.buildId) ?: build
 
         addBranch(finishedBuild)
@@ -100,7 +101,7 @@ class VerboseMessageBuilder(
         }
     }
 
-    private fun MessagePayloadBlockBuilder.addChangesDescription(changes: List<VcsModification>) {
+    private fun MessagePayloadBlockBuilder.addChangesDescription(changes: List<SVcsModification>) {
         val firstChanges = changes.take(verboseMessagesOptions.maximumNumberOfChanges).toList()
 
         newline()
@@ -111,7 +112,7 @@ class VerboseMessageBuilder(
             newline()
             val changeDescription = shorten(change.description.trim())
             val date = changeDateFormat.format(change.vcsDate)
-            val username = change.userName
+            val username = change.committers.firstOrNull()?.descriptiveName ?: change.userName
             val prefix = if (username != null) {
                 "${format.bold(username)} at $date"
             } else {
@@ -135,7 +136,7 @@ class VerboseMessageBuilder(
         }
     }
 
-    private fun MessagePayloadBlockBuilder.addChanges(build: Build) {
+    private fun MessagePayloadBlockBuilder.addChanges(build: SBuild) {
         if (!verboseMessagesOptions.addChanges) {
             return
         }
@@ -195,7 +196,7 @@ class VerboseMessageBuilder(
     override fun labelingFailed(build: Build, root: VcsRoot, exception: Throwable): MessagePayload = messagePayload {
         text {
             add(messageBuilder.labelingFailed(build, root, exception))
-            addVerboseInfo(build, BuildEvent.LABELING_FAILED)
+            addVerboseInfo(build as SBuild, BuildEvent.LABELING_FAILED)
         }
     }
 

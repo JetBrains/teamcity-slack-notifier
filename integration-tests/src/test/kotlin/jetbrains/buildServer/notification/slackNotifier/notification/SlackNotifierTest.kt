@@ -20,7 +20,6 @@ package jetbrains.buildServer.notification.slackNotifier.notification
 import jetbrains.buildServer.notification.NotificationRule.Event.*
 import jetbrains.buildServer.notification.slackNotifier.And
 import jetbrains.buildServer.notification.slackNotifier.BaseSlackTestCase
-import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import org.testng.annotations.Test
 
 
@@ -173,6 +172,13 @@ class SlackNotifierTest : BaseSlackTestCase() {
         `given build feature with verbose changes is subscribed to`(BUILD_FINISHED_SUCCESS)
         val build = `when build finishes with changes`()
         `then message should contain`("success", build.buildNumber, "committer1", "Commit message")
+    }
+
+    @Test
+    fun `build feature should send username in verbose notification changes about build success`() {
+        `given build feature with verbose changes is subscribed to`(BUILD_FINISHED_SUCCESS)
+        `when build finishes with changes`()
+        `then message should contain user descriptive name`()
     }
 
     @Test

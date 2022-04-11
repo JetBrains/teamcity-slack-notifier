@@ -30,6 +30,7 @@ import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.users.SUser
+import jetbrains.buildServer.users.impl.UserEx
 import jetbrains.buildServer.vcs.ModificationDataForTest
 import org.testng.annotations.BeforeMethod
 import java.util.function.BooleanSupplier
@@ -242,6 +243,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     }
 
     fun `when build finishes with changes`(): SBuild {
+        (myUser as UserEx).setDefaultVcsUsernames(listOf("committer1"))
         val vcsRoot = myFixture.addVcsRoot("vcs", "")
         startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "committer1", vcsRoot, "1"))
         return finishBuild()
@@ -361,6 +363,11 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         for (str in strings) {
             assertContains(mySlackApi.messages.last().text, str)
         }
+    }
+
+    fun `then message should contain user descriptive name`() {
+        waitForMessage()
+        assertContains(mySlackApi.messages.last().text, myUser.descriptiveName)
     }
 
     fun `then message should not contain`(vararg strings: String) {
