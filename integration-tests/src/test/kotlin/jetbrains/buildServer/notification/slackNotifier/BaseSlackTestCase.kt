@@ -243,6 +243,12 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     }
 
     fun `when build finishes with changes`(): SBuild {
+        val vcsRoot = myFixture.addVcsRoot("vcs", "")
+        startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "committer1", vcsRoot, "1"))
+        return finishBuild()
+    }
+
+    fun `when build finishes with user changes`(): SBuild {
         (myUser as UserEx).setDefaultVcsUsernames(listOf("committer1"))
         val vcsRoot = myFixture.addVcsRoot("vcs", "")
         startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "committer1", vcsRoot, "1"))

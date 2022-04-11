@@ -177,7 +177,7 @@ class SlackNotifierTest : BaseSlackTestCase() {
     @Test
     fun `build feature should send username in verbose notification changes about build success`() {
         `given build feature with verbose changes is subscribed to`(BUILD_FINISHED_SUCCESS)
-        `when build finishes with changes`()
+        `when build finishes with user changes`()
         `then message should contain user descriptive name`()
     }
 
