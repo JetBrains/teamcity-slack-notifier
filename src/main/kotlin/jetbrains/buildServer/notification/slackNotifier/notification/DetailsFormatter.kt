@@ -53,13 +53,9 @@ class DetailsFormatter(
         val projectName =
                 format.escape(projectManager.findProjectByExternalId(buildType.projectExternalId)?.fullName ?: "<deleted project>")
 
-        val buildTypeName = format.escape(buildType.name ?: "")
-
-        val buildName = "$buildTypeName ${number(queuedBuild)}"
-        return "$projectName / ${format.url(links.getQueuedBuildUrl(queuedBuild), buildName)}"
+        val buildTypeName = format.escape(buildType.name)
+        return "$projectName / ${format.url(links.getQueuedBuildUrl(queuedBuild), buildTypeName)}"
     }
 
     private fun number(build: Build) = "#${build.buildNumber}"
-
-    private fun number(queuedBuild: SQueuedBuild) = "#${queuedBuild.orderNumber}"
 }

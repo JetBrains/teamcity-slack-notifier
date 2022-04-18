@@ -267,6 +267,6 @@ class PlainMessageBuilder(
         } else {
             ""
         }
-        return MessagePayload("${detailsFormatter.buildUrl(queuedBuild)} ${format.bold("is waiting for approval")}${prefix}")
+        return MessagePayload("Build in ${detailsFormatter.buildUrl(queuedBuild)} ${format.bold("is waiting for approval")}${prefix}")
     }
 }
