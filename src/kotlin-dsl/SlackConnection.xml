@@ -17,20 +17,24 @@
 
 <dsl-extension kind="projectFeature" type="OAuthProvider" generateDslJar="true"
                applicable="params['providerType'] == 'slackConnection'">
+
     <class name="SlackConnection">
         <description>
             Project feature defining an OAuth connection settings for Slack
         </description>
     </class>
+
     <init>
         <param name="providerType" value="slackConnection"/>
     </init>
+
     <function name="slackConnection">
         <description>
             Creates a Slack connection in the current project
             @see SlackConnection
         </description>
     </function>
+
     <params>
         <param name="displayName" mandatory="true">
             <description>
@@ -53,4 +57,21 @@
             </description>
         </param>
     </params>
+
+    <examples>
+        <example>
+            <description>
+                Creates a Slack connection
+            </description>
+            <code>
+                slackConnection {
+                    id = "PROJECT_EXT_4"
+                    displayName = "Connection to Slack"
+                    botToken = "xoxb-123123"
+                    clientId = "Slack client id"
+                    clientSecret = "credentialsJSON:123-123"
+                }
+            </code>
+        </example>
+    </examples>
 </dsl-extension>

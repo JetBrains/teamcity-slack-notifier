@@ -19,6 +19,7 @@
     <extends>
         <dsl type="notifications"/>
     </extends>
+
     <params>
         <param name="notifier" type="compound" dslName="notifierSettings">
             <option name="slackNotifier" value="jbSlackNotifier">
@@ -70,4 +71,42 @@
             </option>
         </param>
     </params>
+
+    <examples>
+        <example>
+            <description>
+                Adds notifications build feature that sends notifications when build has failed to start
+            </description>
+            <code>
+                notifications {
+                    notifierSettings = slackNotifier {
+                        connection = "PROJECT_EXT_4"
+                        sendTo = "#channel-name"
+                        messageFormat = simpleMessageFormat()
+                    }
+                    buildFailedToStart = true
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds notifications build feature that sends verbose notifications.
+                Notifications will contain build branch, build status and list all code changes, up to a specified maximum.
+            </description>
+            <code>
+                notifications {
+                    notifierSettings = slackNotifier {
+                        connection = "PROJECT_EXT_4"
+                        sendTo = "#channel-name"
+                        messageFormat = verboseMessageFormat {
+                            addBranch = true
+                            addChanges = true
+                            addStatusText = true
+                            maximumNumberOfChanges = 15
+                        }
+                    }
+                }
+            </code>
+        </example>
+    </examples>
 </dsl-add-on>
