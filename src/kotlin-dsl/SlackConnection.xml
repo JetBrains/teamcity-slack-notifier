@@ -67,7 +67,7 @@
                 slackConnection {
                     id = "PROJECT_EXT_4"
                     displayName = "Connection to Slack"
-                    botToken = "xoxb-123123"
+                    botToken = "credentialsJSON:321-321"
                     clientId = "Slack client id"
                     clientSecret = "credentialsJSON:123-123"
                 }
