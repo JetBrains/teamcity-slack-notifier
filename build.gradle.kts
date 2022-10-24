@@ -1,4 +1,5 @@
-import com.github.jk1.license.render.*
+import com.github.jk1.license.render.JsonReportRenderer
+import java.util.*
 
 plugins {
     kotlin("jvm") version "1.3.72"
@@ -8,7 +9,7 @@ plugins {
 }
 
 group = "org.jetbrains.teamcity"
-val pluginVersion = project.findProperty("PluginVersion") ?: "999999-snapshot"
+val pluginVersion = project.findProperty("PluginVersion") ?: "999999-snapshot-${Date().time}"
 version = pluginVersion
 
 val teamcityVersion = "2022.04-SNAPSHOT"

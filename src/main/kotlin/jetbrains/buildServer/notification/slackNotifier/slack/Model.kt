@@ -366,6 +366,16 @@ data class MessageActions(
     val elements: List<MessageAction>
 ): MessageBlock
 
+data class ContextBlock(
+    val type: String = "context",
+    val elements: List<ContextBlockElement>
+): MessageBlock
+
+data class ContextBlockElement(
+    val type: String = "mrkdwn",
+    val text: String
+)
+
 data class MessageAction(
     val type: String,
     val text: MessageActionText,

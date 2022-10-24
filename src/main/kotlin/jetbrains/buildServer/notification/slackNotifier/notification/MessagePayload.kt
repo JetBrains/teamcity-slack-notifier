@@ -18,6 +18,7 @@
 
 package jetbrains.buildServer.notification.slackNotifier.notification
 
+import jetbrains.buildServer.log.Loggers
 import jetbrains.buildServer.notification.slackNotifier.slack.*
 
 data class MessagePayload(
@@ -61,6 +62,12 @@ class MessagePayloadBuilder {
         blocks.add(builder.build())
     }
 
+    fun contextBlock(block: MessagePayloadContextBuilder.() -> Unit) {
+        val builder = MessagePayloadContextBuilder()
+        builder.block()
+        blocks.addAll(builder.build())
+    }
+
     fun build(): MessagePayload {
         val text = messageText.toString()
         if (text.isNotEmpty() && blocks.isNotEmpty()) {
@@ -90,23 +97,28 @@ fun messagePayload(block: MessagePayloadBuilder.() -> Unit): MessagePayload {
     return builder.build()
 }
 
-class MessagePayloadBlockBuilder {
-    private val text = StringBuilder()
+interface MessagePayloadTextBuilder<T: MessagePayloadTextBuilder<T>> {
+    fun add(text: String): T
+    fun newline(): T
+}
 
-    fun add(str: String): MessagePayloadBlockBuilder = apply {
-        text.append(str)
+class MessagePayloadBlockBuilder: MessagePayloadTextBuilder<MessagePayloadBlockBuilder> {
+    private val textBuilder = StringBuilder()
+
+    override fun add(text: String): MessagePayloadBlockBuilder = apply {
+        textBuilder.append(text)
     }
 
     fun add(messagePayload: MessagePayload): MessagePayloadBlockBuilder = apply {
-        text.append(messagePayload.text)
+        textBuilder.append(messagePayload.text)
     }
 
-    fun newline(): MessagePayloadBlockBuilder = apply {
+    override fun newline(): MessagePayloadBlockBuilder = apply {
         add("\n")
     }
 
     fun build(): TextBlock {
-        return TextBlock(text = MessageBlockText(type = "mrkdwn", text = text.toString()))
+        return TextBlock(text = MessageBlockText(type = "mrkdwn", text = textBuilder.toString()))
     }
 }
 
@@ -118,5 +130,22 @@ class MessagePayloadActionsBuilder {
 
     fun build(): MessageActions {
         return MessageActions(elements = actions)
+    }
+}
+
+class MessagePayloadContextBuilder: MessagePayloadTextBuilder<MessagePayloadContextBuilder> {
+    private val blocks = mutableListOf<ContextBlock>()
+
+    override fun add(text: String): MessagePayloadContextBuilder {
+        blocks.add(ContextBlock(elements = listOf(ContextBlockElement(text = text))))
+        return this
+    }
+
+    override fun newline(): MessagePayloadContextBuilder {
+        return this
+    }
+
+    fun build(): List<ContextBlock> {
+        return blocks
     }
 }
