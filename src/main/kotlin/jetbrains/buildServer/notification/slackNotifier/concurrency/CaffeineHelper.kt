@@ -20,7 +20,7 @@ import com.github.benmanes.caffeine.cache.AsyncCache
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-fun <K, V> AsyncCache<K, V>.getAsync(key: K, timeoutMs: Long, mapper: () -> V): V {
+fun <K : Any, V> AsyncCache<K, V>.getAsync(key: K, timeoutMs: Long, mapper: () -> V): V {
     return get(key) { _, executor ->
         val result = CompletableFuture<V>()
         executor.execute {
