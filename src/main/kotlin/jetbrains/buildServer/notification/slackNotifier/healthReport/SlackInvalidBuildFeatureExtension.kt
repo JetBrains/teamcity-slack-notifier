@@ -20,9 +20,11 @@ import jetbrains.buildServer.serverSide.BuildTypeNotFoundException
 import jetbrains.buildServer.serverSide.ProjectManager
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor
 import jetbrains.buildServer.serverSide.WebLinks
+import jetbrains.buildServer.serverSide.auth.Permission
 import jetbrains.buildServer.web.openapi.PagePlaces
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import jetbrains.buildServer.web.openapi.healthStatus.HealthStatusItemPageExtension
+import jetbrains.buildServer.web.util.SessionUser
 import org.springframework.stereotype.Service
 import javax.servlet.http.HttpServletRequest
 
@@ -38,6 +40,22 @@ class SlackInvalidBuildFeatureExtension(
         includeUrl = pluginDescriptor.getPluginResourcesPath("/healthReport/invalidBuildFeature.jsp")
         isVisibleOutsideAdminArea = false
         register()
+    }
+
+    override fun isAvailable(request: HttpServletRequest): Boolean {
+        val user = SessionUser.getUser(request)
+
+        val statusItem = getStatusItem(request)
+        val data = statusItem.additionalData
+        val buildTypeId = data["buildTypeId"] as String
+        val buildType = projectManager.findBuildTypeByExternalId(buildTypeId)
+        if (buildType != null) {
+            if (!user.isPermissionGrantedForProject(buildType.projectId, Permission.RUN_BUILD)) {
+                return false
+            }
+        }
+
+        return super.isAvailable(request)
     }
 
     override fun fillModel(model: MutableMap<String, Any>, request: HttpServletRequest) {

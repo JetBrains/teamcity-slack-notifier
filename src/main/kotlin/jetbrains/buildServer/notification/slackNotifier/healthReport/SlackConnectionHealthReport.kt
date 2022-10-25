@@ -19,6 +19,7 @@ package jetbrains.buildServer.notification.slackNotifier.healthReport
 import jetbrains.buildServer.notification.slackNotifier.SlackConnection
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
+import jetbrains.buildServer.serverSide.SProject
 import jetbrains.buildServer.serverSide.healthStatus.*
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
@@ -52,12 +53,12 @@ class SlackConnectionHealthReport(
                     continue
                 }
 
-                report(connection, consumer)
+                report(connection, consumer, project)
             }
         }
     }
 
-    private fun report(connection: OAuthConnectionDescriptor, consumer: HealthStatusItemConsumer) {
+    private fun report(connection: OAuthConnectionDescriptor, consumer: HealthStatusItemConsumer, project: SProject) {
         val token = connection.parameters["secure:token"]
         if (token == null || token == "") {
             consumer.consumeForProject(
@@ -67,7 +68,8 @@ class SlackConnectionHealthReport(
                     invalidConnectionCategory,
                     mapOf(
                         "reason" to "Connection is missing Slack bot token ('secure:token') property.",
-                        "connection" to connection
+                        "connection" to connection,
+                        "project" to project
                     )
                 )
             )
@@ -94,7 +96,7 @@ class SlackConnectionHealthReport(
                 HealthStatusItem(
                     "invalidToken_" + connection.id,
                     invalidConnectionCategory,
-                    mapOf("reason" to reason, "connection" to connection)
+                    mapOf("reason" to reason, "connection" to connection, "project" to project)
                 )
             )
         }
@@ -108,7 +110,8 @@ class SlackConnectionHealthReport(
                     invalidConnectionCategory,
                     mapOf(
                         "reason" to "Connection is missing Slack client id ('clientId') property.",
-                        "connection" to connection
+                        "connection" to connection,
+                        "project" to project
                     )
                 )
             )
@@ -124,7 +127,8 @@ class SlackConnectionHealthReport(
                     invalidConnectionCategory,
                     mapOf(
                         "reason" to "Connection is missing Slack client secret ('secure:clientSecret') property.",
-                        "connection" to connection
+                        "connection" to connection,
+                        "project" to project
                     )
                 )
             )
