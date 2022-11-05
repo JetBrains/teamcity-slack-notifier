@@ -38,6 +38,10 @@ class SlackInvalidConnectionExtension(
     }
 
     override fun isAvailable(request: HttpServletRequest): Boolean {
+        if (!super.isAvailable(request)) {
+            return false;
+        }
+
         val statusItem = getStatusItem(request)
         val data = statusItem.additionalData
         val project = data["project"] as SProject
@@ -47,7 +51,7 @@ class SlackInvalidConnectionExtension(
             return false
         }
 
-        return super.isAvailable(request)
+        return true;
     }
 
     override fun fillModel(model: MutableMap<String, Any>, request: HttpServletRequest) {
