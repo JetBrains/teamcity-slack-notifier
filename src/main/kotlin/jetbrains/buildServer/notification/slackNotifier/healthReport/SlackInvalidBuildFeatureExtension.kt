@@ -43,6 +43,10 @@ class SlackInvalidBuildFeatureExtension(
     }
 
     override fun isAvailable(request: HttpServletRequest): Boolean {
+        if (!super.isAvailable(request)) {
+            return false;
+        }
+
         val user = SessionUser.getUser(request)
 
         val statusItem = getStatusItem(request)
@@ -55,7 +59,7 @@ class SlackInvalidBuildFeatureExtension(
             }
         }
 
-        return super.isAvailable(request)
+        return true;
     }
 
     override fun fillModel(model: MutableMap<String, Any>, request: HttpServletRequest) {
