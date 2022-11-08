@@ -2,8 +2,8 @@ import com.github.jk1.license.render.*
 
 plugins {
     kotlin("jvm") version "1.3.72"
-    id("com.github.rodm.teamcity-server") version "1.3.1"
-    id("com.github.rodm.teamcity-environments") version "1.3.1"
+    id("com.github.rodm.teamcity-server") version "1.4.1"
+    id("com.github.rodm.teamcity-environments") version "1.4.1"
     id ("com.github.jk1.dependency-license-report") version "1.17"
 }
 
