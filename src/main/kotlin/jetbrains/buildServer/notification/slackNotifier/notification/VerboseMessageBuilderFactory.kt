@@ -45,7 +45,7 @@ class VerboseMessageBuilderFactory(
         val maximumNumberOfChanges = user.getPropertyValue(SlackProperties.maximumNumberOfChangesProperty)?.toIntOrNull()
                 ?: defaultMaximumNumberOfChanges
 
-        val newFormatEnabled = (project as ProjectEx).getBooleanInternalParameter("teamcity.internal.notification.jbSlackNotifier.verboseMessages.newFormatEnabled")
+        val newFormatEnabled = (project as ProjectEx).getBooleanInternalParameterOrTrue("teamcity.internal.notification.jbSlackNotifier.verboseMessages.newFormatEnabled")
 
         if (newFormatEnabled) {
             return NewVerboseMessageBuilder(
