@@ -367,13 +367,23 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     fun `then message should contain`(vararg strings: String) {
         waitForMessage()
         for (str in strings) {
-            assertContains(mySlackApi.messages.last().text, str)
+            val message = mySlackApi.messages.last()
+            if (message.blocks.isNotEmpty()) {
+                assertContains(message.blocks.joinToString("\n"), str)
+            } else {
+                assertContains(message.text, str)
+            }
         }
     }
 
     fun `then message should contain user descriptive name`() {
         waitForMessage()
-        assertContains(mySlackApi.messages.last().text, myUser.descriptiveName)
+        val message = mySlackApi.messages.last()
+        if (message.blocks.isNotEmpty()) {
+            assertContains(message.blocks.joinToString("\n"), myUser.descriptiveName)
+        } else {
+            assertContains(message.text, myUser.descriptiveName)
+        }
     }
 
     fun `then message should not contain`(vararg strings: String) {
