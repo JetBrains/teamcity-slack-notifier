@@ -147,7 +147,7 @@ class NewVerboseMessageBuilder(
             return
         }
 
-        val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
+        val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_FINISHED_BUILD, true)
         if (changes.isEmpty()) {
             return
         }
