@@ -149,6 +149,7 @@ class NewVerboseMessageBuilder(
 
         val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
         if (changes.isEmpty()) {
+            add("No new changes")
             return
         }
 
@@ -165,6 +166,7 @@ class NewVerboseMessageBuilder(
 
         val changes = queuedBuild.buildPromotion.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
         if (changes.isEmpty()) {
+            add("No new changes")
             return
         }
 
