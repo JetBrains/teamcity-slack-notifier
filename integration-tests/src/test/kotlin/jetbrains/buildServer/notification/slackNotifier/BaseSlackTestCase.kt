@@ -23,6 +23,7 @@ import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.notification.*
 import jetbrains.buildServer.notification.slackNotifier.slack.*
+import jetbrains.buildServer.serverSide.ChangesCalculationOptionsFactory
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.SBuild
 import jetbrains.buildServer.serverSide.SimpleParameter
@@ -112,7 +113,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                     messageFormatter,
                     myFixture.webLinks,
                     myFixture.getSingletonService(NotificationBuildStatusProvider::class.java),
-                    myServer
+                    myServer,
+                    myFixture.getSingletonService(ChangesCalculationOptionsFactory::class.java)
                 )
             ),
             myProjectManager,

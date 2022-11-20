@@ -20,9 +20,9 @@ import jetbrains.buildServer.Build
 import jetbrains.buildServer.notification.NotificationBuildStatusProvider
 import jetbrains.buildServer.notification.TemplateMessageBuilder
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
+import jetbrains.buildServer.notification.slackNotifier.teamcity.getChanges
 import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.vcs.SVcsModification
-import jetbrains.buildServer.vcs.SelectPrevBuildPolicy
 import jetbrains.buildServer.vcs.VcsModification
 import jetbrains.buildServer.vcs.VcsRoot
 import java.text.SimpleDateFormat
@@ -33,7 +33,8 @@ class NewVerboseMessageBuilder(
         private val format: SlackMessageFormatter,
         private val webLinks: RelativeWebLinks,
         private val notificationBuildStatusProvider: NotificationBuildStatusProvider,
-        private val server: SBuildServer
+        private val server: SBuildServer,
+        private val changesCalculationOptionsFactory: ChangesCalculationOptionsFactory
 ) : MessageBuilder by messageBuilder {
     private val changeDateFormat = SimpleDateFormat("d MMM HH∶mm")
 
@@ -147,7 +148,7 @@ class NewVerboseMessageBuilder(
             return
         }
 
-        val changes = build.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
+        val changes = changesCalculationOptionsFactory.getChanges(build.buildPromotion)
         if (changes.isEmpty()) {
             add("No new changes")
             return
@@ -164,7 +165,7 @@ class NewVerboseMessageBuilder(
             return
         }
 
-        val changes = queuedBuild.buildPromotion.getChanges(SelectPrevBuildPolicy.SINCE_LAST_BUILD, true)
+        val changes = changesCalculationOptionsFactory.getChanges(queuedBuild.buildPromotion)
         if (changes.isEmpty()) {
             add("No new changes")
             return

@@ -20,6 +20,7 @@ import jetbrains.buildServer.notification.NotificationBuildStatusProvider
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackMessageFormatter
 import jetbrains.buildServer.serverSide.BuildServerEx
+import jetbrains.buildServer.serverSide.ChangesCalculationOptionsFactory
 import jetbrains.buildServer.serverSide.RelativeWebLinks
 import jetbrains.buildServer.serverSide.SProject
 import jetbrains.buildServer.serverSide.impl.ProjectEx
@@ -32,7 +33,8 @@ class VerboseMessageBuilderFactory(
     private val format: SlackMessageFormatter,
     private val links: RelativeWebLinks,
     private val notificationBuildStatusProvider: NotificationBuildStatusProvider,
-    private val server: BuildServerEx
+    private val server: BuildServerEx,
+    private val changesCalculationOptionsFactory: ChangesCalculationOptionsFactory
 ) : MessageBuilderFactory {
     companion object {
         const val defaultMaximumNumberOfChanges = 10
@@ -65,7 +67,8 @@ class VerboseMessageBuilderFactory(
                 format,
                 links,
                 notificationBuildStatusProvider,
-                server
+                server,
+                changesCalculationOptionsFactory
             )
         }
 
