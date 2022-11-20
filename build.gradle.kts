@@ -49,7 +49,7 @@ tasks {
 }
 
 teamcity {
-    version = "2020.2"
+    version = "2022.10"
 
     server {
         archiveName = "slack.zip"
