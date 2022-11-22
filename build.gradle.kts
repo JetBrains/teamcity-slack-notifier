@@ -12,7 +12,7 @@ group = "org.jetbrains.teamcity"
 val pluginVersion = project.findProperty("PluginVersion") ?: "999999-snapshot-${Date().time}"
 version = pluginVersion
 
-val teamcityVersion = "2022.04-SNAPSHOT"
+val teamcityVersion = "2022.10-SNAPSHOT"
 
 extra["teamcityVersion"] = teamcityVersion
 extra["downloadsDir"] = project.findProperty("downloads.dir") ?: "${rootDir}/downloads"

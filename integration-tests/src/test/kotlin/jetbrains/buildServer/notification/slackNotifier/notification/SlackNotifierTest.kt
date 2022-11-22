@@ -194,6 +194,20 @@ class SlackNotifierTest : BaseSlackTestCase() {
         `when build finishes with changes`()
         `then message should not contain`("committer1", "Commit message")
     }
+    @Test
+    fun `build feature should send changes in verbose notification for a composite build`() {
+        `given build feature in composite build with verbose changes is subscribed to`(BUILD_FINISHED_SUCCESS)
+        `when composite build finishes with changes from dependent build`()
+        `then message should contain`("committer1", "Commit message")
+    }
+
+    @Test
+    fun `build feature should not send changes in verbose notification for a composite build without show changes from dependencies option`() {
+        `given build feature in composite build with verbose changes that doesnt show changes from dependecies is subscribed to`(BUILD_FINISHED_SUCCESS)
+        `when composite build finishes with changes from dependent build`()
+        `then message should not contain`("committer1", "Commit message")
+    }
+
 
     @Test
     fun `notification message should limit number of changes in a message`() {

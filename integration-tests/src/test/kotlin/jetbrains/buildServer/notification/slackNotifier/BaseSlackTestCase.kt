@@ -23,10 +23,7 @@ import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.notification.*
 import jetbrains.buildServer.notification.slackNotifier.slack.*
-import jetbrains.buildServer.serverSide.ChangesCalculationOptionsFactory
-import jetbrains.buildServer.serverSide.InvalidProperty
-import jetbrains.buildServer.serverSide.SBuild
-import jetbrains.buildServer.serverSide.SimpleParameter
+import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
@@ -34,6 +31,7 @@ import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.users.impl.UserEx
 import jetbrains.buildServer.vcs.ModificationDataForTest
 import org.testng.annotations.BeforeMethod
+import java.util.*
 import java.util.function.BooleanSupplier
 
 open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
@@ -50,6 +48,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     private lateinit var messageFormatter: SlackMessageFormatter
     private lateinit var detailsFormatter: DetailsFormatter
     private lateinit var simpleMessageBuilderFactory: SimpleMessageBuilderFactory
+
+    private lateinit var compositeBuildType: SBuildType
 
     @BeforeMethod(alwaysRun = true)
     override fun setUp() {
@@ -156,6 +156,37 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         ))
     }
 
+    fun `given build feature in composite build with verbose changes is subscribed to`(vararg events: NotificationRule.Event) {
+        compositeBuildType = registerBuildType("Composite Build", myProject.name)
+        compositeBuildType.setOption(BuildTypeOptions.BT_SHOW_DEPS_CHANGES, true)
+        addDependency(compositeBuildType, myBuildType)
+
+        addBuildFeature(
+            *events,
+            additionalParameters = mapOf(
+                SlackProperties.messageFormatProperty.key to "verbose",
+                SlackProperties.addChangesProperty.key to "true"
+            ),
+            buildType = compositeBuildType
+        )
+    }
+
+    fun `given build feature in composite build with verbose changes that doesnt show changes from dependecies is subscribed to`(
+        vararg events: NotificationRule.Event
+    ) {
+        compositeBuildType = registerBuildType("Composite Build", myProject.name)
+        addDependency(compositeBuildType, myBuildType)
+
+        addBuildFeature(
+            *events,
+            additionalParameters = mapOf(
+                SlackProperties.messageFormatProperty.key to "verbose",
+                SlackProperties.addChangesProperty.key to "true"
+            ),
+            buildType = compositeBuildType
+        )
+    }
+
     fun `given build feature with 2 max changes is subscribed to`(vararg events: NotificationRule.Event) {
         addBuildFeature(*events, additionalParameters = mapOf(
             SlackProperties.messageFormatProperty.key to "verbose",
@@ -170,8 +201,12 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         ))
     }
 
-    private fun addBuildFeature(vararg events: NotificationRule.Event, additionalParameters: Map<String, String> = emptyMap()) {
-        myBuildType.addBuildFeature(
+    private fun addBuildFeature(
+        vararg events: NotificationRule.Event,
+        additionalParameters: Map<String, String> = emptyMap(),
+        buildType: SBuildType = myBuildType
+    ) {
+        buildType.addBuildFeature(
             FeatureProviderNotificationRulesHolder.FEATURE_NAME,
             mapOf(
                 "notifier" to myNotifier.notificatorType,
@@ -247,6 +282,17 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     fun `when build finishes with changes`(): SBuild {
         val vcsRoot = myFixture.addVcsRoot("vcs", "")
         startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "committer1", vcsRoot, "1"))
+        return finishBuild()
+    }
+
+    fun `when composite build finishes with changes from dependent build`(): SBuild {
+        val vcsRoot = myFixture.addVcsRoot("vcs", "")
+        val modificationData = ModificationDataForTest.forTests("Commit Message", "committer1", vcsRoot, "1", Date());
+        myFixture.addModification(modificationData)
+        compositeBuildType.addToQueue("")
+        flushQueueAndWait()
+        finishBuild()
+        flushQueueAndWait()
         return finishBuild()
     }
 
