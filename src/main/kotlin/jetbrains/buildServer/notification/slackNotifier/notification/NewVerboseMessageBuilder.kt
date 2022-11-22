@@ -25,7 +25,6 @@ import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.vcs.SVcsModification
 import jetbrains.buildServer.vcs.VcsModification
 import jetbrains.buildServer.vcs.VcsRoot
-import java.text.SimpleDateFormat
 
 class NewVerboseMessageBuilder(
         private val messageBuilder: MessageBuilder,
@@ -36,8 +35,6 @@ class NewVerboseMessageBuilder(
         private val server: SBuildServer,
         private val changesCalculationOptionsFactory: ChangesCalculationOptionsFactory
 ) : MessageBuilder by messageBuilder {
-    private val changeDateFormat = SimpleDateFormat("d MMM HH∶mm")
-
     override fun buildStarted(build: SRunningBuild): MessagePayload = messagePayload {
         textBlock {
             add(messageBuilder.buildStarted(build))
@@ -118,12 +115,11 @@ class NewVerboseMessageBuilder(
             newline()
             newline()
             val changeDescription = shorten(change.description.trim())
-            val date = changeDateFormat.format(change.vcsDate)
             val username = change.committers.firstOrNull()?.descriptiveName ?: change.userName
             val prefix = if (username != null) {
-                "${format.bold(username)} at $date"
+                format.bold(username)
             } else {
-                "At $date"
+                ""
             }
 
             // Use different colon symbol here since the date is in format hh:mm
