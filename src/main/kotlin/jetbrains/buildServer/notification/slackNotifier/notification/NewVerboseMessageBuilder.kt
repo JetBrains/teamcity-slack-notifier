@@ -125,7 +125,7 @@ class NewVerboseMessageBuilder(
             // Use different colon symbol here since the date is in format hh:mm
             // and that could lead to Slack interpreting message like '...19:42: ...'
             // as :42: meaning emoji
-            add("${prefix}∶ $changeDescription")
+            add(format.listElement("${prefix}∶ $changeDescription"))
         }
 
         newline()
