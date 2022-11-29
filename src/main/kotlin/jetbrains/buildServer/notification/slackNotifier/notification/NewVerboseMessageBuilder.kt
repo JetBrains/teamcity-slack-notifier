@@ -117,7 +117,7 @@ class NewVerboseMessageBuilder(
             val changeDescription = shorten(change.description.trim())
             val username = change.committers.firstOrNull()?.descriptiveName ?: change.userName
             val prefix = if (username != null) {
-                format.bold(username)
+                "$username∶ "
             } else {
                 ""
             }
@@ -125,7 +125,7 @@ class NewVerboseMessageBuilder(
             // Use different colon symbol here since the date is in format hh:mm
             // and that could lead to Slack interpreting message like '...19:42: ...'
             // as :42: meaning emoji
-            add(format.listElement("${prefix}∶ $changeDescription"))
+            add(format.listElement("${prefix}$changeDescription"))
         }
 
         newline()
