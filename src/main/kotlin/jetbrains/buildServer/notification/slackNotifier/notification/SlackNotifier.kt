@@ -25,7 +25,6 @@ import jetbrains.buildServer.notification.NotificatorAdapter
 import jetbrains.buildServer.notification.NotificatorRegistry
 import jetbrains.buildServer.notification.slackNotifier.*
 import jetbrains.buildServer.notification.slackNotifier.logging.ThrottlingLogger
-import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
@@ -45,13 +44,12 @@ import org.springframework.stereotype.Service
 @Service
 @Conditional(SlackNotifierEnabled::class)
 class SlackNotifier(
-        notifierRegistry: NotificatorRegistry,
-        slackApiFactory: SlackWebApiFactory,
-        private val messageBuilderFactory: ChoosingMessageBuilderFactory,
-        private val projectManager: ProjectManager,
-        private val oauthManager: OAuthConnectionsManager,
-        private val aggregatedSlackApi: AggregatedSlackApi,
-        private val descriptor: SlackNotifierDescriptor
+    notifierRegistry: NotificatorRegistry,
+    slackApiFactory: SlackWebApiFactory,
+    private val messageBuilderFactory: ChoosingMessageBuilderFactory,
+    private val projectManager: ProjectManager,
+    private val oauthManager: OAuthConnectionsManager,
+    private val descriptor: SlackNotifierDescriptor
 ) : NotificatorAdapter(), AdHocNotifier, PositionAware {
 
     private val slackApi = slackApiFactory.createSlackWebApi()

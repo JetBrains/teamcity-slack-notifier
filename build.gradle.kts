@@ -49,7 +49,7 @@ tasks {
 }
 
 teamcity {
-    version = "2023.03"
+    version = "2022.10"
 
     server {
         archiveName = "slack.zip"
@@ -60,14 +60,6 @@ teamcity {
             into("kotlin-dsl") {
                 from("src/kotlin-dsl")
             }
-        }
-    }
-    environments {
-        baseHomeDir = "teamcity/servers"
-        baseDataDir = "${rootDir}/data"
-
-        create("teamcity2023.03") {
-            version = "2023.03"
         }
     }
 }
