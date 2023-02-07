@@ -45,6 +45,8 @@ class SlackProperties {
         private fun property(name: String): PluginPropertyKey {
             return PluginPropertyKey(PluginTypes.NOTIFICATOR_PLUGIN_TYPE, SlackNotifierDescriptor.notifierType, name)
         }
+
+        const val adHocNotificationsCounterAttribute = "teamcity.build.adHocNotifications.slack.counter"
     }
 
     val channelKey = channelProperty.key

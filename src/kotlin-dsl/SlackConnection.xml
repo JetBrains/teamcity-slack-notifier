@@ -56,6 +56,11 @@
                 Client secret
             </description>
         </param>
+        <param name="adHocMaxNotificationsPerBuild" dslName="adHocMaxNotificationsPerBuild">
+            <description>
+                Max number of ad-hoc notifications per build
+            </description>
+        </param>
     </params>
 
     <examples>
