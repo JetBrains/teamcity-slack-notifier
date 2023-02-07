@@ -12,7 +12,7 @@ group = "org.jetbrains.teamcity"
 val pluginVersion = project.findProperty("PluginVersion") ?: "999999-snapshot-${Date().time}"
 version = pluginVersion
 
-val teamcityVersion = "2022.10-SNAPSHOT"
+val teamcityVersion = "2023.03-SNAPSHOT"
 
 extra["teamcityVersion"] = teamcityVersion
 extra["downloadsDir"] = project.findProperty("downloads.dir") ?: "${rootDir}/downloads"
@@ -49,7 +49,7 @@ tasks {
 }
 
 teamcity {
-    version = "2022.10"
+    version = "2023.03"
 
     server {
         archiveName = "slack.zip"
@@ -66,8 +66,8 @@ teamcity {
         baseHomeDir = "teamcity/servers"
         baseDataDir = "${rootDir}/data"
 
-        create("teamcity2020.2") {
-            version = "2020.2.2"
+        create("teamcity2023.03") {
+            version = "2023.03"
         }
     }
 }
