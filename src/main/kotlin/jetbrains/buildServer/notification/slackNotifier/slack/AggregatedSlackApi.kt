@@ -67,7 +67,7 @@ class AggregatedSlackApi(
     // If some changing info (like display name) should be cached, Guava expirable cache should be used instead
     private val myBotCache: MutableMap<String, AggregatedBot> = Collections.synchronizedMap(WeakHashMap())
 
-    private val readTimeoutMs = 5_000L
+    private val readTimeoutMs = 30_000L
 
     fun getChannelsList(token: String): List<Channel> {
         return myChannelsCache.getAsync(token, readTimeoutMs) {

@@ -4,6 +4,7 @@
 <%@ include file="/include-internal.jsp" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
+<%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <%--
@@ -257,6 +258,20 @@
         <span class="error" id="error_secure:token"></span>
     </td>
 </tr>
+
+<l:settingsGroup title="Ad-hoc notifications">
+    <tr>
+        <td><label for="adHocMaxNotificationsPerBuild">Max notifications per build:</label></td>
+        <td>
+            <props:textProperty name="adHocMaxNotificationsPerBuild" style="width: 5em;"
+                                value="${empty propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]
+                                        ? propertiesBean.defaultProperties[\"adHocMaxNotificationsPerBuild\"]
+                                        : propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]}"/>
+            <bs:smallNote>Limits number of Slack ad-hoc notifications per build. If set to 0, no ad-hoc notifications will be sent</bs:smallNote>
+            <span class="error" id="error_adHocMaxNotificationsPerBuild"></span>
+        </td>
+    </tr>
+</l:settingsGroup>
 
 <span id="testConnectionButtonWrapper" style="display:none;">
   <forms:submit id="testConnectionButton" type="button" label="Test connection"

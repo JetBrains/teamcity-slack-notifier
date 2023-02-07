@@ -20,6 +20,8 @@ import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider
+import jetbrains.buildServer.serverSide.oauth.github.GitHubConstants
+import jetbrains.buildServer.serverSide.oauth.github.GitHubOAuthProvider
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
@@ -65,7 +67,16 @@ class SlackConnection(
             errors.add(InvalidProperty("secure:clientSecret", "Client secret must be specified"))
         }
 
+        val maxNotificationsPerBuild = it["adHocMaxNotificationsPerBuild"]
+        if (!maxNotificationsPerBuild.isNullOrEmpty() && maxNotificationsPerBuild.toIntOrNull() == null) {
+            errors.add(InvalidProperty("adHocMaxNotificationsPerBuild", "Could not parse integer value"))
+        }
+
         errors
+    }
+
+    override fun getDefaultProperties(): MutableMap<String, String> {
+        return hashMapOf("adHocMaxNotificationsPerBuild" to "0")
     }
 
     companion object {
