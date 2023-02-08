@@ -29,6 +29,7 @@ import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
 import jetbrains.buildServer.serverSide.*
+import jetbrains.buildServer.serverSide.impl.LogUtil
 import jetbrains.buildServer.serverSide.mute.MuteInfo
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
@@ -342,8 +343,12 @@ class SlackNotifier(
     override fun sendBuildRelatedNotification(
         message: String, runningBuild: SRunningBuild, parameters: MutableMap<String, String>
     ) {
-        val buildType = runningBuild.buildType ?:
-            throw IllegalStateException("Could not resolve build type for build ID ${runningBuild.buildId}")
+        val buildType = runningBuild.buildType
+
+        if (buildType == null) {
+            logger.warn("Could not find a build configuration for ${LogUtil.describe(runningBuild)}")
+            return
+        }
 
         val project = buildType.project
 
@@ -358,7 +363,7 @@ class SlackNotifier(
             )
 
         val channel = parameters["channel"]
-            ?: throw AdHocNotificationException("'channel' argument was not specified for message $message")
+            ?: throw AdHocNotificationException("'channel' argument was not specified for message $message, build ID ${runningBuild.buildId}")
 
         val payloadBuilder = MessagePayloadBuilder()
         payloadBuilder.contextBlock { add("[This custom message was sent by a TeamCity build, and may potentially contain deceptive or malicious content. " +
@@ -429,6 +434,7 @@ class SlackNotifier(
             SlackProperties.adHocNotificationsCounterAttribute,
             currentNotificationsCount + 1
         )
+        buildPromotionEx.persist()
     }
 
     override fun getOrderId(): String = notificatorType
