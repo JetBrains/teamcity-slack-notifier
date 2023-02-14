@@ -6,6 +6,7 @@
 <%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="intprop" uri="/WEB-INF/functions/intprop"%>
 
 <%--
   ~  Copyright 2000-2022 JetBrains s.r.o.
@@ -259,19 +260,22 @@
     </td>
 </tr>
 
-<l:settingsGroup title="Ad-hoc notifications">
-    <tr>
-        <td><label for="adHocMaxNotificationsPerBuild">Max notifications per build:</label></td>
-        <td>
-            <props:textProperty name="adHocMaxNotificationsPerBuild" style="width: 5em;"
-                                value="${empty propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]
-                                        ? propertiesBean.defaultProperties[\"adHocMaxNotificationsPerBuild\"]
-                                        : propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]}"/>
-            <bs:smallNote>Limits number of Slack ad-hoc notifications per build. If set to 0, no ad-hoc notifications will be sent</bs:smallNote>
-            <span class="error" id="error_adHocMaxNotificationsPerBuild"></span>
-        </td>
-    </tr>
-</l:settingsGroup>
+<c:if test="${intprop:getBoolean('teamcity.notifications.adhoc.slack.ui.enabled')}">
+    <l:settingsGroup title="Ad-hoc notifications">
+        <bs:smallNote>Settings for sending ad-hoc notifications via Slack</bs:smallNote><bs:help file="service-messages#sending-ad-hoc-notifications"/>
+        <tr>
+            <td><label for="adHocMaxNotificationsPerBuild">Max notifications per build:</label></td>
+            <td>
+                <props:textProperty name="adHocMaxNotificationsPerBuild" style="width: 5em;"
+                                    value="${empty propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]
+                                            ? propertiesBean.defaultProperties[\"adHocMaxNotificationsPerBuild\"]
+                                            : propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]}"/>
+                <bs:smallNote>Limits number of Slack ad-hoc notifications per build. If set to 0, no ad-hoc notifications will be sent</bs:smallNote>
+                <span class="error" id="error_adHocMaxNotificationsPerBuild"></span>
+            </td>
+        </tr>
+    </l:settingsGroup>
+</c:if>
 
 <span id="testConnectionButtonWrapper" style="display:none;">
   <forms:submit id="testConnectionButton" type="button" label="Test connection"
