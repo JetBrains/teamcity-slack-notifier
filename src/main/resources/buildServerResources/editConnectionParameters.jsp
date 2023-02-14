@@ -262,7 +262,6 @@
 
 <c:if test="${intprop:getBoolean('teamcity.notifications.adhoc.slack.ui.enabled')}">
     <l:settingsGroup title="Ad-hoc notifications">
-        <bs:smallNote>Settings for sending ad-hoc notifications via Slack</bs:smallNote><bs:help file="service-messages#sending-ad-hoc-notifications"/>
         <tr>
             <td><label for="adHocMaxNotificationsPerBuild">Max notifications per build:</label></td>
             <td>
