@@ -67,7 +67,7 @@ class SlackTestConnectionController(
         val errors = mutableListOf<InvalidProperty>()
         val botToken = it["secure:token"] ?: return@PropertiesProcessor errors
 
-        val authTest = IOGuard.allowNetworkCall<AuthTestResult, Exception> { slackApi.authTest(botToken) }
+        val authTest = slackApi.authTest(botToken)
         if (!authTest.ok) {
             errors.add(
                     InvalidProperty(

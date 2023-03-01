@@ -23,9 +23,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Pair
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
+import jetbrains.buildServer.serverSide.IOGuard
 import jetbrains.buildServer.serverSide.TeamCityProperties
-import jetbrains.buildServer.serverSide.impl.SecondaryNodeSecurityManager
-import jetbrains.buildServer.util.FuncThrow
 import jetbrains.buildServer.util.HTTPRequestBuilder
 import jetbrains.buildServer.util.ssl.SSLTrustStoreProvider
 import java.nio.charset.Charset
@@ -155,7 +154,7 @@ class SlackWebApiImpl(
             clientSecret: String,
             code: String,
             redirectUrl: String
-    ): OauthAccessToken {
+    ): OauthAccessToken = readOnlyRequest {
         val encodedSecret = Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray())
 
         val response = request(
@@ -171,10 +170,10 @@ class SlackWebApiImpl(
         )
 
         if (response.isException || response.message == null) {
-            return OauthAccessToken(ok = false, error = unknownError)
+            OauthAccessToken(ok = false, error = unknownError)
+        } else {
+            mapper.readValue(response.message, OauthAccessToken::class.java)
         }
-
-        return mapper.readValue(response.message, OauthAccessToken::class.java)
     }
 
     override fun teamInfo(token: String, team: String): MaybeTeam = readOnlyRequest {
@@ -245,9 +244,9 @@ class SlackWebApiImpl(
     }
 
     private fun <T> readOnlyRequest(block: () -> T): T =
-            SecondaryNodeSecurityManager.runSafeNetworkOperation(FuncThrow<T, Throwable> {
-                block()
-            })
+        IOGuard.allowNetworkCall<T, Exception> {
+            block()
+        }
 
     internal data class SlackResponse(val message: String?, val isException: Boolean)
 
