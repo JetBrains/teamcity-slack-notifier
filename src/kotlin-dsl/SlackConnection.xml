@@ -58,7 +58,12 @@
         </param>
         <param name="adHocMaxNotificationsPerBuild" dslName="adHocMaxNotificationsPerBuild">
             <description>
-                Max number of ad-hoc notifications per build
+                Max number of service message notifications per build
+            </description>
+        </param>
+        <param name="adHocAllowedDomainNames" dslName="adHocAllowedDomainNames">
+            <description>
+                Whitelist of domain names which may be included in service message notification
             </description>
         </param>
     </params>

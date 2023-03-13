@@ -81,6 +81,9 @@ class SlackNotifierDescriptor(
 
 
     fun getType(): String = notifierType
+
+    fun getAdHocNotifierType(): String = adHocNotifierType
+
     fun getDisplayName(): String {
         if (displayNameClashes()) {
             return "$defaultDisplayName (official)"
@@ -96,6 +99,7 @@ class SlackNotifierDescriptor(
 
     companion object {
         const val notifierType = "jbSlackNotifier"
+        const val adHocNotifierType = "slack"
         const val defaultDisplayName = "Slack Notifier"
     }
 }

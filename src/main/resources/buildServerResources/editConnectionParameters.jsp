@@ -261,16 +261,23 @@
 </tr>
 
 <c:if test="${intprop:getBoolean('teamcity.notifications.adhoc.slack.ui.enabled')}">
-    <l:settingsGroup title="Ad-hoc notifications">
+    <l:settingsGroup title="Service message notifications">
         <tr>
-            <td><label for="adHocMaxNotificationsPerBuild">Max notifications per build:</label></td>
+            <td><label for="adHocMaxNotificationsPerBuild">Notifications limit:</label></td>
             <td>
                 <props:textProperty name="adHocMaxNotificationsPerBuild" style="width: 5em;"
                                     value="${empty propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]
                                             ? propertiesBean.defaultProperties[\"adHocMaxNotificationsPerBuild\"]
                                             : propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]}"/>
-                <bs:smallNote>Limits number of Slack ad-hoc notifications per build. If set to 0, no ad-hoc notifications will be sent</bs:smallNote>
+                <bs:smallNote>Limits the number of service message notifications per build run. Set to '0' to disable service message notifications.</bs:smallNote>
                 <span class="error" id="error_adHocMaxNotificationsPerBuild"></span>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="adHocAllowedDomainNames">Allowed hostnames:</label></td>
+            <td>
+                <props:textProperty name="adHocAllowedDomainNames"/>
+                <bs:smallNote>TeamCity notifications can display only those URLs which reference hostnames from this list. You can use asterisk (*) as a wildcard for any string (for example, *.test.co.uk).</bs:smallNote>
             </td>
         </tr>
     </l:settingsGroup>

@@ -19,10 +19,7 @@ package jetbrains.buildServer.notification.slackNotifier.notification
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.log.Loggers
-import jetbrains.buildServer.notification.AdHocNotificationException
-import jetbrains.buildServer.notification.AdHocNotifier
-import jetbrains.buildServer.notification.NotificatorAdapter
-import jetbrains.buildServer.notification.NotificatorRegistry
+import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.*
 import jetbrains.buildServer.notification.slackNotifier.logging.ThrottlingLogger
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
@@ -48,9 +45,12 @@ class SlackNotifier(
     notifierRegistry: NotificatorRegistry,
     slackApiFactory: SlackWebApiFactory,
     private val messageBuilderFactory: ChoosingMessageBuilderFactory,
+    private val adHocMessageBuilder: PlainAdHocMessageBuilder,
     private val projectManager: ProjectManager,
     private val oauthManager: OAuthConnectionsManager,
-    private val descriptor: SlackNotifierDescriptor
+    private val descriptor: SlackNotifierDescriptor,
+    private val notificationCountHandler: BuildPromotionNotificationCountHandler,
+    private val domainNameFinder: DomainNameFinder
 ) : NotificatorAdapter(), AdHocNotifier, PositionAware {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
@@ -63,7 +63,10 @@ class SlackNotifier(
     }
 
     override fun getDisplayName(): String = descriptor.getDisplayName()
+
     override fun getNotificatorType(): String = descriptor.getType()
+
+    override fun getAdHocNotifierType(): String = descriptor.getAdHocNotifierType()
 
     override fun notifyTestsMuted(tests: Collection<STest>, muteInfo: MuteInfo, users: Set<SUser>) {
         val project = muteInfo.project ?: return
@@ -327,15 +330,15 @@ class SlackNotifier(
     }
 
     @Throws(AdHocNotificationException::class)
-    private fun sendMessage(message: MessagePayload, channelId: String, token: String) {
+    private fun sendMessage(message: MessagePayload, sendTo: String, token: String) {
         if (!TeamCityProperties.getBooleanOrTrue(SlackNotifierProperties.sendNotifications)) {
-            throw AdHocNotificationException("Slack notifications are disabled server-wide. Not sending $message to channel with id '$channelId'.")
+            throw AdHocNotificationException("Slack notifications are disabled server-wide. Not sending $message to channel with id '$sendTo'.")
         }
 
-        val result = slackApi.postMessage(token, message.toSlackMessage(channelId))
+        val result = slackApi.postMessage(token, message.toSlackMessage(sendTo))
 
         if (!result.ok) {
-            throw AdHocNotificationException("Error sending message to $channelId: ${result.error}")
+            throw AdHocNotificationException("Error sending message to $sendTo: ${result.error}")
         }
     }
 
@@ -356,21 +359,23 @@ class SlackNotifier(
 
         checkAdHocNotificationLimit(runningBuild, connectionDescriptor)
 
+        checkExternalDomainsInMessage(message, connectionDescriptor)
+
         val token = getToken(project, connectionDescriptor.id)
             ?: throw AdHocNotificationException(
                 "No token for connection with id '${connectionDescriptor.id}'" +
                         " in project with external id '${project.externalId}' was found"
             )
 
-        val channel = parameters["channel"]
-            ?: throw AdHocNotificationException("'channel' argument was not specified for message $message, build ID ${runningBuild.buildId}")
+        val sendTo = parameters["sendTo"]
+            ?: throw AdHocNotificationException("'sendTo' argument was not specified for message $message, build ID ${runningBuild.buildId}")
 
-        val payloadBuilder = MessagePayloadBuilder()
-        payloadBuilder.contextBlock { add("[This custom message was sent by a TeamCity build, and may potentially contain deceptive or malicious content. " +
-                "Please carefully review links or instructions if any are present.]") }
-        payloadBuilder.textBlock { add(message) }
+        val processedMessagePayload = adHocMessageBuilder.buildRelatedNotification(
+            runningBuild,
+            message
+        )
 
-        sendMessage(payloadBuilder.build(), channel, token)
+        sendMessage(processedMessagePayload, sendTo, token)
     }
 
     @Throws(AdHocNotificationException::class)
@@ -418,23 +423,46 @@ class SlackNotifier(
         runningBuild: SRunningBuild,
         connectionDescriptor: OAuthConnectionDescriptor
     ) {
-        val buildPromotionEx = runningBuild.buildPromotion as BuildPromotionEx
+        val buildPromotion = runningBuild.buildPromotion
 
         val limit = getMaxAdHocNotificationsPerBuild(connectionDescriptor)
 
-        val rawCounter = buildPromotionEx.getAttribute(SlackProperties.adHocNotificationsCounterAttribute)
-        val currentNotificationsCount = rawCounter.toString().toIntOrNull()
-            ?: 0 // assume attribute is not set yet
+        val currentCount = notificationCountHandler.getCounter(
+            buildPromotion,
+            adHocNotifierType
+        )
 
-        if (currentNotificationsCount >= limit) {
+        if (currentCount >= limit) {
             throw AdHocNotificationException("Reached limit of $limit ad-hoc Slack notifications per build")
         }
 
-        buildPromotionEx.setAttribute(
-            SlackProperties.adHocNotificationsCounterAttribute,
-            currentNotificationsCount + 1
+        notificationCountHandler.incrementCounter(
+            buildPromotion,
+            adHocNotifierType
         )
-        buildPromotionEx.persist()
+    }
+
+    @Throws(AdHocNotificationException::class)
+    private fun checkExternalDomainsInMessage(
+        message: String,
+        descriptor: OAuthConnectionDescriptor
+    ) {
+        val allowedDomainNamePatternsString = descriptor.parameters["adHocAllowedDomainNames"]
+            ?: ""
+
+        val allowedPatterns = domainNameFinder.getPatterns(allowedDomainNamePatternsString)
+
+        val externalDomains = domainNameFinder.findExternalDomains(
+            message,
+            allowedPatterns
+        )
+
+        if (externalDomains.isNotEmpty()) {
+            throw AdHocNotificationException(
+                "Found external domains that are not allowed by configuration: " +
+                        "[${externalDomains.joinToString(" ,")}]"
+            )
+        }
     }
 
     override fun getOrderId(): String = notificatorType

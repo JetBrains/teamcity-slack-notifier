@@ -41,6 +41,9 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     private lateinit var myNotifier: SlackNotifier
     private lateinit var myUser: SUser
     private lateinit var myAssignerUser: SUser
+    private lateinit var myAdHocMessageBuilder: PlainAdHocMessageBuilder
+    private lateinit var myNotificationCountHandler: BuildPromotionNotificationCountHandler
+    private lateinit var myDomainNameFinder: DomainNameFinder
 
     protected lateinit var myConnectionManager: OAuthConnectionsManager
     protected lateinit var myConnection: OAuthConnectionDescriptor
@@ -72,6 +75,15 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
             messageFormatter,
             myFixture.webLinks,
             myFixture.projectManager
+        )
+
+        myAdHocMessageBuilder = PlainAdHocMessageBuilder(detailsFormatter)
+
+        myNotificationCountHandler = myFixture.getSingletonService(
+            BuildPromotionNotificationCountHandler::class.java
+        )
+        myDomainNameFinder = myFixture.getSingletonService(
+            DomainNameFinder::class.java
         )
 
         simpleMessageBuilderFactory = SimpleMessageBuilderFactory(
@@ -117,9 +129,12 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                     myFixture.getSingletonService(ChangesCalculationOptionsFactory::class.java)
                 )
             ),
+            myAdHocMessageBuilder,
             myProjectManager,
             myConnectionManager,
-            myDescriptor
+            myDescriptor,
+            myNotificationCountHandler,
+            myDomainNameFinder
         )
 
         myFixture.addService(notifier)
