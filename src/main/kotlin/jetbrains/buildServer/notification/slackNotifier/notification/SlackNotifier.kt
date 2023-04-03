@@ -314,7 +314,7 @@ class SlackNotifier(
         val result = slackApi.postMessage(token, message.toSlackMessage(sendTo))
 
         if (!result.ok) {
-            logger.error("Error sending message to $sendTo: ${result.error}")
+            logger.warn("Error sending message to $sendTo: ${result.error}")
         }
     }
 
