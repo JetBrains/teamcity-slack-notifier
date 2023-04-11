@@ -17,6 +17,7 @@
 package jetbrains.buildServer.notification.slackNotifier.notification
 
 
+import jetbrains.buildServer.notification.AdHocNotificationException
 import jetbrains.buildServer.notification.NotificationRule.Event.*
 import jetbrains.buildServer.notification.slackNotifier.And
 import jetbrains.buildServer.notification.slackNotifier.BaseSlackTestCase
@@ -82,6 +83,14 @@ class SlackNotifierTest : BaseSlackTestCase() {
     }
 
     @Test
+    fun `should send notification about build that requires approval`() {
+        `given user is subscribed to`(QUEUED_BUILD_REQUIRES_APPROVAL)
+        `when approvable build is queued`()
+        `then message should contain`("is waiting for approval") And
+                1.`messages should be sent`()
+    }
+
+    @Test
     fun `build feature should send notification about build start`() {
         `given build feature is subscribed to`(BUILD_STARTED)
         val build = `when build starts`()
@@ -122,6 +131,14 @@ class SlackNotifierTest : BaseSlackTestCase() {
         `given build feature is subscribed to`(NEW_BUILD_PROBLEM_OCCURRED, BUILD_FINISHED_FAILURE)
         val build = `when build problem occurs`()
         `then message should contain`("fail", build.buildNumber)
+    }
+
+    @Test
+    fun `build feature should send notification about build that requires approval`() {
+        `given build feature is subscribed to`(QUEUED_BUILD_REQUIRES_APPROVAL)
+        `when approvable build is queued`()
+        `then message should contain`("is waiting for approval") And
+                1.`messages should be sent`()
     }
 
     @Test
@@ -235,5 +252,46 @@ class SlackNotifierTest : BaseSlackTestCase() {
         `given build feature has parameterized receiver`()
         `when build finishes`()
         `then message should contain`("success")
+    }
+
+    @Test
+    fun `service message notification should fail if no connections allow it`() {
+        `when service message notification is sent`()
+        `then exception is logged in the build log`("Could not find any suitable Slack connection with service message notifications enabled")
+    }
+
+    @Test
+    fun `service message notification should be sent if exactly one connection allows it`() {
+        `given there is connection allowing service message notifications`(1)
+        `when service message notification is sent`()
+        `then message should contain`("service message")
+    }
+
+    @Test
+    fun `service message notification should fail if more than one connection allow it`() {
+        `given there are more multiple connections allowing service message notifications`()
+        `when service message notification is sent`()
+        `then exception is logged in the build log`("More than one suitable Slack connection was found, please specify 'connectionId' argument to explicitly select connection")
+    }
+
+    @Test
+    fun `service message notification should fail if notification limit is reached`() {
+        `given there is connection allowing service message notifications`(1)
+        `when multiple service message notifications are sent`(count = 2)
+        `then exception is logged in the build log`("Reached limit of 1 ad-hoc Slack notifications per build")
+    }
+
+    @Test
+    fun `service message notification should fail if there are external domains not in whitelist`() {
+        `given there is connection allowing service message notifications`(1)
+        `when service message notification is sent`(message = "link to externaldomain.com")
+        `then exception is logged in the build log`("Found external domains that are not allowed by configuration: [externaldomain.com]")
+    }
+
+    @Test
+    fun `service message notification should be sent if there are whitelisted external domains`() {
+        `given there is an allowed external domain`(1, setOf("externaldomain.com"))
+        `when service message notification is sent`(message = "link to externaldomain.com")
+        `then message should contain`("externaldomain.com")
     }
 }

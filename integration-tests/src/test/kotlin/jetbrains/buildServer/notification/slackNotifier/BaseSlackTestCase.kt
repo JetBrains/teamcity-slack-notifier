@@ -16,8 +16,10 @@
 
 package jetbrains.buildServer.notification.slackNotifier
 
+import jetbrains.buildServer.BaseTestCase
 import jetbrains.buildServer.BuildProblemData
 import jetbrains.buildServer.ExtensionHolder
+import jetbrains.buildServer.buildFeatures.approvals.ApprovalConstants
 import jetbrains.buildServer.messages.DefaultMessagesInfo
 import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.*
@@ -25,6 +27,7 @@ import jetbrains.buildServer.notification.slackNotifier.notification.*
 import jetbrains.buildServer.notification.slackNotifier.slack.*
 import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
+import jetbrains.buildServer.serverSide.impl.approval.ApprovalBuildFeatureConfiguration
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.users.SUser
@@ -39,6 +42,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     private lateinit var mySlackApi: StoringMessagesSlackWebApi
     protected lateinit var myDescriptor: SlackNotifierDescriptor
     private lateinit var myNotifier: SlackNotifier
+    protected lateinit var myChannelName: String
     private lateinit var myUser: SUser
     private lateinit var myAssignerUser: SUser
     private lateinit var myAdHocMessageBuilder: PlainAdHocMessageBuilder
@@ -95,18 +99,11 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myDescriptor = SlackNotifierDescriptor(myFixture.getSingletonService(NotificatorRegistry::class.java))
         myNotifier = createNotifier()
 
-        myConnection = myConnectionManager.addConnection(
-                myProject,
-                SlackConnection.type,
-                mapOf(
-                        "secure:token" to "test_token",
-                        "clientId" to "test_clientId",
-                        "secure:clientSecret" to "test_clientSecret"
-                )
-        )
+        myConnection = addConnection()
 
         myUser = createUser("test_user")
-        myUser.setUserProperty(SlackProperties.channelProperty, "#test_channel")
+        myChannelName = "#test_channel"
+        myUser.setUserProperty(SlackProperties.channelProperty, myChannelName)
         myUser.setUserProperty(SlackProperties.connectionProperty, myConnection.id)
         makeProjectAccessible(myUser, myProject.projectId)
 
@@ -140,6 +137,23 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myFixture.addService(notifier)
 
         return notifier
+    }
+
+    private fun addConnection(
+        maxNotificationsPerBuild: Int = 0,
+        allowedDomainNames: Set<String> = setOf()
+    ): OAuthConnectionDescriptor {
+        return myConnectionManager.addConnection(
+            myProject,
+            SlackConnection.type,
+            mapOf(
+                "secure:token" to "test_token",
+                "clientId" to "test_clientId",
+                "secure:clientSecret" to "test_clientSecret",
+                "adHocMaxNotificationsPerBuild" to maxNotificationsPerBuild.toString(),
+                "adHocAllowedDomainNames" to allowedDomainNames.joinToString(",")
+            )
+        )
     }
 
     fun `given user is subscribed to`(vararg events: NotificationRule.Event) {
@@ -216,6 +230,10 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         ))
     }
 
+    fun `given there is connection with enabled service message notifications`() {
+
+    }
+
     private fun addBuildFeature(
         vararg events: NotificationRule.Event,
         additionalParameters: Map<String, String> = emptyMap(),
@@ -262,14 +280,40 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         initHangingSlackWebApi("conversationsMembers")
     }
 
+    fun `given there is connection allowing service message notifications`(limit: Int) {
+        addConnection(maxNotificationsPerBuild = limit)
+    }
+
+    fun `given there are more multiple connections allowing service message notifications`() {
+        addConnection(maxNotificationsPerBuild = 1)
+        addConnection(maxNotificationsPerBuild = 1)
+    }
+
+    fun `given there is an allowed external domain`(limit: Int, allowedDomainNames: Set<String>) {
+        addConnection(maxNotificationsPerBuild = limit, allowedDomainNames = allowedDomainNames)
+    }
+
     private fun initHangingSlackWebApi(methodThatAreHanging: String) {
         mySlackApiFactory =
             HangingSlackWebApiFactoryStub(methodThatAreHanging, mySlackApi, myFixture.executorServices)
         mySlackApi = mySlackApiFactory.createSlackWebApi()
     }
 
+    fun `when approvable build is queued`(): SQueuedBuild {
+        myBuildType.addBuildFeature(
+            ApprovalConstants.FEATURE_TYPE,
+            mapOf(
+                ApprovalConstants.FEATURE_SETTING_RULES to "user:${myUser.username}",
+                ApprovalConstants.FEATURE_SETTING_TIMEOUT to ApprovalBuildFeatureConfiguration.DEFAULT_TIMEOUT_MINUTES.toString(),
+                ApprovalConstants.FEATURE_SETTING_MANUAL_START_IS_APPROVAL to true.toString()
+            )
+        )
+
+        return addToQueue(myBuildType)
+    }
 
     fun `when build starts`(): SBuild = startBuild()
+
     fun `when build is triggered manually`(): SBuild {
         return build().`in`(myBuildType).by(createUser("user_who_triggered_the_build")).run()
     }
@@ -427,6 +471,33 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         return myUser
     }
 
+    fun `when service message notification is sent`(
+        message: String = "service message",
+        sendTo: String = myChannelName
+    ) {
+        startBuild()
+        myFixture.logBuildMessages(
+            runningBuild,
+            listOf(DefaultMessagesInfo.createTextMessage("##teamcity[notification message='$message' notifier='slack' sendTo='$sendTo']"))
+        )
+        runningBuild.updateBuild()
+    }
+
+    fun `when multiple service message notifications are sent`(
+        message: String = "service message",
+        sendTo: String = myChannelName,
+        count: Int = 2
+    ) {
+        startBuild()
+        for (i in 0..count) {
+            myFixture.logBuildMessages(
+                runningBuild,
+                listOf(DefaultMessagesInfo.createTextMessage("##teamcity[notification message='$message' notifier='slack' sensTo='$sendTo']"))
+            )
+            runningBuild.updateBuild()
+        }
+    }
+
     fun `then message should contain`(vararg strings: String) {
         waitForMessage()
         for (str in strings) {
@@ -472,6 +543,18 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         assertTrue(mySlackApi.messages.last().text!!.length < 1000)
     }
 
+    fun `then exception is logged in the build log`(exceptionMessage: String) {
+        val prefix = "Service message notification exception: "
+        val errorMessages = runningBuild.buildLog.errorMessages
+        val exceptions = errorMessages
+            .filter {it.text.contains(prefix)}
+            .map { it.text }
+        assertEquals(
+            listOf(prefix + exceptionMessage),
+            exceptions
+        )
+    }
+
     private fun waitForMessage() {
         waitForAssert(BooleanSupplier {
             mySlackApi.messages.isNotEmpty()
@@ -481,7 +564,6 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     fun `then no messages should be sent`() {
         assertEmpty(mySlackApi.messages)
     }
-
 
     fun Int.`messages should be sent`() {
         waitForAssert(BooleanSupplier {

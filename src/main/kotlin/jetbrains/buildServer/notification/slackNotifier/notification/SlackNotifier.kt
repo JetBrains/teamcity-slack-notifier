@@ -399,7 +399,7 @@ class SlackNotifier(
                 return descriptors.first()
             }
             descriptors.isEmpty() -> {
-                throw AdHocNotificationException("Could not find any suitable Slack connection with ad-hoc notifications enabled")
+                throw AdHocNotificationException("Could not find any suitable Slack connection with service message notifications enabled")
             }
             else -> {
                 throw AdHocNotificationException("More than one suitable Slack connection was found, please specify 'connectionId' argument to explicitly select connection")
