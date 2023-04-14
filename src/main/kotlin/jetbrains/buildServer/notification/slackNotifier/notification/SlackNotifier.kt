@@ -51,7 +51,7 @@ class SlackNotifier(
     private val descriptor: SlackNotifierDescriptor,
     private val notificationCountHandler: BuildPromotionNotificationCountHandler,
     private val domainNameFinder: DomainNameFinder
-) : NotificatorAdapter(), AdHocNotifier, PositionAware {
+) : NotificatorAdapter(), ServiceMessageNotifier, PositionAware {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
 
@@ -66,7 +66,7 @@ class SlackNotifier(
 
     override fun getNotificatorType(): String = descriptor.getType()
 
-    override fun getAdHocNotifierType(): String = descriptor.getAdHocNotifierType()
+    override fun getServiceMessageNotifierType(): String = descriptor.getServiceMessageNotifierType()
 
     override fun notifyTestsMuted(tests: Collection<STest>, muteInfo: MuteInfo, users: Set<SUser>) {
         val project = muteInfo.project ?: return
@@ -329,20 +329,20 @@ class SlackNotifier(
         return null
     }
 
-    @Throws(AdHocNotificationException::class)
+    @Throws(ServiceMessageNotificationException::class)
     private fun sendMessage(message: MessagePayload, sendTo: String, token: String) {
         if (!TeamCityProperties.getBooleanOrTrue(SlackNotifierProperties.sendNotifications)) {
-            throw AdHocNotificationException("Slack notifications are disabled server-wide. Not sending $message to channel with id '$sendTo'.")
+            throw ServiceMessageNotificationException("Slack notifications are disabled server-wide. Not sending $message to channel with id '$sendTo'.")
         }
 
         val result = slackApi.postMessage(token, message.toSlackMessage(sendTo))
 
         if (!result.ok) {
-            throw AdHocNotificationException("Error sending message to $sendTo: ${result.error}")
+            throw ServiceMessageNotificationException("Error sending message to $sendTo: ${result.error}")
         }
     }
 
-    @Throws(AdHocNotificationException::class)
+    @Throws(ServiceMessageNotificationException::class)
     override fun sendBuildRelatedNotification(
         message: String, runningBuild: SRunningBuild, parameters: MutableMap<String, String>
     ) {
@@ -362,13 +362,13 @@ class SlackNotifier(
         checkExternalDomainsInMessage(message, connectionDescriptor)
 
         val token = getToken(project, connectionDescriptor.id)
-            ?: throw AdHocNotificationException(
+            ?: throw ServiceMessageNotificationException(
                 "No token for connection with id '${connectionDescriptor.id}'" +
                         " in project with external id '${project.externalId}' was found"
             )
 
         val sendTo = parameters["sendTo"]
-            ?: throw AdHocNotificationException("'sendTo' argument was not specified for message $message, build ID ${runningBuild.buildId}")
+            ?: throw ServiceMessageNotificationException("'sendTo' argument was not specified for message $message, build ID ${runningBuild.buildId}")
 
         val processedMessagePayload = adHocMessageBuilder.buildRelatedNotification(
             runningBuild,
@@ -378,7 +378,7 @@ class SlackNotifier(
         sendMessage(processedMessagePayload, sendTo, token)
     }
 
-    @Throws(AdHocNotificationException::class)
+    @Throws(ServiceMessageNotificationException::class)
     private fun findConnectionForAdHocNotification(
         project: SProject,
         parameters: MutableMap<String, String>
@@ -387,7 +387,7 @@ class SlackNotifier(
 
         if (connectionId != null) {
             return oauthManager.findConnectionById(project, connectionId)
-                ?: throw AdHocNotificationException("Could not resolve Slack connection by ID '$connectionId'")
+                ?: throw ServiceMessageNotificationException("Could not resolve Slack connection by ID '$connectionId'")
         }
 
         val descriptors = oauthManager
@@ -399,10 +399,10 @@ class SlackNotifier(
                 return descriptors.first()
             }
             descriptors.isEmpty() -> {
-                throw AdHocNotificationException("Could not find any suitable Slack connection with service message notifications enabled")
+                throw ServiceMessageNotificationException("Could not find any suitable Slack connection with service message notifications enabled")
             }
             else -> {
-                throw AdHocNotificationException("More than one suitable Slack connection was found, please specify 'connectionId' argument to explicitly select connection")
+                throw ServiceMessageNotificationException("More than one suitable Slack connection was found, please specify 'connectionId' argument to explicitly select connection")
             }
         }
     }
@@ -413,12 +413,12 @@ class SlackNotifier(
         try {
             return rawLimitValue.toInt()
         } catch (e: NumberFormatException) {
-            throw AdHocNotificationException("Could not resolve notification limit from '$rawLimitValue' value", e)
+            throw ServiceMessageNotificationException("Could not resolve notification limit from '$rawLimitValue' value", e)
         }
     }
 
     @Synchronized
-    @Throws(AdHocNotificationException::class)
+    @Throws(ServiceMessageNotificationException::class)
     private fun checkAdHocNotificationLimit(
         runningBuild: SRunningBuild,
         connectionDescriptor: OAuthConnectionDescriptor
@@ -429,20 +429,20 @@ class SlackNotifier(
 
         val currentCount = notificationCountHandler.getCounter(
             buildPromotion,
-            adHocNotifierType
+            serviceMessageNotifierType
         )
 
         if (currentCount >= limit) {
-            throw AdHocNotificationException("Reached limit of $limit ad-hoc Slack notifications per build")
+            throw ServiceMessageNotificationException("Reached limit of $limit service message Slack notifications per build")
         }
 
         notificationCountHandler.incrementCounter(
             buildPromotion,
-            adHocNotifierType
+            serviceMessageNotifierType
         )
     }
 
-    @Throws(AdHocNotificationException::class)
+    @Throws(ServiceMessageNotificationException::class)
     private fun checkExternalDomainsInMessage(
         message: String,
         descriptor: OAuthConnectionDescriptor
@@ -458,7 +458,7 @@ class SlackNotifier(
         )
 
         if (externalDomains.isNotEmpty()) {
-            throw AdHocNotificationException(
+            throw ServiceMessageNotificationException(
                 "Found external domains that are not allowed by configuration: " +
                         "[${externalDomains.joinToString(" ,")}]"
             )

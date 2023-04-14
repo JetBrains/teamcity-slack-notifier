@@ -17,7 +17,7 @@
 package jetbrains.buildServer.notification.slackNotifier.notification
 
 
-import jetbrains.buildServer.notification.AdHocNotificationException
+import jetbrains.buildServer.notification.ServiceMessageNotificationException
 import jetbrains.buildServer.notification.NotificationRule.Event.*
 import jetbrains.buildServer.notification.slackNotifier.And
 import jetbrains.buildServer.notification.slackNotifier.BaseSlackTestCase
@@ -278,7 +278,7 @@ class SlackNotifierTest : BaseSlackTestCase() {
     fun `service message notification should fail if notification limit is reached`() {
         `given there is connection allowing service message notifications`(1)
         `when multiple service message notifications are sent`(count = 2)
-        `then exception is logged in the build log`("Reached limit of 1 ad-hoc Slack notifications per build")
+        `then exception is logged in the build log`("Reached limit of 1 service message Slack notifications per build")
     }
 
     @Test

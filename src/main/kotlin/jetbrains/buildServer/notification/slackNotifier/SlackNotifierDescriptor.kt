@@ -82,7 +82,7 @@ class SlackNotifierDescriptor(
 
     fun getType(): String = notifierType
 
-    fun getAdHocNotifierType(): String = adHocNotifierType
+    fun getServiceMessageNotifierType(): String = adHocNotifierType
 
     fun getDisplayName(): String {
         if (displayNameClashes()) {
