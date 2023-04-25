@@ -260,12 +260,20 @@
     </td>
 </tr>
 
-<c:if test="${intprop:getBoolean('teamcity.notifications.adhoc.slack.ui.enabled')}">
+<c:if test="${intprop:getBooleanOrTrue('teamcity.notifications.adhoc.slack.ui.enabled')}">
     <l:settingsGroup title="Service message notifications">
+        <tr>
+            <td colspan="2">
+                <bs:smallNote>
+                    Use these settings to configure notifications sent via service messages.
+                    <bs:help file="Service+Messages#Sending+Custom+Slack+Messages"/>
+                </bs:smallNote>
+            </td>
+        </tr>
         <tr>
             <td><label for="adHocMaxNotificationsPerBuild">Notifications limit:</label></td>
             <td>
-                <props:textProperty name="adHocMaxNotificationsPerBuild" style="width: 5em;"
+                <props:textProperty name="adHocMaxNotificationsPerBuild"
                                     value="${empty propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]
                                             ? propertiesBean.defaultProperties[\"adHocMaxNotificationsPerBuild\"]
                                             : propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]}"/>
@@ -276,8 +284,8 @@
         <tr>
             <td><label for="adHocAllowedDomainNames">Allowed hostnames:</label></td>
             <td>
-                <props:textProperty name="adHocAllowedDomainNames"/>
-                <bs:smallNote>For security reasons, only links to this TeamCity server are allowed in notifications. Notifications with URLs to external web resources are automatically blocked. This setting allows you to specify the list of trusted hostnames that can be referenced in notifications. Use the asterisk (*) as a wildcard for any string (for example, *.test.co.uk).</bs:smallNote>
+                <props:textProperty name="adHocAllowedDomainNames" expandable="true" style="width: 30em"/>
+                <bs:smallNote>For security reasons, only links to this TeamCity server are allowed in notifications. Notifications with URLs to external web resources are automatically blocked. This setting allows you to specify comma-separated list of trusted hostnames that can be referenced in notifications. Use the asterisk (*) as a wildcard for any string (for example, *.test.co.uk).</bs:smallNote>
             </td>
         </tr>
     </l:settingsGroup>
