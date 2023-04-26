@@ -271,20 +271,20 @@
             </td>
         </tr>
         <tr>
-            <td><label for="adHocMaxNotificationsPerBuild">Notifications limit:</label></td>
+            <td><label for="serviceMessageMaxNotificationsPerBuild">Notifications limit:</label></td>
             <td>
-                <props:textProperty name="adHocMaxNotificationsPerBuild"
-                                    value="${empty propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]
-                                            ? propertiesBean.defaultProperties[\"adHocMaxNotificationsPerBuild\"]
-                                            : propertiesBean.properties[\"adHocMaxNotificationsPerBuild\"]}"/>
+                <props:textProperty name="serviceMessageMaxNotificationsPerBuild"
+                                    value="${empty propertiesBean.properties[\"serviceMessageMaxNotificationsPerBuild\"]
+                                            ? propertiesBean.defaultProperties[\"serviceMessageMaxNotificationsPerBuild\"]
+                                            : propertiesBean.properties[\"serviceMessageMaxNotificationsPerBuild\"]}"/>
                 <bs:smallNote>Limits the number of service message notifications per build run. Set to '0' to disable service message notifications.</bs:smallNote>
-                <span class="error" id="error_adHocMaxNotificationsPerBuild"></span>
+                <span class="error" id="error_serviceMessageMaxNotificationsPerBuild"></span>
             </td>
         </tr>
         <tr>
-            <td><label for="adHocAllowedDomainNames">Allowed hostnames:</label></td>
+            <td><label for="serviceMessageAllowedDomainNames">Allowed hostnames:</label></td>
             <td>
-                <props:textProperty name="adHocAllowedDomainNames" expandable="true" style="width: 20em"/>
+                <props:textProperty name="serviceMessageAllowedDomainNames" expandable="true" style="width: 20em"/>
                 <bs:smallNote>For security reasons, only links to this TeamCity server are allowed in notifications. Notifications with URLs to external web resources are automatically blocked. This setting allows you to specify comma-separated list of trusted hostnames that can be referenced in notifications. Use the asterisk (*) as a wildcard for any string (for example, *.test.co.uk).</bs:smallNote>
             </td>
         </tr>

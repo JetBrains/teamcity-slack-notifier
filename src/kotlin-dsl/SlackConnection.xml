@@ -56,12 +56,12 @@
                 Client secret
             </description>
         </param>
-        <param name="adHocMaxNotificationsPerBuild" dslName="adHocMaxNotificationsPerBuild">
+        <param name="serviceMessageMaxNotificationsPerBuild">
             <description>
                 Max number of service message notifications per build
             </description>
         </param>
-        <param name="adHocAllowedDomainNames" dslName="adHocAllowedDomainNames">
+        <param name="serviceMessageAllowedDomainNames">
             <description>
                 Whitelist of domain names which may be included in service message notification
             </description>
@@ -80,6 +80,8 @@
                     botToken = "credentialsJSON:321-321"
                     clientId = "Slack client id"
                     clientSecret = "credentialsJSON:123-123"
+                    serviceMessageMaxNotificationsPerBuild = 0
+                    serviceMessageAllowedDomainNames = "jetbrains.com,*.example.com"
                 }
             </code>
         </example>

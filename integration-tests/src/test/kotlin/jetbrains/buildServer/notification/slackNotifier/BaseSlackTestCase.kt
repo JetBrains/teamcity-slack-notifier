@@ -16,7 +16,6 @@
 
 package jetbrains.buildServer.notification.slackNotifier
 
-import jetbrains.buildServer.BaseTestCase
 import jetbrains.buildServer.BuildProblemData
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.buildFeatures.approvals.ApprovalConstants
@@ -45,7 +44,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     protected lateinit var myChannelName: String
     private lateinit var myUser: SUser
     private lateinit var myAssignerUser: SUser
-    private lateinit var myAdHocMessageBuilder: PlainAdHocMessageBuilder
+    private lateinit var myAdHocMessageBuilder: PlainServiceMessageNotificationMessageBuilder
     private lateinit var myNotificationCountHandler: BuildPromotionNotificationCountHandler
     private lateinit var myDomainNameFinder: DomainNameFinder
 
@@ -81,7 +80,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
             myFixture.projectManager
         )
 
-        myAdHocMessageBuilder = PlainAdHocMessageBuilder(detailsFormatter)
+        myAdHocMessageBuilder = PlainServiceMessageNotificationMessageBuilder(detailsFormatter)
 
         myNotificationCountHandler = myFixture.getSingletonService(
             BuildPromotionNotificationCountHandler::class.java
@@ -150,8 +149,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                 "secure:token" to "test_token",
                 "clientId" to "test_clientId",
                 "secure:clientSecret" to "test_clientSecret",
-                "adHocMaxNotificationsPerBuild" to maxNotificationsPerBuild.toString(),
-                "adHocAllowedDomainNames" to allowedDomainNames.joinToString(",")
+                "serviceMessageMaxNotificationsPerBuild" to maxNotificationsPerBuild.toString(),
+                "serviceMessageAllowedDomainNames" to allowedDomainNames.joinToString(",")
             )
         )
     }

@@ -82,7 +82,7 @@ class SlackNotifierDescriptor(
 
     fun getType(): String = notifierType
 
-    fun getServiceMessageNotifierType(): String = adHocNotifierType
+    fun getServiceMessageNotifierType(): String = serviceMessageNotifierType
 
     fun getDisplayName(): String {
         if (displayNameClashes()) {
@@ -99,7 +99,7 @@ class SlackNotifierDescriptor(
 
     companion object {
         const val notifierType = "jbSlackNotifier"
-        const val adHocNotifierType = "slack"
+        const val serviceMessageNotifierType = "slack"
         const val defaultDisplayName = "Slack Notifier"
     }
 }

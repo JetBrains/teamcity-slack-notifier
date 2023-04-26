@@ -45,7 +45,7 @@ class SlackNotifier(
     notifierRegistry: NotificatorRegistry,
     slackApiFactory: SlackWebApiFactory,
     private val messageBuilderFactory: ChoosingMessageBuilderFactory,
-    private val adHocMessageBuilder: PlainAdHocMessageBuilder,
+    private val serviceMessageMessageBuilder: PlainServiceMessageNotificationMessageBuilder,
     private val projectManager: ProjectManager,
     private val oauthManager: OAuthConnectionsManager,
     private val descriptor: SlackNotifierDescriptor,
@@ -370,7 +370,7 @@ class SlackNotifier(
         val sendTo = parameters["sendTo"]
             ?: throw ServiceMessageNotificationException("'sendTo' argument was not specified for message $message, build ID ${runningBuild.buildId}")
 
-        val processedMessagePayload = adHocMessageBuilder.buildRelatedNotification(
+        val processedMessagePayload = serviceMessageMessageBuilder.buildRelatedNotification(
             runningBuild,
             message
         )
@@ -408,7 +408,7 @@ class SlackNotifier(
     }
 
     private fun getMaxAdHocNotificationsPerBuild(descriptor: OAuthConnectionDescriptor): Int {
-        val rawLimitValue = descriptor.parameters["adHocMaxNotificationsPerBuild"] ?: return 0
+        val rawLimitValue = descriptor.parameters["serviceMessageMaxNotificationsPerBuild"] ?: return 0
 
         try {
             return rawLimitValue.toInt()
@@ -449,7 +449,7 @@ class SlackNotifier(
         message: String,
         descriptor: OAuthConnectionDescriptor
     ) {
-        val allowedDomainNamePatternsString = descriptor.parameters["adHocAllowedDomainNames"]
+        val allowedDomainNamePatternsString = descriptor.parameters["serviceMessageAllowedDomainNames"]
             ?: ""
 
         val allowedPatterns = domainNameFinder.getPatterns(allowedDomainNamePatternsString)

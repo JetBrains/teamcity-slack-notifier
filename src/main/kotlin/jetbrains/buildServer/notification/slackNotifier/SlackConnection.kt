@@ -67,16 +67,16 @@ class SlackConnection(
             errors.add(InvalidProperty("secure:clientSecret", "Client secret must be specified"))
         }
 
-        val maxNotificationsPerBuild = it["adHocMaxNotificationsPerBuild"]
+        val maxNotificationsPerBuild = it["serviceMessageMaxNotificationsPerBuild"]
         if (!maxNotificationsPerBuild.isNullOrEmpty() && maxNotificationsPerBuild.toIntOrNull() == null) {
-            errors.add(InvalidProperty("adHocMaxNotificationsPerBuild", "Could not parse integer value"))
+            errors.add(InvalidProperty("serviceMessageMaxNotificationsPerBuild", "Could not parse integer value"))
         }
 
         errors
     }
 
     override fun getDefaultProperties(): MutableMap<String, String> {
-        return hashMapOf("adHocMaxNotificationsPerBuild" to "0")
+        return hashMapOf("serviceMessageMaxNotificationsPerBuild" to "0")
     }
 
     companion object {
