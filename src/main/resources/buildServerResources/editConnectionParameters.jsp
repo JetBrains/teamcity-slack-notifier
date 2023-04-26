@@ -284,7 +284,7 @@
         <tr>
             <td><label for="adHocAllowedDomainNames">Allowed hostnames:</label></td>
             <td>
-                <props:textProperty name="adHocAllowedDomainNames" expandable="true" style="width: 30em"/>
+                <props:textProperty name="adHocAllowedDomainNames" expandable="true" style="width: 20em"/>
                 <bs:smallNote>For security reasons, only links to this TeamCity server are allowed in notifications. Notifications with URLs to external web resources are automatically blocked. This setting allows you to specify comma-separated list of trusted hostnames that can be referenced in notifications. Use the asterisk (*) as a wildcard for any string (for example, *.test.co.uk).</bs:smallNote>
             </td>
         </tr>
