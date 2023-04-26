@@ -284,7 +284,7 @@
         <tr>
             <td><label for="serviceMessageAllowedDomainNames">Allowed hostnames:</label></td>
             <td>
-                <props:textProperty name="serviceMessageAllowedDomainNames" expandable="true" className="longField"/>
+                <props:textProperty name="serviceMessageAllowedDomainNames" expandable="true" style="width: 20em"/>
                 <bs:smallNote>For security reasons, only links to this TeamCity server are allowed in notifications. Notifications with URLs to external web resources are automatically blocked. This setting allows you to specify comma-separated list of trusted hostnames that can be referenced in notifications. Use the asterisk (*) as a wildcard for any string (for example, *.test.co.uk).</bs:smallNote>
             </td>
         </tr>
