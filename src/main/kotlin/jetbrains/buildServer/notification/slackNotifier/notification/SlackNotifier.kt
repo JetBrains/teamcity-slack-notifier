@@ -427,9 +427,11 @@ class SlackNotifier(
 
         val limit = getMaxAdHocNotificationsPerBuild(connectionDescriptor)
 
+        val notifierId = "${serviceMessageNotifierType}_${connectionDescriptor.id}"
+
         val currentCount = notificationCountHandler.getCounter(
             buildPromotion,
-            serviceMessageNotifierType
+            notifierId
         )
 
         if (currentCount >= limit) {
@@ -438,7 +440,7 @@ class SlackNotifier(
 
         notificationCountHandler.incrementCounter(
             buildPromotion,
-            serviceMessageNotifierType
+            notifierId
         )
     }
 
