@@ -16,6 +16,7 @@
 
 package jetbrains.buildServer.notification.slackNotifier.notification
 
+import com.google.common.util.concurrent.Striped
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.log.Loggers
@@ -38,6 +39,7 @@ import jetbrains.buildServer.util.positioning.PositionConstraint
 import jetbrains.buildServer.vcs.VcsRoot
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
+import java.util.concurrent.locks.Lock
 
 @Service
 @Conditional(SlackNotifierEnabled::class)
@@ -57,6 +59,10 @@ class SlackNotifier(
 
     private val logger = Logger.getInstance(SlackNotifier::class.java.name)
     private val throttlingLogger = ThrottlingLogger(logger)
+
+    private val myMessageLimitLocks = Striped.lazyWeakLock(
+        TeamCityProperties.getInteger("teamcity.notifications.adhoc.countLimit.slack.stripesCount", 32)
+    )
 
     init {
         notifierRegistry.register(this)
@@ -357,8 +363,6 @@ class SlackNotifier(
 
         val connectionDescriptor = findConnectionForAdHocNotification(project, parameters)
 
-        checkAdHocNotificationLimit(runningBuild, connectionDescriptor)
-
         checkExternalDomainsInMessage(message, connectionDescriptor)
 
         val token = getToken(project, connectionDescriptor.id)
@@ -374,6 +378,15 @@ class SlackNotifier(
             runningBuild,
             message
         )
+
+        val lock: Lock = myMessageLimitLocks.get(runningBuild.buildId) // avoid race in notifications count logic
+        lock.lock()
+
+        try {
+            checkAdHocNotificationLimit(runningBuild, connectionDescriptor)
+        } finally {
+            lock.unlock()
+        }
 
         sendMessage(processedMessagePayload, sendTo, token)
     }
@@ -417,7 +430,6 @@ class SlackNotifier(
         }
     }
 
-    @Synchronized
     @Throws(ServiceMessageNotificationException::class)
     private fun checkAdHocNotificationLimit(
         runningBuild: SRunningBuild,
