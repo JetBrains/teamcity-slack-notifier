@@ -491,7 +491,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         for (i in 0..count) {
             myFixture.logBuildMessages(
                 runningBuild,
-                listOf(DefaultMessagesInfo.createTextMessage("##teamcity[notification message='$message' notifier='slack' sensTo='$sendTo']"))
+                listOf(DefaultMessagesInfo.createTextMessage("##teamcity[notification message='$message' notifier='slack' sendTo='$sendTo']"))
             )
             runningBuild.updateBuild()
         }
