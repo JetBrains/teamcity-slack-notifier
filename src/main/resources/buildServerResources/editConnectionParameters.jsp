@@ -277,7 +277,7 @@
                                     value="${empty propertiesBean.properties[\"serviceMessageMaxNotificationsPerBuild\"]
                                             ? propertiesBean.defaultProperties[\"serviceMessageMaxNotificationsPerBuild\"]
                                             : propertiesBean.properties[\"serviceMessageMaxNotificationsPerBuild\"]}"/>
-                <bs:smallNote>Limits the number of service message notifications per build run. Set to '0' to disable service message notifications.</bs:smallNote>
+                <bs:smallNote>Limits the number of service message notifications per build run. Set to '0' to disable service message notifications, or '-1' to allow unlimited notifications.</bs:smallNote>
                 <span class="error" id="error_serviceMessageMaxNotificationsPerBuild"></span>
             </td>
         </tr>
