@@ -16,12 +16,11 @@
 
 package jetbrains.buildServer.notification.slackNotifier
 
+import com.intellij.openapi.util.text.StringUtil
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider
-import jetbrains.buildServer.serverSide.oauth.github.GitHubConstants
-import jetbrains.buildServer.serverSide.oauth.github.GitHubOAuthProvider
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
@@ -41,12 +40,43 @@ class SlackConnection(
         pluginDescriptor.getPluginResourcesPath("editConnectionParameters.jsp")
 
     override fun describeConnection(connection: OAuthConnectionDescriptor): String {
+        val builder = StringBuilder()
+
         val displayName = connection.connectionDisplayName
         if (displayName.isEmpty()) {
-            return "Connection to a single Slack workspace"
+            builder.append("Connection to a single Slack workspace")
+        } else {
+            builder.append("Connection name: $displayName")
         }
 
-        return displayName
+        val rawLimitValue = connection.parameters["serviceMessageMaxNotificationsPerBuild"]
+        if (rawLimitValue != null) {
+            val limit: Long? = rawLimitValue.toLongOrNull()
+            if (limit != null && limit != 0L) {
+                builder
+                    .append(System.lineSeparator())
+                    .append("Service message notifications are enabled")
+                    .append(System.lineSeparator())
+
+                when (limit) {
+                    -1L -> {
+                        builder.append("Each build may produce unlimited number of notifications")
+                    }
+                    else -> {
+                        builder.append("Each build may produce $limit ${StringUtil.pluralize("notification", limit.toInt())}")
+                    }
+                }
+
+                val allowedDomains = connection.parameters["serviceMessageAllowedDomainNames"] ?: ""
+                if (allowedDomains.isNotEmpty()) {
+                    builder
+                        .append(System.lineSeparator())
+                        .append("Allowed domain name patterns: $allowedDomains")
+                }
+            }
+        }
+
+        return builder.toString()
     }
 
     override fun getPropertiesProcessor(): PropertiesProcessor = PropertiesProcessor {
