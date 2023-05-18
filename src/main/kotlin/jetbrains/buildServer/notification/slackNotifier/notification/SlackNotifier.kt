@@ -405,7 +405,10 @@ class SlackNotifier(
 
         val descriptors = oauthManager
             .getAvailableConnectionsOfType(project, SlackConnection.type)
-            .filter { desc -> getMaxAdHocNotificationsPerBuild(desc) > 0 }
+            .filter { desc ->
+                getMaxAdHocNotificationsPerBuild(desc) > 0 // non-default limit
+                        || getMaxAdHocNotificationsPerBuild(desc) == -1 // no limit
+            }
 
         when {
             descriptors.size == 1 -> {
@@ -435,9 +438,13 @@ class SlackNotifier(
         runningBuild: SRunningBuild,
         connectionDescriptor: OAuthConnectionDescriptor
     ) {
-        val buildPromotion = runningBuild.buildPromotion
-
         val limit = getMaxAdHocNotificationsPerBuild(connectionDescriptor)
+
+        if (limit == -1) { // no limit, no need to keep track of current count
+            return
+        }
+
+        val buildPromotion = runningBuild.buildPromotion
 
         val notifierId = "${serviceMessageNotifierType}_${connectionDescriptor.id}"
 
