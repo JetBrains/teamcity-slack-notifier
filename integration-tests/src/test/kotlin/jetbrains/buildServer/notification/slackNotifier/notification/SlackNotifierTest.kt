@@ -257,7 +257,7 @@ class SlackNotifierTest : BaseSlackTestCase() {
     @Test
     fun `service message notification should fail if no connections allow it`() {
         `when service message notification is sent`()
-        `then exception is logged in the build log`("Could not find any suitable Slack connection with service message notifications enabled")
+        0.`messages should be sent`()
     }
 
     @Test
@@ -271,21 +271,28 @@ class SlackNotifierTest : BaseSlackTestCase() {
     fun `service message notification should fail if more than one connection allow it`() {
         `given there are more multiple connections allowing service message notifications`()
         `when service message notification is sent`()
-        `then exception is logged in the build log`("More than one suitable Slack connection was found, please specify 'connectionId' argument to explicitly select connection")
+        0.`messages should be sent`()
     }
 
     @Test
     fun `service message notification should fail if notification limit is reached`() {
         `given there is connection allowing service message notifications`(1)
         `when multiple service message notifications are sent`(count = 2)
-        `then exception is logged in the build log`("Reached limit of 1 service message Slack notifications per build")
+        1.`messages should be sent`()
+    }
+
+    @Test
+    fun `service message notification should honor -1 notification limit`() {
+        `given there is connection allowing service message notifications`(-1)
+        `when service message notification is sent`()
+        `then message should contain`("service message")
     }
 
     @Test
     fun `service message notification should fail if there are external domains not in whitelist`() {
         `given there is connection allowing service message notifications`(1)
         `when service message notification is sent`(message = "link to externaldomain.com")
-        `then exception is logged in the build log`("Found external domains that are not allowed by configuration: [externaldomain.com]")
+        0.`messages should be sent`()
     }
 
     @Test

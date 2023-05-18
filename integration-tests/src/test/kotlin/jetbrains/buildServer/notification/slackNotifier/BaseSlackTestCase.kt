@@ -542,18 +542,6 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         assertTrue(mySlackApi.messages.last().text!!.length < 1000)
     }
 
-    fun `then exception is logged in the build log`(exceptionMessage: String) {
-        val prefix = "Service message notification exception: "
-        val errorMessages = runningBuild.buildLog.errorMessages
-        val exceptions = errorMessages
-            .filter {it.text.contains(prefix)}
-            .map { it.text }
-        assertEquals(
-            listOf(prefix + exceptionMessage),
-            exceptions
-        )
-    }
-
     private fun waitForMessage() {
         waitForAssert(BooleanSupplier {
             mySlackApi.messages.isNotEmpty()
