@@ -2,7 +2,7 @@ import com.github.jk1.license.render.JsonReportRenderer
 import java.util.*
 
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.5.20"
     id("com.github.rodm.teamcity-server") version "1.4.1"
     id("com.github.rodm.teamcity-environments") version "1.4.1"
     id ("com.github.jk1.dependency-license-report") version "1.17"
@@ -19,12 +19,16 @@ extra["downloadsDir"] = project.findProperty("downloads.dir") ?: "${rootDir}/dow
 
 repositories {
     maven(url="https://cache-redirector.jetbrains.com/maven-central")
+    mavenLocal()
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.3") {
+        exclude("com.fasterxml.jackson.core", "jackson-annotations")
+        exclude("com.fasterxml.jackson.core", "jackson-databind")
+    }
     implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
     implementation("com.github.ben-manes.caffeine:caffeine:2.9.2")
 
