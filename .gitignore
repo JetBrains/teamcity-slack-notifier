@@ -4,3 +4,5 @@ teamcity-plugin.dist.xml
 downloads
 ./teamcity
 data
+.DS_Store
+/local-repo
