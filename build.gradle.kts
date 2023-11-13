@@ -1,10 +1,11 @@
 import com.github.jk1.license.render.JsonReportRenderer
+import java.nio.file.Paths
 import java.util.*
 
 plugins {
     kotlin("jvm") version "1.5.20"
-    id("com.github.rodm.teamcity-server") version "1.4.1"
-    id("com.github.rodm.teamcity-environments") version "1.4.1"
+    id("com.github.rodm.teamcity-server") version "1.5.2"
+    id("com.github.rodm.teamcity-environments") version "1.5.2"
     id ("com.github.jk1.dependency-license-report") version "1.17"
 }
 
@@ -12,14 +13,23 @@ group = "org.jetbrains.teamcity"
 val pluginVersion = project.findProperty("PluginVersion") ?: "999999-snapshot-${Date().time}"
 version = pluginVersion
 
-val teamcityVersion = "2023.11-SNAPSHOT"
+val teamcityVersion by extra { findProperty("teamcityVersion") ?: "2023.11-SNAPSHOT" }
 
 extra["teamcityVersion"] = teamcityVersion
 extra["downloadsDir"] = project.findProperty("downloads.dir") ?: "${rootDir}/downloads"
 
-repositories {
-    maven(url="https://cache-redirector.jetbrains.com/maven-central")
-    mavenLocal()
+allprojects {
+    repositories {
+        findProperty("TC_LOCAL_REPO")?.toString()?.let {
+            maven {
+                url = Paths.get(it).toUri()
+            }
+        }
+        maven(url = "https://cache-redirector.jetbrains.com/maven-central")
+        maven(url = "https://download.jetbrains.com/teamcity-repository")
+        mavenLocal()
+        mavenCentral()
+    }
 }
 
 dependencies {
