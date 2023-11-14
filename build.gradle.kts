@@ -77,7 +77,7 @@ dependencies {
 
     provided("org.jetbrains.teamcity:server-api:${teamcityVersion}")
     provided("org.jetbrains.teamcity:oauth:${teamcityVersion}")
-    provided("org.jetbrains.teamcity:web-openapi:${teamcityVersion}")
+    provided("org.jetbrains.teamcity:server-web-api:${teamcityVersion}")
     provided("org.jetbrains.teamcity.internal:server:${teamcityVersion}")
     provided("org.jetbrains.teamcity.internal:web:${teamcityVersion}")
 
