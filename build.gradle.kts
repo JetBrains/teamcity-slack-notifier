@@ -1,4 +1,4 @@
-import com.github.jk1.license.render.JsonReportRenderer
+import com.github.jk1.license.render.*
 import java.nio.file.Paths
 import java.util.*
 
@@ -93,6 +93,12 @@ tasks {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
+    licenseReport {
+        renderers = arrayOf(JsonReportRenderer("third-party-libs.json"))
+    }
+    serverPlugin {
+        finalizedBy(licenseReport)
+    }
 }
 
 teamcity {
@@ -111,6 +117,5 @@ teamcity {
     }
 }
 
-licenseReport {
-    renderers = arrayOf(JsonReportRenderer("third-party-libs.json"))
-}
+
+
