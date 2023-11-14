@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.5.20"
     id("com.github.rodm.teamcity-server") version "1.5.2"
     id("com.github.rodm.teamcity-environments") version "1.5.2"
-    id ("com.github.jk1.dependency-license-report") version "1.17"
+    id ("com.github.jk1.dependency-license-report") version "2.5"
 }
 
 group = "org.jetbrains.teamcity"
