@@ -25,6 +25,8 @@ import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.notification.*
 import jetbrains.buildServer.notification.slackNotifier.slack.*
 import jetbrains.buildServer.serverSide.*
+import jetbrains.buildServer.serverSide.auth.Role
+import jetbrains.buildServer.serverSide.auth.RoleScope
 import jetbrains.buildServer.serverSide.impl.NotificationRulesConstants
 import jetbrains.buildServer.serverSide.impl.approval.ApprovalBuildFeatureConfiguration
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
@@ -157,6 +159,10 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
 
     fun `given user is subscribed to`(vararg events: NotificationRule.Event) {
         storeRules(myUser, myNotifier, newRule(*events))
+    }
+
+    fun `given user has role for the project`(role: Role) {
+        myUser.addRole(RoleScope.projectScope(myProject.projectId), role)
     }
 
     fun `given build feature is subscribed to`(vararg events: NotificationRule.Event) {
@@ -307,7 +313,6 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                 ApprovalConstants.FEATURE_SETTING_MANUAL_START_IS_APPROVAL to true.toString()
             )
         )
-
         return addToQueue(myBuildType)
     }
 

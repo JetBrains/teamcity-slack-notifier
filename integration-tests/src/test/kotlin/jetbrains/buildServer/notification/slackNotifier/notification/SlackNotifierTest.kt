@@ -85,6 +85,7 @@ class SlackNotifierTest : BaseSlackTestCase() {
     @Test
     fun `should send notification about build that requires approval`() {
         `given user is subscribed to`(QUEUED_BUILD_REQUIRES_APPROVAL)
+        `given user has role for the project`(projectDevRole)
         `when approvable build is queued`()
         `then message should contain`("is waiting for approval") And
                 1.`messages should be sent`()
