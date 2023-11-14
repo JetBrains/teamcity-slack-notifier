@@ -93,12 +93,6 @@ tasks {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
-    licenseReport {
-        renderers = arrayOf(JsonReportRenderer("third-party-libs.json"))
-    }
-    serverPlugin {
-        finalizedBy(licenseReport)
-    }
 }
 
 teamcity {
@@ -115,6 +109,14 @@ teamcity {
             }
         }
     }
+}
+
+licenseReport {
+    renderers = arrayOf(JsonReportRenderer("third-party-libs.json"))
+}
+
+tasks.serverPlugin {
+    finalizedBy(licenseReport)
 }
 
 
