@@ -1,4 +1,4 @@
-import com.github.jk1.license.render.JsonReportRenderer
+import com.github.jk1.license.render.*
 import java.nio.file.Paths
 import java.util.*
 
@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.5.20"
     id("com.github.rodm.teamcity-server") version "1.5.2"
     id("com.github.rodm.teamcity-environments") version "1.5.2"
-    id ("com.github.jk1.dependency-license-report") version "1.17"
+    id ("com.github.jk1.dependency-license-report") version "2.5"
 }
 
 group = "org.jetbrains.teamcity"
@@ -112,5 +112,12 @@ teamcity {
 }
 
 licenseReport {
-    renderers = arrayOf(JsonReportRenderer("third-party-libs.json"))
+    renderers = arrayOf(JsonReportRenderer("third-party-libraries.json"))
 }
+
+tasks.serverPlugin {
+    finalizedBy(project.tasks.getByName("generateLicenseReport"))
+}
+
+
+
