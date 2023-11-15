@@ -116,7 +116,7 @@ licenseReport {
 }
 
 tasks.serverPlugin {
-    finalizedBy(generateLicenseReport)
+    finalizedBy(project.tasks.getByName("generateLicenseReport"))
 }
 
 
