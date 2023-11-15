@@ -1,4 +1,4 @@
-import com.github.jk1.license.render.JsonReportRenderer
+import com.github.jk1.license.render.*
 import java.nio.file.Paths
 import java.util.*
 
@@ -112,5 +112,12 @@ teamcity {
 }
 
 licenseReport {
-    renderers = arrayOf(JsonReportRenderer("third-party-libs.json"))
+    renderers = arrayOf(JsonReportRenderer("third-party-libraries.json"))
 }
+
+tasks.serverPlugin {
+    finalizedBy(project.tasks.getByName("generateLicenseReport"))
+}
+
+
+
