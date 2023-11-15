@@ -112,11 +112,11 @@ teamcity {
 }
 
 licenseReport {
-    renderers = arrayOf(JsonReportRenderer("third-party-libs.json"))
+    renderers = arrayOf(JsonReportRenderer("third-party-libraries.json"))
 }
 
 tasks.serverPlugin {
-    finalizedBy(project.tasks.getByName("licenseReport"))
+    finalizedBy(generateLicenseReport)
 }
 
 
