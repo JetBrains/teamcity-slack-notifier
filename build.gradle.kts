@@ -72,6 +72,7 @@ dependencies {
         exclude("com.fasterxml.jackson.core", "jackson-annotations")
         exclude("com.fasterxml.jackson.core", "jackson-databind")
     }
+    implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
     implementation("com.github.ben-manes.caffeine:caffeine:2.9.2")
 
