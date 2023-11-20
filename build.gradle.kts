@@ -33,6 +33,7 @@ extra["canDownloadSpacePackages"] = canDownloadSpacePackages
 
 allprojects {
     repositories {
+        mavenLocal()
         findProperty("TC_LOCAL_REPO")?.toString()?.let {
             maven {
                 url = Paths.get(it).toUri()
