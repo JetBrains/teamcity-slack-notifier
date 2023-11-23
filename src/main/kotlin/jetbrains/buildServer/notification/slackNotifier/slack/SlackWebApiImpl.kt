@@ -26,6 +26,7 @@ import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
 import jetbrains.buildServer.serverSide.IOGuard
 import jetbrains.buildServer.serverSide.TeamCityProperties
 import jetbrains.buildServer.util.HTTPRequestBuilder
+import jetbrains.buildServer.util.NamedThreadFactory
 import jetbrains.buildServer.util.ssl.SSLTrustStoreProvider
 import java.nio.charset.Charset
 import java.util.*
@@ -229,6 +230,7 @@ class SlackWebApiImpl(
                             response = it.bodyAsString
                         }
                         .onException(Consumer<Exception> {
+                            // TODO better handle connection timeouts. In the code it's treated as unknown error, and the exact cause is available only in logs.
                             logger.warn(
                                     "Exception occurred when sending request to Slack: ${it.message}"
                             )
@@ -236,7 +238,9 @@ class SlackWebApiImpl(
                         })
                         .build()
 
-        requestHandler.doRequest(post)
+        NamedThreadFactory.executeWithNewThreadName("Performing Slack API request at $baseUrl/${path}") {
+            requestHandler.doRequest(post)
+        }
 
         val isException = exceptions.size > maxNumberOfRetries
 

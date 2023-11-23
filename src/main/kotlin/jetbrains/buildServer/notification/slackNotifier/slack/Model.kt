@@ -407,6 +407,14 @@ interface SlackList<T> {
     val data: List<T>
 }
 
+// completed list, gained with cursor pagination
+data class AggregatedSlackList<T>(
+    override val ok: Boolean = false,
+    override val error: String = "",
+    override val needed: String = "",
+    val data: List<T> = emptyList()
+) : MaybeError
+
 // https://api.slack.com/methods/channels.list
 data class ChannelsList(
     override val ok: Boolean = false,
