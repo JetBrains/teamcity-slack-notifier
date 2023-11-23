@@ -40,8 +40,8 @@ class AggregatedSlackApi(
         )
         .executor(executorServices.lowPriorityExecutorService)
         .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumChannelsToCache, 50_000))
-        .weigher { _: String, channels: List<Channel> -> channels.size }
-        .buildAsync<String, List<Channel>>()
+        .weigher { _: String, channels: AggregatedSlackList<Channel> -> channels.data.size }
+        .buildAsync<String, AggregatedSlackList<Channel>>()
 
     private val myUsersCache = Caffeine.newBuilder()
             .expireAfterWrite(
@@ -50,8 +50,8 @@ class AggregatedSlackApi(
             )
             .executor(executorServices.lowPriorityExecutorService)
             .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumUsersToCache, 50_000))
-            .weigher { _: String, users: List<User> -> users.size }
-            .buildAsync<String, List<User>>()
+            .weigher { _: String, users: AggregatedSlackList<User> -> users.data.size }
+            .buildAsync<String, AggregatedSlackList<User>>()
 
     private val myConversationMembersCache = Caffeine.newBuilder()
             .expireAfterWrite(
@@ -60,8 +60,8 @@ class AggregatedSlackApi(
             )
             .executor(executorServices.lowPriorityExecutorService)
             .maximumWeight(TeamCityProperties.getLong(SlackNotifierProperties.maximumConversationMembersToCache, 50_000))
-            .weigher { _: String, members: List<String> -> members.size }
-            .buildAsync<String, List<String>>()
+            .weigher { _: String, members: AggregatedSlackList<String> -> members.data.size }
+            .buildAsync<String, AggregatedSlackList<String>>()
 
     // Main bot info (like id or team id) doesn't change over time, so it's safe to cache them indefinitely
     // If some changing info (like display name) should be cached, Guava expirable cache should be used instead
@@ -69,28 +69,38 @@ class AggregatedSlackApi(
 
     private val readTimeoutMs = 5_000L
 
+    // TW-84904
+    // Error responses should also be cached. Without it, consecutive failures may drain the rate limits.
+    // In worst case, it can result into consecutive timeouts,
+    // so the Slack health reports may take extremely long time to calculate.
     fun getChannelsList(token: String): List<Channel> {
-        return myChannelsCache.getAsync(token, readTimeoutMs) {
+        val res = myChannelsCache.getAsync(token, readTimeoutMs) {
             getList { cursor ->
                 slackApi.conversationsList(token, cursor)
             }
         }
+        if (!res.ok) throw SlackResponseError(res.error)
+        return res.data
     }
 
     fun getUsersList(token: String): List<User> {
-        return myUsersCache.getAsync(token, readTimeoutMs) {
+        val res = myUsersCache.getAsync(token, readTimeoutMs) {
             getList { cursor ->
                 slackApi.usersList(token, cursor)
             }
         }
+        if (!res.ok) throw SlackResponseError(res.error)
+        return res.data
     }
 
     fun getConversationMembers(token: String, channelId: String): List<String> {
-        return myConversationMembersCache.getAsync(token, readTimeoutMs) {
+        val res = myConversationMembersCache.getAsync(token, readTimeoutMs) {
             getList { cursor ->
                 slackApi.conversationsMembers(token, channelId, cursor)
             }
         }
+        if (!res.ok) throw SlackResponseError(res.error)
+        return res.data
     }
 
     fun getBot(token: String): AggregatedBot {
@@ -106,7 +116,7 @@ class AggregatedSlackApi(
         }
     }
 
-    private fun <T, D> getList(dataProvider: (String?) -> D): List<T> where D : SlackList<T>, D : MaybeError {
+    private fun <T, D> getList(dataProvider: (String?) -> D): AggregatedSlackList<T> where D : SlackList<T>, D : MaybeError {
         val result = mutableListOf<T>()
         var cursor: String? = null
         var prevCursor: String?
@@ -114,14 +124,14 @@ class AggregatedSlackApi(
         do {
             val data = dataProvider(cursor)
             if (!data.ok) {
-                throw SlackResponseError(data.error)
+                return AggregatedSlackList(ok = false, error = data.error, needed = data.needed)
             }
             prevCursor = cursor
             cursor = data.nextCursor
             result.addAll(data.data)
         } while (cursor != "" && cursor != prevCursor)
 
-        return result
+        return AggregatedSlackList(ok = true, data = result)
     }
 }
 
