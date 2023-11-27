@@ -68,27 +68,17 @@ class SlackBuildFeatureHealthReport(
     }
 
     override fun report(scope: HealthStatusScope, consumer: HealthStatusItemConsumer) {
-        val buildTypeItems = mutableListOf<Pair<SBuildType, HealthStatusItem>>()
-        val templateItems = mutableListOf<Pair<BuildTypeTemplate, HealthStatusItem>>()
-        try {
-            for (buildType in scope.buildTypes) {
-                buildTypeItems.addAll(getStatusItems(buildType))
-            }
-
-            for (buildTemplate in scope.buildTypeTemplates) {
-                templateItems.addAll(getStatusItems(buildTemplate))
-            }
-        } catch (e: SlackResponseError) {
-            logger.error("Error while generating health report: ${e.message}")
-            return
+        for (buildType in scope.buildTypes) {
+            report(buildType, consumer)
         }
-        buildTypeItems.forEach { consumer.consumeForBuildType(it.first, it.second) }
-        templateItems.forEach { consumer.consumeForTemplate(it.first, it.second) }
+
+        for (buildTemplate in scope.buildTypeTemplates) {
+            report(buildTemplate, consumer)
+        }
     }
 
-    private fun getStatusItems(buildType: SBuildType): List<Pair<SBuildType, HealthStatusItem>> {
+    private fun report(buildType: SBuildType, consumer: HealthStatusItemConsumer) {
         val features = getFeatures(buildType)
-        val result = mutableListOf<Pair<SBuildType, HealthStatusItem>>()
         for (feature in features) {
             val statusItem = try {
                 getHealthStatus(feature, buildType, "buildType")
@@ -96,17 +86,18 @@ class SlackBuildFeatureHealthReport(
                 null
             } catch (e: ExecutionException) {
                 null
+            } catch (e: SlackResponseError) {
+                logger.error("Error while generating health report: ${e.message}")
+                null
             }
             if (statusItem != null) {
-                result.add(Pair(buildType, statusItem))
+                consumer.consumeForBuildType(buildType, statusItem)
             }
         }
-        return result
     }
 
-    private fun getStatusItems(buildTemplate: BuildTypeTemplate): List<Pair<BuildTypeTemplate, HealthStatusItem>> {
+    private fun report(buildTemplate: BuildTypeTemplate, consumer: HealthStatusItemConsumer) {
         val features = getFeatures(buildTemplate)
-        val result = mutableListOf<Pair<BuildTypeTemplate, HealthStatusItem>>()
         for (feature in features) {
             val statusItem = try {
                 getHealthStatus(feature, buildTemplate, "template")
@@ -114,12 +105,14 @@ class SlackBuildFeatureHealthReport(
                 null
             } catch (e: ExecutionException) {
                 null
+            } catch (e: SlackResponseError) {
+                logger.error("Error while generating health report: ${e.message}")
+                null
             }
             if (statusItem != null) {
-                result.add(Pair(buildTemplate, statusItem))
+                consumer.consumeForTemplate(buildTemplate, statusItem)
             }
         }
-        return result
     }
 
     private fun getFeatures(buildTypeSettings: BuildTypeSettings): List<SBuildFeatureDescriptor> {
