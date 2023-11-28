@@ -28,6 +28,7 @@ import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.serverSide.*
 import jetbrains.buildServer.serverSide.executors.ExecutorServices
 import jetbrains.buildServer.serverSide.healthStatus.*
+import jetbrains.buildServer.serverSide.impl.LogUtil
 import jetbrains.buildServer.serverSide.impl.NotificationsBuildFeature
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import org.springframework.context.annotation.Conditional
@@ -68,17 +69,25 @@ class SlackBuildFeatureHealthReport(
     }
 
     override fun report(scope: HealthStatusScope, consumer: HealthStatusItemConsumer) {
+        var errors = 0
+
         for (buildType in scope.buildTypes) {
-            report(buildType, consumer)
+            errors += report(buildType, consumer)
         }
 
         for (buildTemplate in scope.buildTypeTemplates) {
-            report(buildTemplate, consumer)
+            errors += report(buildTemplate, consumer)
+        }
+        if (errors != 0) {
+            logger.error("Could not generate health report for $errors build features" +
+                    " due to error responses from Slack." +
+                    " See notifications log for details. To see all failed features, enable the debug preset.")
         }
     }
 
-    private fun report(buildType: SBuildType, consumer: HealthStatusItemConsumer) {
+    private fun report(buildType: SBuildType, consumer: HealthStatusItemConsumer): Int {
         val features = getFeatures(buildType)
+        var errorRequests = 0
         for (feature in features) {
             val statusItem = try {
                 getHealthStatus(feature, buildType, "buildType")
@@ -87,17 +96,21 @@ class SlackBuildFeatureHealthReport(
             } catch (e: ExecutionException) {
                 null
             } catch (e: SlackResponseError) {
-                logger.error("Error while generating health report: ${e.message}")
+                logger.debug("Error while generating health report for feature with id=${feature.id} " +
+                        "in build type with id=${buildType.buildTypeId}: ${e.message}")
+                errorRequests++
                 null
             }
             if (statusItem != null) {
                 consumer.consumeForBuildType(buildType, statusItem)
             }
         }
+        return errorRequests
     }
 
-    private fun report(buildTemplate: BuildTypeTemplate, consumer: HealthStatusItemConsumer) {
+    private fun report(buildTemplate: BuildTypeTemplate, consumer: HealthStatusItemConsumer): Int {
         val features = getFeatures(buildTemplate)
+        var errorRequests = 0
         for (feature in features) {
             val statusItem = try {
                 getHealthStatus(feature, buildTemplate, "template")
@@ -106,13 +119,16 @@ class SlackBuildFeatureHealthReport(
             } catch (e: ExecutionException) {
                 null
             } catch (e: SlackResponseError) {
-                logger.error("Error while generating health report: ${e.message}")
+                logger.debug("Error while generating health report for feature" +
+                        " with id=${feature.id} in template ${LogUtil.describe(buildTemplate)}: ${e.message}")
+                errorRequests++
                 null
             }
             if (statusItem != null) {
                 consumer.consumeForTemplate(buildTemplate, statusItem)
             }
         }
+        return errorRequests
     }
 
     private fun getFeatures(buildTypeSettings: BuildTypeSettings): List<SBuildFeatureDescriptor> {
