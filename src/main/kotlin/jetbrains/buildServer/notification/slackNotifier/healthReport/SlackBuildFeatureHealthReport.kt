@@ -79,7 +79,7 @@ class SlackBuildFeatureHealthReport(
             errors += report(buildTemplate, consumer)
         }
         if (errors != 0) {
-            logger.error("Could not generate health report for $errors build features" +
+            logger.warn("Could not generate health report for $errors build features" +
                     " due to error responses from Slack." +
                     " See notifications log for details. To see all failed features, enable the debug preset.")
         }
