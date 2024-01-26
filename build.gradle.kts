@@ -36,7 +36,12 @@ allprojects {
         mavenLocal()
         findProperty("TC_LOCAL_REPO")?.toString()?.let {
             maven {
-                url = Paths.get(it).toUri()
+                val path = if (Paths.get(it).isAbsolute()) {
+                    Paths.get(it)
+                } else {
+                    getRootDir().toPath().resolve(it)
+                }
+                url = path.toUri()
             }
         }
         maven(url = "https://cache-redirector.jetbrains.com/maven-central")
