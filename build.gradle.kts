@@ -1,26 +1,31 @@
+import java.io.FileInputStream
 import com.github.jk1.license.render.*
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
 plugins {
-    kotlin("jvm") version "1.5.20"
+    kotlin("jvm") version "1.9.22"
     id("com.github.rodm.teamcity-server") version "1.5.2"
     id("com.github.rodm.teamcity-environments") version "1.5.2"
     id ("com.github.jk1.dependency-license-report") version "2.5"
 }
 
+initializeWorkspace()
+
 group = "org.jetbrains.teamcity"
-val pluginVersion = project.findProperty("PluginVersion") ?: "999999-snapshot-${Date().time}"
+val pluginVersion = anyParam("PluginVersion") ?: "999999-snapshot-${Date().time}"
 version = pluginVersion
 
-val teamcityVersion by extra { findProperty("teamcityVersion") ?: "2023.11-SNAPSHOT" }
+val teamcityVersion = anyParam("teamcityVersion") ?: "2023.11-SNAPSHOT"
 
-val spacePackagesToken = rootProject.findProperty("spacePackagesToken") as String?
-val spacePackagesUsername = rootProject.findProperty("spacePackagesUsername") as String?
-val spacePackagesPassword = rootProject.findProperty("spacePackagesPassword") as String?
+val spacePackagesToken = anyParam("spacePackagesToken")
+val spacePackagesUsername = anyParam("spacePackagesUsername")
+val spacePackagesPassword = anyParam("spacePackagesPassword")
 
 val canDownloadSpacePackages = spacePackagesToken != null ||
         (spacePackagesUsername != null && spacePackagesPassword != null)
+val localRepo = anyParamPath("TC_LOCAL_REPO")
 
 if (!canDownloadSpacePackages) {
     println("Not running integration tests, can't authorize to Space")
@@ -28,22 +33,15 @@ if (!canDownloadSpacePackages) {
 
 
 extra["teamcityVersion"] = teamcityVersion
-extra["downloadsDir"] = project.findProperty("downloads.dir") ?: "${rootDir}/downloads"
+extra["downloadsDir"] = anyParam("downloads.dir") ?: "${rootDir}/downloads"
 extra["canDownloadSpacePackages"] = canDownloadSpacePackages
 
 allprojects {
     repositories {
-        mavenLocal()
-        findProperty("TC_LOCAL_REPO")?.toString()?.let {
-            maven {
-                val path = if (Paths.get(it).isAbsolute()) {
-                    Paths.get(it)
-                } else {
-                    getRootDir().toPath().resolve(it)
-                }
-                url = path.toUri()
-            }
+        if (localRepo != null) {
+            maven(url = "file:///${localRepo}")
         }
+        mavenLocal()
         maven(url = "https://cache-redirector.jetbrains.com/maven-central")
         maven(url = "https://download.jetbrains.com/teamcity-repository")
         maven(url = "https://repo.labs.intellij.net/teamcity")
@@ -87,6 +85,7 @@ dependencies {
     provided("org.jetbrains.teamcity:web-openapi:${teamcityVersion}")
     provided("org.jetbrains.teamcity.internal:server:${teamcityVersion}")
     provided("org.jetbrains.teamcity.internal:web:${teamcityVersion}")
+    provided("com.ibm.icu:icu4j:4.8.1.1")
 
     testImplementation("org.assertj:assertj-core:1.7.1")
     testImplementation("org.testng:testng:6.8")
@@ -127,4 +126,49 @@ tasks.serverPlugin {
 }
 
 
+fun anyParamPath(vararg names: String): Path? {
+    val param = anyParam(*names)
+    if (param == null || param.isEmpty())
+        return null
+    return if (Paths.get(param).isAbsolute()) {
+        Paths.get(param)
+    } else {
+        getRootDir().toPath().resolve(param)
+    }
+}
 
+fun anyParam(vararg names: String): String? {
+    var param: String? = ""
+    try {
+        for(name in names) {
+            param = if (project.hasProperty(name)) {
+                project.property(name).toString()
+            } else {
+                System.getProperty(name) ?: System.getenv(name) ?: null
+            }
+            if (param != null)
+                break;
+        }
+        if (param == null || param.isEmpty())
+            param = null
+    } finally {
+        println("AnyParam: ${names.joinToString(separator = ",")} -> $param")
+    }
+    return param
+}
+
+
+fun initializeWorkspace() {
+    if (System.getProperty("idea.active") != null) {
+        println("Attempt to configure workspace in IDEA")
+        val coreVersionProperties = project.projectDir.toPath().parent.parent.resolve(".version.properties")
+        if (coreVersionProperties.toFile().exists()) {
+            val p = Properties().also {
+                it.load(FileInputStream(coreVersionProperties.toFile()))
+            }
+            p.forEach {(k,v) ->
+                System.setProperty(k.toString(), v.toString());
+            }
+        }
+    }
+}
