@@ -57,7 +57,7 @@ class SlackWebApiImpl(
                 )
         )
         if (response.isException || response.message == null) {
-            ChannelsList(ok = false, error = unknownError)
+            ChannelsList(ok = false, error = response.message ?: unknownError)
         } else {
             mapper.readValue(response.message, ChannelsList::class.java)
         }
