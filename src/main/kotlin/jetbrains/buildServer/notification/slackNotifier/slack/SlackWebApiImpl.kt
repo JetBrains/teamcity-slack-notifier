@@ -41,7 +41,7 @@ class SlackWebApiImpl(
                 method = "POST"
         )
         if (response.isException || response.message == null) {
-            return MaybeMessage(ok = false, error = unknownError)
+            return MaybeMessage(ok = false, error = response.message ?: unknownError)
         }
         return mapper.readValue(response.message, MaybeMessage::class.java)
     }
@@ -74,7 +74,7 @@ class SlackWebApiImpl(
                 )
         )
         if (response.isException || response.message == null) {
-            UsersList(ok = false, error = unknownError)
+            UsersList(ok = false, error = response.message ?: unknownError)
         } else {
             mapper.readValue(response.message, UsersList::class.java)
         }
@@ -84,7 +84,7 @@ class SlackWebApiImpl(
         val response = request("auth.test", token)
 
         if (response.isException || response.message == null) {
-            AuthTestResult(ok = false, error = unknownError)
+            AuthTestResult(ok = false, error = response.message ?: unknownError)
         } else {
             mapper.readValue(response.message, AuthTestResult::class.java)
         }
@@ -94,7 +94,7 @@ class SlackWebApiImpl(
         val response = request("bots.info", token, parameters = listOf(Pair("bot", botId)))
 
         if (response.isException || response.message == null) {
-            MaybeBot(ok = false, error = unknownError)
+            MaybeBot(ok = false, error = response.message ?: unknownError)
         } else {
             mapper.readValue(response.message, MaybeBot::class.java)
         }
@@ -112,7 +112,7 @@ class SlackWebApiImpl(
             )
 
             if (response.isException || response.message == null) {
-                ConversationMembers(ok = false, error = unknownError)
+                ConversationMembers(ok = false, error = response.message ?: unknownError)
             } else {
                 mapper.readValue(response.message, ConversationMembers::class.java)
             }
@@ -121,7 +121,7 @@ class SlackWebApiImpl(
     override fun usersIdentity(token: String): UserIdentity = readOnlyRequest {
         val response = request("users.identity", token)
         if (response.isException || response.message == null) {
-            UserIdentity(ok = false, error = unknownError)
+            UserIdentity(ok = false, error = response.message ?: unknownError)
         } else {
             mapper.readValue(response.message, UserIdentity::class.java)
         }
@@ -130,7 +130,7 @@ class SlackWebApiImpl(
     override fun usersInfo(token: String, userId: String): MaybeUser = readOnlyRequest {
         val response = request("users.info", token, listOf(Pair("user", userId)))
         if (response.isException || response.message == null) {
-            MaybeUser(ok = false, error = unknownError)
+            MaybeUser(ok = false, error = response.message ?: unknownError)
         } else {
             mapper.readValue(response.message, MaybeUser::class.java)
         }
@@ -157,7 +157,7 @@ class SlackWebApiImpl(
         )
 
         if (response.isException || response.message == null) {
-            OauthAccessToken(ok = false, error = unknownError)
+            OauthAccessToken(ok = false, error = response.message ?: unknownError)
         } else {
             mapper.readValue(response.message, OauthAccessToken::class.java)
         }
@@ -166,7 +166,7 @@ class SlackWebApiImpl(
     override fun teamInfo(token: String, team: String): MaybeTeam = readOnlyRequest {
         val response = request("team.info", token, listOf(Pair("team", team)))
         if (response.isException || response.message == null) {
-            MaybeTeam(ok = false, error = unknownError)
+            MaybeTeam(ok = false, error = response.message ?: unknownError)
         } else {
             mapper.readValue(response.message, MaybeTeam::class.java)
         }
@@ -181,7 +181,7 @@ class SlackWebApiImpl(
             method: String = "GET"
     ): SlackResponse {
         var response: String? = null
-        val exceptions = mutableListOf<Exception>()
+        var exceptions = 0
 
         val post: HTTPRequestBuilder.Request =
                 HTTPRequestBuilder("$baseUrl/${path}")
@@ -208,19 +208,19 @@ class SlackWebApiImpl(
                         .withRetryCount(maxNumberOfRetries)
                         .withTrustStore(sslTrustStoreProvider.trustStore)
                         .onErrorResponse(HTTPRequestBuilder.ResponseConsumer {
-                            logger.warn("Slack API returned non-ok response. Status code: ${it.statusCode}, body: ${it.bodyAsString?.replace("\n", " ")}")
-
-                            response = it.bodyAsString
+                            val responseBody = it.bodyAsString
+                            logger.warn("Slack API returned non-ok response. Status code: ${it.statusCode}, body: ${responseBody?.replace("\n", " ")}")
+                            response = responseBody
+                            exceptions++
                         })
                         .onSuccess {
                             response = it.bodyAsString
                         }
-                        .onException(Consumer<Exception> {
-                            // TODO better handle connection timeouts. In the code it's treated as unknown error, and the exact cause is available only in logs.
+                        .onException(Consumer {
                             logger.warn(
                                     "Exception occurred when sending request to Slack: ${it.message}"
                             )
-                            exceptions.add(it)
+                            exceptions++
                         })
                         .build()
 
@@ -228,7 +228,7 @@ class SlackWebApiImpl(
             requestHandler.doRequest(post)
         }
 
-        val isException = exceptions.size > maxNumberOfRetries
+        val isException = exceptions > maxNumberOfRetries
 
         return SlackResponse(response, isException)
     }
