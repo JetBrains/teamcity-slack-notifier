@@ -55,6 +55,12 @@ class SlackWebApiImplTest : BaseServerTestCase() {
         `then multiple same aggregating requests are not hanging`()
     }
 
+    @Test
+    fun `should report rate limit error`() {
+        `given slack always fails with rate limit`()
+        `then error details about rate limit should be returned`()
+    }
+
 
     private fun `given slack is responding correctly`() {
         slackApi = SlackWebApiImpl(
@@ -94,6 +100,13 @@ class SlackWebApiImplTest : BaseServerTestCase() {
         )
     }
 
+    private fun `given slack always fails with rate limit`() {
+        slackApi = SlackWebApiImpl(
+            AlwaysRateLimitingRequestHandler(),
+            SSLTrustStoreProvider { null }
+        )
+    }
+
     private fun `given slack always fails`() {
         slackApi = SlackWebApiImpl(
             AlwaysFailingRequestHandler(),
@@ -117,6 +130,12 @@ class SlackWebApiImplTest : BaseServerTestCase() {
                 // timeout expected
             }
         }
+    }
+
+    private fun `then error details about rate limit should be returned`() {
+        slackResponse = slackApi.usersList(slackToken)
+        assertFalse(slackResponse.ok)
+        assertContains(slackResponse.error, "ratelimited")
     }
 
     private fun `then result should be successful`() {
