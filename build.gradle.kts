@@ -1,5 +1,6 @@
 import java.io.FileInputStream
 import com.github.jk1.license.render.*
+import com.github.jk1.license.filter.*
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -119,6 +120,10 @@ teamcity {
 
 licenseReport {
     renderers = arrayOf(JsonReportRenderer("third-party-libraries.json"))
+    excludes = arrayOf("org.jetbrains.*", "com.jetbrains.*", ".*jackson-bom*")
+    filters = arrayOf<DependencyFilter>(
+        LicenseBundleNormalizer("${project.rootDir}/license-third-party-normalizer.json", false)
+    )
 }
 
 tasks.serverPlugin {
