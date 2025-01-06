@@ -7,8 +7,8 @@ import java.util.*
 
 plugins {
     kotlin("jvm") version "1.9.22"
-    id("com.github.rodm.teamcity-server") version "1.5.2"
-    id("com.github.rodm.teamcity-environments") version "1.5.2"
+    id("io.github.rodm.teamcity-server") version "1.5.2"
+    id("io.github.rodm.teamcity-environments") version "1.5.2"
     id ("com.github.jk1.dependency-license-report") version "2.5"
 }
 
