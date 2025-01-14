@@ -1,11 +1,10 @@
-
-
 package jetbrains.buildServer.notification.slackNotifier.notification
 
 import com.google.common.util.concurrent.Striped
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.Build
 import jetbrains.buildServer.log.Loggers
+import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.*
 import jetbrains.buildServer.notification.slackNotifier.logging.ThrottlingLogger
@@ -13,6 +12,7 @@ import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
 import jetbrains.buildServer.serverSide.*
+import jetbrains.buildServer.serverSide.buildLog.MessageAttrs
 import jetbrains.buildServer.serverSide.impl.LogUtil
 import jetbrains.buildServer.serverSide.mute.MuteInfo
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor
@@ -74,10 +74,10 @@ class SlackNotifier(
     }
 
     override fun notifyBuildProblemsUnmuted(
-            buildProblems: Collection<BuildProblemInfo>,
-            muteInfo: MuteInfo,
-            user: SUser?,
-            users: Set<SUser>
+        buildProblems: Collection<BuildProblemInfo>,
+        muteInfo: MuteInfo,
+        user: SUser?,
+        users: Set<SUser>
     ) {
         val project = muteInfo.project ?: return
         forReceiver(users, project) { receiver, messageBuilder ->
@@ -197,9 +197,9 @@ class SlackNotifier(
     ) {
         forReceiver(users, project) { receiver, messageBuilder ->
             sendMessage(
-                    messageBuilder.buildProblemResponsibleAssigned(buildProblems, entry, project),
-                    receiver,
-                    project
+                messageBuilder.buildProblemResponsibleAssigned(buildProblems, entry, project),
+                receiver,
+                project
             )
         }
     }
@@ -250,9 +250,9 @@ class SlackNotifier(
         val project = projectManager.findProjectByExternalId(build.buildType?.projectExternalId)
         if (project == null) {
             logger.error(
-                    "Won't send notification because can't find project for build" +
-                            " ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
-                            " by external id ${build.buildType?.projectExternalId}."
+                "Won't send notification because can't find project for build" +
+                        " ${build.buildType?.buildTypeId ?: ""}/${build.buildId}" +
+                        " by external id ${build.buildType?.projectExternalId}."
             )
             return
         }
@@ -264,9 +264,9 @@ class SlackNotifier(
         val project = projectManager.findProjectByExternalId(buildType.projectExternalId)
         if (project == null) {
             logger.error(
-                    "Won't send notification because can't find project for queued build" +
-                            " ${buildType.buildTypeId}/${queuedBuild.buildPromotion.id}" +
-                            " by external id ${buildType.projectExternalId}."
+                "Won't send notification because can't find project for queued build" +
+                        " ${buildType.buildTypeId}/${queuedBuild.buildPromotion.id}" +
+                        " by external id ${buildType.projectExternalId}."
             )
             return
         }
@@ -349,7 +349,7 @@ class SlackNotifier(
 
         val connectionDescriptor = findConnectionForAdHocNotification(project, parameters)
 
-        checkExternalDomainsInMessage(message, connectionDescriptor)
+        checkExternalDomainsInMessage(runningBuild, message, connectionDescriptor)
 
         val token = getToken(project, connectionDescriptor.id)
             ?: throw ServiceMessageNotificationException(
@@ -400,9 +400,11 @@ class SlackNotifier(
             descriptors.size == 1 -> {
                 return descriptors.first()
             }
+
             descriptors.isEmpty() -> {
                 throw ServiceMessageNotificationException("Could not find any suitable Slack connection with service message notifications enabled")
             }
+
             else -> {
                 throw ServiceMessageNotificationException("More than one suitable Slack connection was found, please specify 'connectionId' argument to explicitly select connection")
             }
@@ -451,6 +453,7 @@ class SlackNotifier(
 
     @Throws(ServiceMessageNotificationException::class)
     private fun checkExternalDomainsInMessage(
+        runningBuild: SRunningBuild,
         message: String,
         descriptor: OAuthConnectionDescriptor
     ) {
@@ -465,10 +468,10 @@ class SlackNotifier(
         )
 
         if (externalDomains.isNotEmpty()) {
-            throw ServiceMessageNotificationException(
-                "Found external domains that are not allowed by configuration: " +
-                        "[${externalDomains.joinToString(" ,")}]"
-            )
+            val warningMessage = "Slack notifier: Found external domains that are not allowed by configuration: " +
+                    "[${externalDomains.joinToString(" ,")}]. Will not send Slack notification."
+            runningBuild.buildLog.messageAsync(warningMessage, Status.WARNING, MessageAttrs.serverMessage())
+            throw ServiceMessageNotificationException(warningMessage)
         }
     }
 
