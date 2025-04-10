@@ -252,7 +252,7 @@
             <td colspan="2">
                 <bs:smallNote>
                     Use these settings to configure notifications sent via service messages.
-                    <bs:help file="Service+Messages#Sending+Custom+Slack+Messages"/>
+                    <bs:help file="send-custom-slack-messages"/>
                 </bs:smallNote>
             </td>
         </tr>
