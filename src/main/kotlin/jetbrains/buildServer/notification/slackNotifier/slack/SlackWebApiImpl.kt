@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Pair
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierProperties
@@ -27,7 +28,7 @@ class SlackWebApiImpl(
     private val logger = Logger.getInstance(SlackWebApi::class.java.name)
 
     private val mapper = ObjectMapper()
-            .registerModule(KotlinModule())
+            .registerKotlinModule()
             .configure(SerializationFeature.INDENT_OUTPUT, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
