@@ -1,15 +1,15 @@
-import java.io.FileInputStream
-import com.github.jk1.license.render.*
 import com.github.jk1.license.filter.*
+import com.github.jk1.license.render.*
+import java.io.FileInputStream
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
 plugins {
-    kotlin("jvm") version "1.9.22"
-    id("com.github.rodm.teamcity-server") version "1.5.2"
-    id("com.github.rodm.teamcity-environments") version "1.5.2"
-    id ("com.github.jk1.dependency-license-report") version "2.5"
+    kotlin("jvm") version "2.0.21"
+    id("com.github.rodm.teamcity-server") version "1.5.6"
+    id("com.github.rodm.teamcity-environments") version "1.5.6"
+    id ("com.github.jk1.dependency-license-report") version "2.9"
 }
 
 initializeWorkspace()
