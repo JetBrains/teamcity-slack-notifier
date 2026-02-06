@@ -20,7 +20,7 @@ dependencies {
 
     testImplementation("org.testng:testng:6.8")
     testImplementation("junit:junit:3.8.1")
-    testImplementation("io.mockk:mockk:1.10.0")
+    testImplementation("io.mockk:mockk:1.14.3")
 }
 
 tasks.named<Test>("test") {
@@ -31,4 +31,22 @@ tasks.named<Test>("test") {
 
 if (!canDownloadSpacePackages) {
     tasks.findByName("compileTestKotlin")?.enabled = false
+}
+
+tasks.withType<Test>().configureEach {
+    if (JavaVersion.current().isJava9Compatible) {
+        val requiredOpens = listOf(
+            "java.base/java.lang",
+            "java.base/java.lang.reflect",
+            "java.base/java.io",
+            "java.base/java.util"
+        )
+
+        requiredOpens.forEach { module ->
+            val arg = "--add-opens=$module=ALL-UNNAMED"
+            if (!jvmArgs.orEmpty().contains(arg)) {
+                jvmArgs(arg)
+            }
+        }
+    }
 }

@@ -1,5 +1,7 @@
 import com.github.jk1.license.filter.*
 import com.github.jk1.license.render.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -66,6 +68,17 @@ allprojects {
                 }
             }
         }
+    }
+
+    tasks.withType<KotlinCompile>().configureEach {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+        }
+    }
+
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
     }
 }
 
