@@ -2,6 +2,7 @@ package jetbrains.buildServer.notification.slackNotifier.healthReport
 
 import jetbrains.buildServer.notification.slackNotifier.SlackNotifierEnabled
 import jetbrains.buildServer.serverSide.ProjectManager
+import jetbrains.buildServer.serverSide.SProject
 import jetbrains.buildServer.serverSide.healthStatus.HealthStatusItem
 import jetbrains.buildServer.serverSide.healthStatus.HealthStatusItemConsumer
 import jetbrains.buildServer.serverSide.healthStatus.HealthStatusReport
@@ -18,7 +19,7 @@ class SlackFailedNotificationHealthReport(
     private val projectManager: ProjectManager
 ) : HealthStatusReport() {
     override fun report(scope: HealthStatusScope, consumer: HealthStatusItemConsumer) {
-        for (project in scope.projects) {
+        for (project in collectScopeProjects(scope)) {
             val failures = failuresCollector.getProjectFailures(project)
 
             for (failure in failures) {
@@ -48,6 +49,14 @@ class SlackFailedNotificationHealthReport(
                 }
             }
         }
+    }
+
+    private fun collectScopeProjects(scope: HealthStatusScope): Set<SProject> {
+        val projects = linkedSetOf<SProject>()
+        projects.addAll(scope.projects)
+        projects.addAll(scope.buildTypes.map { it.project })
+        projects.addAll(scope.buildTypeTemplates.map { it.project })
+        return projects
     }
 
     override fun getType(): String = type
