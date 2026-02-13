@@ -12,6 +12,18 @@ class SlackWebApiStub : SlackWebApi {
             return MaybeMessage(ok = false)
         }
 
+        if (payload.channel == "#anotherChannel") {
+            return MaybeMessage(ok = false, error = "not_in_channel")
+        }
+
+        if (payload.channel == "#rate_limited") {
+            return MaybeMessage(ok = false, error = "ratelimited")
+        }
+
+        if (payload.channel == "#unknown_failure") {
+            return MaybeMessage(ok = false)
+        }
+
         return MaybeMessage(ok = true)
     }
 

@@ -4,6 +4,7 @@ package jetbrains.buildServer.notification.slackNotifier.healthReport
 
 import jetbrains.buildServer.notification.FeatureProviderNotificationRulesHolder
 import jetbrains.buildServer.notification.slackNotifier.And
+import jetbrains.buildServer.notification.slackNotifier.SlackConnection
 import jetbrains.buildServer.notification.slackNotifier.SlackProperties
 import jetbrains.buildServer.notification.slackNotifier.slack.AggregatedSlackApi
 import jetbrains.buildServer.serverSide.impl.NotificationsBuildFeature
@@ -115,6 +116,14 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
         `then report should contain no errors`()
     }
 
+    @Test
+    fun `test should report health check generation failures`() {
+        `given build type is in scope`() And
+                `given build feature has invalid token`()
+        `when health is reported`()
+        `then report should contain health check generation failure`()
+    }
+
     private fun `given build feature is missing connection`() {
         addBuildFeature()
     }
@@ -159,6 +168,25 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
         )
     }
 
+    private fun `given build feature has invalid token`() {
+        val invalidConnection = myConnectionManager.addConnection(
+            myProject,
+            SlackConnection.type,
+            mapOf(
+                "secure:token" to "invalid_token",
+                "clientId" to "test_clientId",
+                "secure:clientSecret" to "test_clientSecret"
+            )
+        )
+
+        addBuildFeature(
+            mapOf(
+                SlackProperties.connectionProperty.key to invalidConnection.id,
+                SlackProperties.channelProperty.key to "#test_channel"
+            )
+        )
+    }
+
     private fun addBuildFeature(parameters: Map<String, String> = emptyMap()) {
         myBuildType.addBuildFeature(
             NotificationsBuildFeature.FEATURE_TYPE,
@@ -191,6 +219,13 @@ class SlackBuildFeatureHealthReportTest : BaseSlackHealthReportTest<SlackBuildFe
         assertResultContains {
             it.category == SlackBuildFeatureHealthReport.botIsNotConfiguredCategory &&
                     (it.additionalData["reason"] as String).contains("should be added to the channel")
+        }
+    }
+
+    private fun `then report should contain health check generation failure`() {
+        assertResultContains {
+            it.category == SlackBuildFeatureHealthReport.healthReportGenerationFailedCategory &&
+                    (it.additionalData["reason"] as String).contains("Could not generate health report for 1 build features")
         }
     }
 }

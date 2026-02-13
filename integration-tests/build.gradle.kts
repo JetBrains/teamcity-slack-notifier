@@ -20,7 +20,6 @@ dependencies {
 
     testImplementation("org.testng:testng:6.8")
     testImplementation("junit:junit:3.8.1")
-    testImplementation("io.mockk:mockk:1.14.3")
 }
 
 tasks.named<Test>("test") {

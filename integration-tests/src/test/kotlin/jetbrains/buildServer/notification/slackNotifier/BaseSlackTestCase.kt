@@ -8,6 +8,7 @@ import jetbrains.buildServer.buildFeatures.approvals.ApprovalConstants
 import jetbrains.buildServer.messages.DefaultMessagesInfo
 import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.*
+import jetbrains.buildServer.notification.slackNotifier.healthReport.SlackFailedNotificationCollector
 import jetbrains.buildServer.notification.slackNotifier.notification.*
 import jetbrains.buildServer.notification.slackNotifier.slack.*
 import jetbrains.buildServer.serverSide.*
@@ -35,6 +36,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     private lateinit var myAdHocMessageBuilder: PlainServiceMessageNotificationMessageBuilder
     private lateinit var myNotificationCountHandler: BuildPromotionNotificationCountHandler
     private lateinit var myDomainNameFinder: DomainNameFinder
+    protected lateinit var myFailedNotificationCollector: SlackFailedNotificationCollector
 
     protected lateinit var myConnectionManager: OAuthConnectionsManager
     protected lateinit var myConnection: OAuthConnectionDescriptor
@@ -76,6 +78,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         myDomainNameFinder = myFixture.getSingletonService(
             DomainNameFinder::class.java
         )
+        myFailedNotificationCollector = SlackFailedNotificationCollector()
+        myFixture.addService(myFailedNotificationCollector)
 
         simpleMessageBuilderFactory = SimpleMessageBuilderFactory(
                 messageFormatter,
@@ -118,7 +122,8 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
             myConnectionManager,
             myDescriptor,
             myNotificationCountHandler,
-            myDomainNameFinder
+            myDomainNameFinder,
+            myFailedNotificationCollector
         )
 
         myFixture.addService(notifier)

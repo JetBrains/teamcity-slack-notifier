@@ -52,28 +52,49 @@ class SlackBuildFeatureHealthReport(
                 "Slack app bot is not configured correctly",
                 ItemSeverity.WARN
             )
+
+        val healthReportGenerationFailedCategory =
+            ItemCategory(
+                "slackBuildFeatureHealthReportGenerationFailed",
+                "Slack notifications health check is incomplete",
+                ItemSeverity.WARN
+            )
     }
 
     override fun report(scope: HealthStatusScope, consumer: HealthStatusItemConsumer) {
-        var errors = 0
+        val generationErrors = mutableMapOf<SProject, Int>()
 
         for (buildType in scope.buildTypes) {
-            errors += report(buildType, consumer)
+            report(buildType, consumer, generationErrors)
         }
 
         for (buildTemplate in scope.buildTypeTemplates) {
-            errors += report(buildTemplate, consumer)
+            report(buildTemplate, consumer, generationErrors)
         }
-        if (errors != 0) {
-            logger.warn("Could not generate health report for $errors build features" +
-                    " due to error responses from Slack." +
-                    " See notifications log for details. To see all failed features, enable the debug preset.")
+
+        for ((project, failedFeaturesCount) in generationErrors) {
+            val reason = "Could not generate health report for $failedFeaturesCount build features due to error responses from Slack."
+            consumer.consumeForProject(
+                project,
+                HealthStatusItem(
+                    "${type}_${project.projectId}_generationFailed",
+                    healthReportGenerationFailedCategory,
+                    mapOf(
+                        "reason" to reason,
+                        "project" to project,
+                        "failedFeaturesCount" to failedFeaturesCount
+                    )
+                )
+            )
         }
     }
 
-    private fun report(buildType: SBuildType, consumer: HealthStatusItemConsumer): Int {
+    private fun report(
+        buildType: SBuildType,
+        consumer: HealthStatusItemConsumer,
+        generationErrors: MutableMap<SProject, Int>
+    ) {
         val features = getFeatures(buildType)
-        var errorRequests = 0
         for (feature in features) {
             val statusItem = try {
                 getHealthStatus(feature, buildType, "buildType")
@@ -84,19 +105,21 @@ class SlackBuildFeatureHealthReport(
             } catch (e: SlackResponseError) {
                 logger.debug("Error while generating health report for feature with id=${feature.id} " +
                         "in build type with id=${buildType.buildTypeId}: ${e.message}")
-                errorRequests++
+                generationErrors[buildType.project] = (generationErrors[buildType.project] ?: 0) + 1
                 null
             }
             if (statusItem != null) {
                 consumer.consumeForBuildType(buildType, statusItem)
             }
         }
-        return errorRequests
     }
 
-    private fun report(buildTemplate: BuildTypeTemplate, consumer: HealthStatusItemConsumer): Int {
+    private fun report(
+        buildTemplate: BuildTypeTemplate,
+        consumer: HealthStatusItemConsumer,
+        generationErrors: MutableMap<SProject, Int>
+    ) {
         val features = getFeatures(buildTemplate)
-        var errorRequests = 0
         for (feature in features) {
             val statusItem = try {
                 getHealthStatus(feature, buildTemplate, "template")
@@ -107,14 +130,13 @@ class SlackBuildFeatureHealthReport(
             } catch (e: SlackResponseError) {
                 logger.debug("Error while generating health report for feature" +
                         " with id=${feature.id} in template ${LogUtil.describe(buildTemplate)}: ${e.message}")
-                errorRequests++
+                generationErrors[buildTemplate.project] = (generationErrors[buildTemplate.project] ?: 0) + 1
                 null
             }
             if (statusItem != null) {
                 consumer.consumeForTemplate(buildTemplate, statusItem)
             }
         }
-        return errorRequests
     }
 
     private fun getFeatures(buildTypeSettings: BuildTypeSettings): List<SBuildFeatureDescriptor> {
@@ -223,6 +245,10 @@ class SlackBuildFeatureHealthReport(
         Companion.type
 
     override fun getDisplayName(): String = "Report Slack incorrectly configured notifications build feature"
-    override fun getCategories(): Collection<ItemCategory> = listOf(invalidBuildFeatureCategory, botIsNotConfiguredCategory)
+    override fun getCategories(): Collection<ItemCategory> = listOf(
+        invalidBuildFeatureCategory,
+        botIsNotConfiguredCategory,
+        healthReportGenerationFailedCategory
+    )
     override fun canReportItemsFor(scope: HealthStatusScope): Boolean = true
 }

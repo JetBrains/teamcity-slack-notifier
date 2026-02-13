@@ -4,17 +4,24 @@
 
 
 
-<jsp:useBean id="feature" type="jetbrains.buildServer.serverSide.SBuildFeatureDescriptor" scope="request"/>
-<jsp:useBean id="editUrl" type="java.lang.String" scope="request"/>
 <jsp:useBean id="reason" type="java.lang.String" scope="request"/>
-<jsp:useBean id="buildTypeName" type="java.lang.String" scope="request"/>
 
 <div>
-    Slack notifications build feature in
-    <a href="${editUrl}">
-        <bs:out value="${buildTypeName}"/>
-    </a>
-    is invalid.
+    <c:choose>
+        <c:when test="${not empty buildTypeName and not empty editUrl}">
+            Slack notifications build feature in
+            <a href="${editUrl}">
+                <bs:out value="${buildTypeName}"/>
+            </a>
+            is invalid.
+        </c:when>
+        <c:otherwise>
+            Slack notifications build feature health check is incomplete.
+            <c:if test="${not empty failedFeaturesCount}">
+                Failed checks: <bs:out value="${failedFeaturesCount}"/>.
+            </c:if>
+        </c:otherwise>
+    </c:choose>
     <br/>
     <bs:out value="${reason}"/>
 </div>

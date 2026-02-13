@@ -7,7 +7,7 @@ import jetbrains.buildServer.log.Loggers
 import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.notification.*
 import jetbrains.buildServer.notification.slackNotifier.*
-import jetbrains.buildServer.notification.slackNotifier.logging.ThrottlingLogger
+import jetbrains.buildServer.notification.slackNotifier.healthReport.SlackFailedNotificationCollector
 import jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiFactory
 import jetbrains.buildServer.responsibility.ResponsibilityEntry
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry
@@ -38,13 +38,13 @@ class SlackNotifier(
     private val oauthManager: OAuthConnectionsManager,
     private val descriptor: SlackNotifierDescriptor,
     private val notificationCountHandler: BuildPromotionNotificationCountHandler,
-    private val domainNameFinder: DomainNameFinder
+    private val domainNameFinder: DomainNameFinder,
+    private val failedNotificationCollector: SlackFailedNotificationCollector
 ) : NotificatorAdapter(), ServiceMessageNotifier, PositionAware {
 
     private val slackApi = slackApiFactory.createSlackWebApi()
 
     private val logger = Logger.getInstance(SlackNotifier::class.java.name)
-    private val throttlingLogger = ThrottlingLogger(logger)
 
     private val myMessageLimitLocks = Striped.lazyWeakLock(
         TeamCityProperties.getInteger("teamcity.notifications.adhoc.countLimit.slack.stripesCount", 32)
@@ -100,7 +100,7 @@ class SlackNotifier(
 
     override fun notifyResponsibleChanged(buildType: SBuildType, users: Set<SUser>) {
         forReceiver(users, buildType.project) { receiver, messageBuilder ->
-            sendMessage(messageBuilder.responsibleChanged(buildType), receiver, buildType.project)
+            sendMessage(messageBuilder.responsibleChanged(buildType), receiver, buildType.project, buildType.externalId)
         }
     }
 
@@ -213,7 +213,7 @@ class SlackNotifier(
 
     override fun notifyResponsibleAssigned(buildType: SBuildType, users: Set<SUser>) {
         forReceiver(users, buildType.project) { receiver, messageBuilder ->
-            sendMessage(messageBuilder.responsibleAssigned(buildType), receiver, buildType.project)
+            sendMessage(messageBuilder.responsibleAssigned(buildType), receiver, buildType.project, buildType.externalId)
         }
     }
 
@@ -256,7 +256,7 @@ class SlackNotifier(
             )
             return
         }
-        sendMessage(message, user, project)
+        sendMessage(message, user, project, build.buildType?.externalId)
     }
 
     private fun sendMessage(message: MessagePayload, user: SUser, queuedBuild: SQueuedBuild) {
@@ -270,10 +270,14 @@ class SlackNotifier(
             )
             return
         }
-        sendMessage(message, user, project)
+        sendMessage(message, user, project, buildType.externalId)
     }
 
     private fun sendMessage(message: MessagePayload, user: SUser, project: SProject) {
+        sendMessage(message, user, project, null)
+    }
+
+    private fun sendMessage(message: MessagePayload, user: SUser, project: SProject, buildTypeExternalId: String?) {
         if (!TeamCityProperties.getBooleanOrTrue(SlackNotifierProperties.sendNotifications)) {
             if (Loggers.SERVER.isDebugEnabled) {
                 Loggers.SERVER.debug("Slack notifications are disabled. Not sending $message to user with id '${user.id}'.")
@@ -283,31 +287,35 @@ class SlackNotifier(
 
         val sendTo = user.getPropertyValue(SlackProperties.channelProperty)
         if (sendTo == null) {
-            throttlingLogger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.channelProperty} property")
+            val reason = "Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.channelProperty} property"
+            failedNotificationCollector.reportFailure(project, buildTypeExternalId, null, null, "missing_channel_property", reason)
             return
         }
 
         val connectionId = user.getPropertyValue(SlackProperties.connectionProperty)
         if (connectionId == null) {
-            throttlingLogger.warn("Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.connectionProperty} property")
+            val reason = "Won't send Slack notification to user with id ${user.id} as it's missing ${SlackProperties.connectionProperty} property"
+            failedNotificationCollector.reportFailure(project, buildTypeExternalId, null, sendTo, "missing_connection_property", reason)
             return
         }
 
         val token = getToken(project, connectionId)
         if (token == null) {
-            throttlingLogger.warn(
-                "Won't send Slack notification to user with id ${user.id}" +
-                        " as no token for connection with id '${connectionId}'" +
-                        " in project with external id '${project.externalId}' was found"
-            )
+            val reason = "Won't send Slack notification to user with id ${user.id} as no token for connection with id '${connectionId}' in project with external id '${project.externalId}' was found"
+            failedNotificationCollector.reportFailure(project, buildTypeExternalId, connectionId, sendTo, "missing_token", reason)
             return
         }
 
         val result = slackApi.postMessage(token, message.toSlackMessage(sendTo))
 
-        if (!result.ok) {
-            logger.warn("Error sending message to $sendTo: ${result.error}")
+        if (result.ok) {
+            failedNotificationCollector.clearDeliveryErrors(project, buildTypeExternalId, connectionId, sendTo)
+            return
         }
+
+        val errorCode = result.error.ifBlank { "unknown_error" }
+        val reason = "Error sending message to $sendTo: $errorCode"
+        failedNotificationCollector.reportFailure(project, buildTypeExternalId, connectionId, sendTo, errorCode, reason)
     }
 
     private fun getToken(project: SProject, connectionId: String): String? {
