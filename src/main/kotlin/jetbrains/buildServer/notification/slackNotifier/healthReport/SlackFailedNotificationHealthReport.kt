@@ -40,7 +40,7 @@ class SlackFailedNotificationHealthReport(
                 )
                 failure.buildTypeExternalId?.let { data["buildTypeId"] = it }
 
-                val item = HealthStatusItem("${type}_${failure.id}", category, data)
+                val item = HealthStatusItem("${Companion.type}_${failure.id}", category, data)
                 val buildType = failure.buildTypeExternalId?.let { projectManager.findBuildTypeByExternalId(it) }
                 if (buildType != null && buildType.project.projectId == project.projectId) {
                     consumer.consumeForBuildType(buildType, item)
@@ -59,7 +59,7 @@ class SlackFailedNotificationHealthReport(
         return projects
     }
 
-    override fun getType(): String = type
+    override fun getType(): String = Companion.type
 
     override fun getDisplayName(): String = "Report failed Slack notifications"
 
