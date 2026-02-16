@@ -111,8 +111,10 @@ class SlackFailedNotificationCollector {
                 return
             }
 
-            val ttlHours = TeamCityProperties.getLong(SlackNotifierProperties.failedNotificationHealthReportTtlHours, 24L)
-            val ttlMs = TimeUnit.HOURS.toMillis(ttlHours)
+            val ttlMs = TeamCityProperties.getIntervalMilliseconds(
+                SlackNotifierProperties.failedNotificationHealthReportTtlHours,
+                TimeUnit.HOURS.toMillis(24L)
+            )
             failures.entries.removeIf { timeAfterLock - it.value.lastOccurredAt > ttlMs }
             nextCleanupTimeMs = timeAfterLock + CLEANUP_INTERVAL_MS
         }
