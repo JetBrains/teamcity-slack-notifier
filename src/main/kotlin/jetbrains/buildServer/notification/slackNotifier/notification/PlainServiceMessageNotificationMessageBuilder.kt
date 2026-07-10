@@ -17,7 +17,7 @@ class PlainServiceMessageNotificationMessageBuilder(
 
         payloadBuilder.contextBlock {
             add(
-                "Sent by ${detailsFormatter.buildUrl(build)}"
+                "Sent by ${detailsFormatter.serviceMessageBuildUrl(build)}"
             )
         }
         payloadBuilder.textBlock { add(message) }
