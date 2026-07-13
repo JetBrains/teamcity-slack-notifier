@@ -21,9 +21,16 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager
 import jetbrains.buildServer.users.SUser
 import jetbrains.buildServer.users.impl.UserEx
 import jetbrains.buildServer.vcs.ModificationDataForTest
+import jetbrains.buildServer.virtualConfiguration.generator.VirtualBuildTypeSettings
+import jetbrains.buildServer.virtualConfiguration.generator.VirtualPromotionGeneratorFactory
 import org.testng.annotations.BeforeMethod
 import java.util.*
 import java.util.function.BooleanSupplier
+
+data class ServiceMessageVirtualBuilds(
+    val sourceBuild: SBuild,
+    val virtualBuild: SRunningBuild
+)
 
 open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     protected lateinit var mySlackApiFactory: StoringMessagesSlackWebApiFactory
@@ -478,6 +485,27 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         runningBuild.updateBuild()
     }
 
+    fun `when service message notification is sent from virtual build`(
+        message: String = "service message",
+        sendTo: String = myChannelName
+    ): ServiceMessageVirtualBuilds {
+        val sourcePromotion = myBuildType.createBuildPromotion()
+        val sourceRunningBuild = startBuild(sourcePromotion, Date(), Date(), null, true)
+        val sourceBuild = finishBuild(sourceRunningBuild, false)
+        val virtualPromotion = myFixture
+            .getSingletonService(VirtualPromotionGeneratorFactory::class.java)
+            .create(sourcePromotion, "test")
+            .getOrCreate(VirtualBuildTypeSettings("Batch_1", "Linux, JDK 21"), null)
+
+        val virtualRunningBuild = startBuild(virtualPromotion, Date(), Date(), null, true)
+        myFixture.logBuildMessages(
+            virtualRunningBuild,
+            listOf(DefaultMessagesInfo.createTextMessage("##teamcity[notification message='$message' notifier='slack' sendTo='$sendTo']"))
+        )
+        virtualRunningBuild.updateBuild()
+        return ServiceMessageVirtualBuilds(sourceBuild, virtualRunningBuild)
+    }
+
     fun `when multiple service message notifications are sent`(
         message: String = "service message",
         sendTo: String = myChannelName,
@@ -496,12 +524,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     fun `then message should contain`(vararg strings: String) {
         waitForMessage()
         for (str in strings) {
-            val message = mySlackApi.messages.last()
-            if (message.blocks.isNotEmpty()) {
-                assertContains(message.blocks.joinToString("\n"), str)
-            } else {
-                assertContains(message.text, str)
-            }
+            assertContains(lastMessageContent(), str)
         }
     }
 
@@ -518,7 +541,7 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
     fun `then message should not contain`(vararg strings: String) {
         waitForMessage()
         for (str in strings) {
-            assertNotContains(mySlackApi.messages.last().text, str, false)
+            assertNotContains(lastMessageContent(), str, false)
         }
     }
 
@@ -542,6 +565,15 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         waitForAssert(BooleanSupplier {
             mySlackApi.messages.isNotEmpty()
         }, 2000L)
+    }
+
+    private fun lastMessageContent(): String {
+        val message = mySlackApi.messages.last()
+        return if (message.blocks.isNotEmpty()) {
+            message.blocks.joinToString("\n")
+        } else {
+            message.text ?: ""
+        }
     }
 
     fun `then no messages should be sent`() {

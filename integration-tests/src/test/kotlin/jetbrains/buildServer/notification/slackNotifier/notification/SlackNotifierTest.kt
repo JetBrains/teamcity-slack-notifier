@@ -255,6 +255,25 @@ class SlackNotifierTest : BaseSlackTestCase() {
     }
 
     @Test
+    fun `service message notification should link to source build configuration for virtual builds`() {
+        `given there is connection allowing service message notifications`(1)
+        val builds = `when service message notification is sent from virtual build`()
+
+        assertTrue(
+            "The fixture must use different source and virtual build ids",
+            builds.sourceBuild.buildId != builds.virtualBuild.buildId
+        )
+
+        `then message should contain`(
+            myBuildType.project.fullName,
+            myBuildType.name,
+            "Build #${builds.sourceBuild.buildNumber}",
+            "/buildConfiguration/${myBuildType.externalId}/${builds.sourceBuild.buildId}"
+        )
+        `then message should not contain`("(auto-generated)", "_virtual")
+    }
+
+    @Test
     fun `service message notification should fail if more than one connection allow it`() {
         `given there are more multiple connections allowing service message notifications`()
         `when service message notification is sent`()
