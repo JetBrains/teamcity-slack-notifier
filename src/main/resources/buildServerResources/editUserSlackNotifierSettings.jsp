@@ -69,7 +69,7 @@
                         >
                             <props:option value="">-- Select Slack connection --</props:option>
                             <c:forEach var="connection" items="${connectionsBean.connections}">
-                                <props:option value="${connection.id}">
+                                <props:option value="${connection.id}" escapeValue="true">
                                     <c:out value="${connection.connectionDisplayName}"/>
                                 </props:option>
                             </c:forEach>
@@ -137,6 +137,15 @@
         <tr>
             <td colspan="2" style="padding-top: 6px;">
                 <div id="connectionWarning" class="attentionComment" style="display: none;"></div>
+                <c:forEach items="${connectionsBean.connections}" var="connection">
+                    <span class="slackConnectionData" style="display: none;"
+                          data-connection-id="<c:out value='${connection.id}'/>"
+                          data-client-id="<c:out value='${connection.parameters["clientId"]}'/>"
+                          data-team="<c:out value='${connectionsBean.getTeamForConnection(connection)}'/>"
+                          data-team-domain="<c:out value='${connectionsBean.getTeamDomainForConnection(connection)}'/>"
+                          data-project-id="<c:out value='${connection.project.externalId}'/>"
+                          data-project-name="<c:out value='${connection.project.fullName}'/>"></span>
+                </c:forEach>
             </td>
         </tr>
 
@@ -180,7 +189,7 @@
                             signOutButton.attr("value", "Sign Out");
 
                             $j(".userSection").show();
-                            if (selectedConnectionId === "${selectedConnection}" && slackUsername) {
+                            if (selectedConnectionId === "${util:forJS(selectedConnection, true, false)}" && slackUsername) {
                                 $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
                                 signInButton.hide()
                                 signOutButton.show();
@@ -204,7 +213,7 @@
                             connectionId: selectedConnectionId
                         }));
 
-                        var redirectUrl = encodeURIComponent("${rootUrl}/slack/oauth.html");
+                        var redirectUrl = encodeURIComponent("${util:forJS(rootUrl, true, false)}/slack/oauth.html");
                         var clientId = connection.clientId;
                         var teamDomain = connection.teamDomain;
 
@@ -289,15 +298,16 @@
                     }
                 };
 
-                <c:forEach items="${connectionsBean.connections}" var="connection">
-                BS.UserSlackNotifierSettings.connections["${connection.id}"] = {
-                    clientId: "${util:forJS(connection.parameters["clientId"], true, false)}",
-                    team: "${connectionsBean.getTeamForConnection(connection)}",
-                    teamDomain: "${connectionsBean.getTeamDomainForConnection(connection)}",
-                    projectId: "${connection.project.externalId}",
-                    projectName: "${connection.project.fullName}"
-                };
-                </c:forEach>
+                $j(".slackConnectionData").each(function () {
+                    var connectionData = this.dataset;
+                    BS.UserSlackNotifierSettings.connections[connectionData.connectionId] = {
+                        clientId: connectionData.clientId,
+                        team: connectionData.team,
+                        teamDomain: connectionData.teamDomain,
+                        projectId: connectionData.projectId,
+                        projectName: connectionData.projectName
+                    };
+                });
 
                 BS.UserSlackNotifierSettings.onMessageFormatChange();
                 BS.UserSlackNotifierSettings.onAddChanges();
