@@ -116,7 +116,7 @@
                 >
                     <props:option value="">-- Select Slack connection --</props:option>
                     <c:forEach var="connection" items="${availableConnections}">
-                        <props:option value="${connection.id}">
+                        <props:option value="${connection.id}" escapeValue="true">
                             <c:out
                                     value="${connection.connectionDisplayName}"/>
                         </props:option>
