@@ -191,7 +191,7 @@
                             $j(".userSection").show();
                             if (selectedConnectionId === "${util:forJS(selectedConnection, true, false)}" && slackUsername) {
                                 $j("#signedInUserNote").text('You are signed in as ' + slackUsername + '.');
-                                signInButton.hide()
+                                signInButton.hide();
                                 signOutButton.show();
                                 saveButton.show();
                                 saveButton.insertBefore(signOutButton);
@@ -235,7 +235,7 @@
                     },
 
                     onMessageFormatChange: function () {
-                        var select = document.getElementById("${properties.messageFormatKey}")
+                        var select = document.getElementById("${properties.messageFormatKey}");
                         var selectedFormat = select.options[select.selectedIndex].value;
 
                         $j(".messageFormatOption").hide();
