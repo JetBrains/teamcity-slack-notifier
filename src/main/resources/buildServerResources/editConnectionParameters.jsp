@@ -131,8 +131,8 @@
 
                 window.open(
                     "https://" + teamDomain + ".slack.com/oauth/authorize?scope=identity.basic,identity.team" +
-                    "&client_id=" + clientId +
-                    "&redirect_uri=" + "${util:forJS(testAuthRedirectUrl, true, false)}",
+                    "&client_id=" + encodeURIComponent(clientId) +
+                    "&redirect_uri=" + encodeURIComponent("${util:forJS(testAuthRedirectUrl, true, false)}"),
                     "_blank"
                 );
 

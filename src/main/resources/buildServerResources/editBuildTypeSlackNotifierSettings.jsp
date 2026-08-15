@@ -59,7 +59,7 @@
         },
 
         onMessageFormatChange: function () {
-            var select = document.getElementById("${properties.messageFormatKey}")
+            var select = document.getElementById("${properties.messageFormatKey}");
             var selectedFormat = select.options[select.selectedIndex].value;
 
             $j(".messageFormatOption").hide();
