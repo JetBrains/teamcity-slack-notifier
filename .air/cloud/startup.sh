@@ -31,6 +31,7 @@ PUBLIC_TEAMCITY_VERSION="2026.3-dsl6"
 ENV_DIR="$HOME/.air-env"
 ENV_FILE="$ENV_DIR/teamcity-slack-notifier.sh"
 ENV_MARKER="# air-env: teamcity-slack-notifier"
+BLOCK_MARKER="air-env: teamcity-slack-notifier"
 
 log() { printf '[startup] %s\n' "$*"; }
 
@@ -59,6 +60,35 @@ install_jdk() {
   log "JDK installed: $("$BUILD_JAVA_HOME/bin/java" -version 2>&1 | head -1)"
 }
 
+# All egress goes through an HTTP proxy and direct DNS does not resolve. curl picks the
+# proxy up from the environment, but the JVM does not, so Gradle needs it as system
+# properties - otherwise even the Gradle distribution download fails with UnknownHostException.
+PROXY_HOST=""
+PROXY_PORT=""
+NON_PROXY_HOSTS="localhost|127.0.0.1|::1"
+
+detect_proxy() {
+  local proxy="${HTTPS_PROXY:-${https_proxy:-${HTTP_PROXY:-${http_proxy:-}}}}"
+  if [ -z "$proxy" ]; then
+    log "No HTTP(S) proxy in the environment; Gradle will connect directly."
+    return 0
+  fi
+  local hostport="${proxy#*://}"
+  hostport="${hostport%%/*}"
+  PROXY_HOST="${hostport%%:*}"
+  if [ "$hostport" = "$PROXY_HOST" ]; then PROXY_PORT="80"; else PROXY_PORT="${hostport##*:}"; fi
+  log "Egress proxy: $PROXY_HOST:$PROXY_PORT"
+}
+
+# JVM proxy flags for the Gradle launcher (the wrapper download happens before any
+# gradle.properties is read). The nonProxyHosts value is quoted because gradlew
+# `eval`s GRADLE_OPTS and '|' would otherwise be a pipe.
+proxy_gradle_opts() {
+  [ -n "$PROXY_HOST" ] || return 0
+  printf -- '-Dhttp.proxyHost=%s -Dhttp.proxyPort=%s -Dhttps.proxyHost=%s -Dhttps.proxyPort=%s "-Dhttp.nonProxyHosts=%s" "-Dhttps.nonProxyHosts=%s"' \
+    "$PROXY_HOST" "$PROXY_PORT" "$PROXY_HOST" "$PROXY_PORT" "$NON_PROXY_HOSTS" "$NON_PROXY_HOSTS"
+}
+
 # Environment exported here dies with this script, so persist it in a file that the
 # login and interactive shells of the agent/user source.
 write_env_file() {
@@ -81,6 +111,24 @@ if [ -z "\${teamcityVersion:-}" ] && [ -z "\${spacePackagesToken:-}" ] \\
    && [ -z "\${spacePackagesUsername:-}" ] && [ -z "\${spacePackagesPassword:-}" ]; then
   export teamcityVersion="$PUBLIC_TEAMCITY_VERSION"
 fi
+
+# The JVM ignores the HTTP(S)_PROXY variables, so hand Gradle the proxy explicitly.
+# Resolved at shell start, because the proxy address is assigned per environment boot.
+__air_proxy="\${HTTPS_PROXY:-\${https_proxy:-\${HTTP_PROXY:-\${http_proxy:-}}}}"
+if [ -n "\$__air_proxy" ]; then
+  case "\${GRADLE_OPTS:-}" in
+    *proxyHost*) ;;
+    *)
+      __air_hostport="\${__air_proxy#*://}"
+      __air_hostport="\${__air_hostport%%/*}"
+      __air_host="\${__air_hostport%%:*}"
+      if [ "\$__air_hostport" = "\$__air_host" ]; then __air_port=80; else __air_port="\${__air_hostport##*:}"; fi
+      export GRADLE_OPTS="\${GRADLE_OPTS:-} -Dhttp.proxyHost=\$__air_host -Dhttp.proxyPort=\$__air_port -Dhttps.proxyHost=\$__air_host -Dhttps.proxyPort=\$__air_port \"-Dhttp.nonProxyHosts=$NON_PROXY_HOSTS\" \"-Dhttps.nonProxyHosts=$NON_PROXY_HOSTS\""
+      unset __air_hostport __air_host __air_port
+      ;;
+  esac
+fi
+unset __air_proxy
 EOF
 
   # A login shell reads only the first profile file that exists.
@@ -107,17 +155,40 @@ EOF
   log "JAVA_HOME=$JAVA_HOME, teamcityVersion=${teamcityVersion:-<repository default>}"
 }
 
-# Make every Gradle invocation (CLI, IDE, tooling API) use the JDK we installed,
-# whatever JAVA_HOME the caller happens to have.
+# Make every Gradle invocation (CLI, IDE, tooling API) use the JDK we installed and the
+# egress proxy, whatever JAVA_HOME or GRADLE_OPTS the caller happens to have. Rewritten on
+# every boot because the proxy address is assigned per environment.
 configure_gradle() {
   mkdir -p "$HOME/.gradle"
   local props="$HOME/.gradle/gradle.properties"
   [ -f "$props" ] || touch "$props"
-  if grep -q '^org\.gradle\.java\.home=' "$props"; then
-    sed -i "s|^org\.gradle\.java\.home=.*|org.gradle.java.home=$BUILD_JAVA_HOME|" "$props"
-  else
-    printf 'org.gradle.java.home=%s\n' "$BUILD_JAVA_HOME" >> "$props"
+
+  # Drop the block written by a previous run, then append the current one.
+  sed -i "/^# >>> $BLOCK_MARKER >>>$/,/^# <<< $BLOCK_MARKER <<<$/d" "$props"
+  {
+    echo "# >>> $BLOCK_MARKER >>>"
+    echo "org.gradle.java.home=$BUILD_JAVA_HOME"
+    if [ -n "$PROXY_HOST" ]; then
+      echo "systemProp.http.proxyHost=$PROXY_HOST"
+      echo "systemProp.http.proxyPort=$PROXY_PORT"
+      echo "systemProp.http.nonProxyHosts=$NON_PROXY_HOSTS"
+      echo "systemProp.https.proxyHost=$PROXY_HOST"
+      echo "systemProp.https.proxyPort=$PROXY_PORT"
+      echo "systemProp.https.nonProxyHosts=$NON_PROXY_HOSTS"
+    fi
+    echo "# <<< $BLOCK_MARKER <<<"
+  } >> "$props"
+
+  # The Gradle wrapper downloads the distribution before reading gradle.properties.
+  local opts
+  opts="$(proxy_gradle_opts)"
+  if [ -n "$opts" ]; then
+    case "${GRADLE_OPTS:-}" in
+      *proxyHost*) ;;
+      *) export GRADLE_OPTS="${GRADLE_OPTS:-} $opts" ;;
+    esac
   fi
+
   chmod +x ./gradlew || true
   log "Gradle configured to run on $BUILD_JAVA_HOME"
 }
@@ -180,6 +251,7 @@ healthcheck() {
 }
 
 log "Starting environment setup (mode=${AIR_STARTUP_MODE:-task}) in $REPO_DIR"
+detect_proxy
 install_jdk
 write_env_file
 configure_gradle
