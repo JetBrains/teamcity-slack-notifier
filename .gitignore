@@ -6,3 +6,4 @@ downloads
 data
 .DS_Store
 /local-repo
+.kotlin
