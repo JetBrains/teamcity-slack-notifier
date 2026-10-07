@@ -7,3 +7,6 @@ data
 .DS_Store
 /local-repo
 .kotlin
+
+# e2e environment state (tokens, passwords)
+e2e/.state/

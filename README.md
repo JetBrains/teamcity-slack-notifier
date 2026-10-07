@@ -18,3 +18,17 @@ In root directory, run
 gradle build
 ```
 Plugin zip will be located in `build/distributions` directory.
+
+## End-to-end environment (local TeamCity + real Slack)
+
+`e2e/` contains a scripted environment that runs the plugin built from this
+checkout in a local TeamCity (Docker) wired to a real Slack sandbox workspace,
+plus scenarios that verify notifications by reading them back from Slack:
+
+```shell script
+./e2e/e2e.sh setup                        # once per session, idempotent
+./e2e/e2e.sh scenario build-notification  # build -> Slack message -> verified
+./e2e/e2e.sh plugin                       # rebuild + reinstall the plugin after a change
+```
+
+See [e2e/README.md](e2e/README.md).
