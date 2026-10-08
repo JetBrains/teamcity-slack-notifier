@@ -13,6 +13,7 @@
             <class name="jetbrains.buildServer.notification.slackNotifier.healthReport.SlackFailedNotificationHealthReportTest"/>
             <class name="jetbrains.buildServer.notification.slackNotifier.slack.SlackWebApiImplTest"/>
             <class name="jetbrains.buildServer.notification.slackNotifier.notification.SlackMessageFormatterTest"/>
+            <class name="jetbrains.buildServer.notification.slackNotifier.notification.MessageTemplateTest"/>
         </classes>
     </test>
 </suite>
