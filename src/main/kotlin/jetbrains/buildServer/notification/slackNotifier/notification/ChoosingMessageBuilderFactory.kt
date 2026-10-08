@@ -10,12 +10,13 @@ import org.springframework.stereotype.Service
 @Service
 class ChoosingMessageBuilderFactory(
         private val simpleMessageBuilderFactory: SimpleMessageBuilderFactory,
-        private val verboseMessageBuilderFactory: VerboseMessageBuilderFactory
+        private val verboseMessageBuilderFactory: VerboseMessageBuilderFactory,
+        private val customMessageBuilderFactory: CustomMessageBuilderFactory
 ) : MessageBuilderFactory {
     override fun get(user: SUser, project: SProject): MessageBuilder {
-        val messageFormat = user.getPropertyValue(SlackProperties.messageFormatProperty)
-        if (messageFormat == "verbose") {
-            return verboseMessageBuilderFactory.get(user, project)
+        when (user.getPropertyValue(SlackProperties.messageFormatProperty)) {
+            SlackProperties.verboseMessageFormat -> return verboseMessageBuilderFactory.get(user, project)
+            SlackProperties.customMessageFormat -> return customMessageBuilderFactory.get(user, project)
         }
 
         return simpleMessageBuilderFactory.get(user, project)

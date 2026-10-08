@@ -19,6 +19,68 @@ class SlackNotifierTest : BaseSlackTestCase() {
     }
 
     @Test
+    fun `custom format should render template for build start`() {
+        `given build feature with custom template is subscribed to`(
+            "{build.emoji} {build.link} *{build.event}* by {build.triggeredBy}, build number %build.number%",
+            events = arrayOf(BUILD_STARTED)
+        )
+        val build = `when build is triggered manually`()
+        `then message should contain`(":arrow_forward:", "*started*", build.buildNumber, "build number ${build.buildNumber}") And
+                `then message should not contain`("{build.", "%build.number%")
+    }
+
+    @Test
+    fun `custom format should use success template for successful builds`() {
+        `given build feature with custom template is subscribed to`(
+            "generic-template {build.event}",
+            successTemplate = ":tada: {build.name} {build.event} with {changes.count} changes, status {build.status}",
+            failureTemplate = "failure-template {build.event}",
+            events = arrayOf(BUILD_FINISHED_SUCCESS)
+        )
+        `when build finishes`()
+        `then message should contain`(":tada:", myBuildType.name, "is successful with 0 changes", "status Success") And
+                `then message should not contain`("generic-template", "failure-template")
+    }
+
+    @Test
+    fun `custom format should use failure template and list committers tests and problems`() {
+        `given build feature with custom template is subscribed to`(
+            "generic-template {build.event}",
+            failureTemplate = "{build.link} *{build.event}*, {committers.mentions} please have a look\n" +
+                    "{build.status}\nFailed tests ({tests.failed.count}):\n{tests.failed}\n" +
+                    "Problems ({problems.count}):\n{problems}\nChanges ({changes.count}):\n{changes}\n{changes.link}",
+            events = arrayOf(BUILD_FINISHED_FAILURE)
+        )
+        `given committer is signed in to Slack`("committer1", "U0123456")
+        val build = `when build fails with multiline change and failed test`()
+        `then message should contain`(
+            build.buildNumber,
+            "*failed*",
+            "<@U0123456> please have a look",
+            "Tests failed: 1",
+            "Failed tests (1):\n- PaymentServiceTest.refundIsIdempotent",
+            "Problems (1):\n- Deployment rejected: checksum mismatch",
+            "Changes (1):\n- committer_committer1∶ [Feature]: new deploy pipeline * x: add staging target * y: wire health checks",
+            "View 1 change in TeamCity"
+        ) And `then message should not contain`("generic-template", "{changes", "\n* x")
+    }
+
+    @Test
+    fun `custom format should fall back to default template for unknown placeholders and personal rules`() {
+        `given user with custom template is subscribed to`("{build.link} {build.event} {build.unknown}", BUILD_FINISHED_FAILURE)
+        val build = `when build fails`()
+        `then message should contain`(build.buildNumber, "failed {build.unknown}")
+    }
+
+    @Test
+    fun `custom format should keep simple format for non-build events`() {
+        `given user with custom template is subscribed to`("custom {build.event}", RESPONSIBILITY_CHANGES)
+        `when responsibility changes`()
+        `then message should contain`("investigation") And
+                `then message should not contain`("custom")
+    }
+
+    @Test
     fun `should send notification about build start`() {
         `given user is subscribed to`(BUILD_STARTED)
         val build = `when build starts`()

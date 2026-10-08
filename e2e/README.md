@@ -139,5 +139,15 @@ CLI access token, resolved channel id, compose env. Deleting it is safe;
 - Hot reload failing with "New version wasn't found" means the loaded copy is
   the bundled one; `./e2e/e2e.sh restart` makes the uploaded copy active
   (`plugin` does this automatically).
+- A *successful* hot reload is not enough when the change touches the notifier
+  itself: the previously registered `SlackNotifier` instance keeps handling
+  events (the registry is not cleaned on unload), so messages still come from
+  the old code. If the messages do not reflect your change after
+  `./e2e/e2e.sh plugin`, run `./e2e/e2e.sh restart`.
+- Messages always say "No new changes" because the e2e job has no VCS root.
+  To exercise changes/committers, serve a bare repository with `git daemon`
+  inside the server container (`git://127.0.0.1:9418/<repo>.git`; local file
+  URLs are rejected by TeamCity) and set the job's `checkoutMode` to `MANUAL`,
+  because the agent container cannot reach the server's loopback interface.
 - Host `curl` must bypass the egress proxy for 127.0.0.1 (`--noproxy '*'`),
   otherwise it answers "Blocked by network policy".
