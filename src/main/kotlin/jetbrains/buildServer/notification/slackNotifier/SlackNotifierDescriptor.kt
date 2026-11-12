@@ -3,6 +3,7 @@
 package jetbrains.buildServer.notification.slackNotifier
 
 import jetbrains.buildServer.notification.NotificatorRegistry
+import jetbrains.buildServer.notification.slackNotifier.notification.MessageTemplate
 import jetbrains.buildServer.serverSide.InvalidProperty
 import org.springframework.context.annotation.Conditional
 import org.springframework.stereotype.Service
@@ -62,7 +63,35 @@ class SlackNotifierDescriptor(
             }
         }
 
+        if (properties[SlackProperties.messageFormatProperty.key] == SlackProperties.customMessageFormat) {
+            validateCustomTemplates(properties, invalidProperties)
+        }
+
         return invalidProperties
+    }
+
+    private fun validateCustomTemplates(properties: Map<String, String>, invalidProperties: MutableCollection<InvalidProperty>) {
+        if (properties[SlackProperties.customTemplateProperty.key].isNullOrBlank()) {
+            invalidProperties.add(
+                InvalidProperty(
+                    SlackProperties.customTemplateProperty.key,
+                    "Message template must not be empty"
+                )
+            )
+        }
+
+        for (templateProperty in SlackProperties.customTemplateProperties) {
+            val template = properties[templateProperty.key] ?: continue
+            val unknown = MessageTemplate.unknownPlaceholders(template)
+            if (unknown.isNotEmpty()) {
+                invalidProperties.add(
+                    InvalidProperty(
+                        templateProperty.key,
+                        "Unknown placeholder(s): ${unknown.joinToString(", ")}"
+                    )
+                )
+            }
+        }
     }
 
 

@@ -53,6 +53,37 @@
                             </description>
                         </param>
                     </option>
+                    <option name="customMessageFormat" value="custom">
+                        <description>
+                            Build notifications are rendered from templates. Templates can contain Slack markup,
+                            TeamCity parameter references (%build.number%, %env.TARGET%) and placeholders in curly braces:
+                            {build.emoji}, {build.event}, {build.link}, {build.url}, {build.number}, {build.name},
+                            {build.branch}, {build.status}, {build.triggeredBy}, {project.name},
+                            {changes}, {changes.count}, {changes.link}, {committers}, {committers.mentions},
+                            {tests.failed}, {tests.failed.count}, {problems}, {problems.count}
+                        </description>
+                        <param name="plugin:notificator:jbSlackNotifier:customTemplate" dslName="template">
+                            <description>
+                                Template used for all build events unless a more specific template is set
+                            </description>
+                        </param>
+                        <param name="plugin:notificator:jbSlackNotifier:customTemplateSuccess" dslName="successTemplate">
+                            <description>
+                                Template for successful builds
+                            </description>
+                        </param>
+                        <param name="plugin:notificator:jbSlackNotifier:customTemplateFailure" dslName="failureTemplate">
+                            <description>
+                                Template for failed builds (also used for builds that failed to start or started to fail)
+                            </description>
+                        </param>
+                        <param name="plugin:notificator:jbSlackNotifier:maximumNumberOfChanges"
+                               dslName="maximumNumberOfChanges" type="int">
+                            <description>
+                                Maximum number of changes listed by the {changes} placeholder, 10 by default
+                            </description>
+                        </param>
+                    </option>
                 </param>
             </option>
         </param>
@@ -91,6 +122,36 @@
                             maximumNumberOfChanges = 15
                         }
                     }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds notifications build feature that renders notifications from custom templates:
+                failed builds mention the committers and list the failed tests, other events use the default template.
+            </description>
+            <code>
+                notifications {
+                    notifierSettings = slackNotifier {
+                        connection = "PROJECT_EXT_4"
+                        sendTo = "#channel-name"
+                        messageFormat = customMessageFormat {
+                            template = """
+                                {build.emoji} {build.link} *{build.event}* in branch `{build.branch}`
+                                Deploying to %env.TARGET%
+                            """.trimIndent()
+                            failureTemplate = """
+                                :rotating_light: {build.link} *failed*, {committers.mentions} please have a look
+                                {build.status}
+                                *Failed tests:*
+                                {tests.failed}
+                                *Changes:*
+                                {changes}
+                            """.trimIndent()
+                        }
+                    }
+                    buildFinishedSuccessfully = true
+                    buildFailed = true
                 }
             </code>
         </example>

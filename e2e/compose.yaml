@@ -1,0 +1,47 @@
+# Local TeamCity used by the e2e environment (see e2e/README.md).
+# Driven by e2e/e2e.sh - do not run `docker compose up` by hand, the script
+# prepares the data directory and the variables referenced below.
+name: tc-slack-e2e
+
+services:
+  server:
+    image: jetbrains/teamcity-server:${TC_VERSION:-2026.2.1}
+    container_name: tc-slack-e2e-server
+    ports:
+      - "127.0.0.1:${TC_PORT:-8111}:8111"
+    environment:
+      # Unattended first start + proxy for the server JVM (the plugin talks to
+      # slack.com through TeamCity's HTTP client, which honours these system
+      # properties). Values come from e2e.sh; `*` is avoided because the launch
+      # script expands TEAMCITY_SERVER_OPTS unquoted.
+      TEAMCITY_SERVER_OPTS: >-
+        -Dteamcity.licenseAgreement.accepted=true
+        -Dteamcity.superUser.token=${TC_SUPERUSER_TOKEN:?set by e2e.sh}
+        -Dteamcity.authorization.simpleMode.roleAssignmentRestriction.enabled=false
+        ${TC_PROXY_JVM_OPTS:-}
+      TEAMCITY_SERVER_MEM_OPTS: ${TC_SERVER_MEM_OPTS:--Xmx2g -XX:ReservedCodeCacheSize=640m}
+    volumes:
+      - server-datadir:/data/teamcity_server/datadir
+      - server-logs:/opt/teamcity/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8111/healthCheck/healthy >/dev/null || curl -fsS -o /dev/null http://localhost:8111/login.html"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+  agent:
+    image: jetbrains/teamcity-agent:${TC_VERSION:-2026.2.1}
+    container_name: tc-slack-e2e-agent
+    environment:
+      SERVER_URL: http://server:8111
+      AGENT_NAME: ${TC_AGENT_NAME:-e2e-agent}
+    volumes:
+      - agent-conf:/data/teamcity_agent/conf
+    depends_on:
+      - server
+
+volumes:
+  server-datadir:
+  server-logs:
+  agent-conf:

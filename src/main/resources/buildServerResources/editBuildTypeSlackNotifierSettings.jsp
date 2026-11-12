@@ -70,6 +70,23 @@
             } else {
                 this.hideVerboseOptions();
             }
+
+            if (selectedFormat === "custom") {
+                this.showCustomOptions();
+            }
+        },
+
+        showCustomOptions: function() {
+            var template = document.getElementById("${properties.customTemplateKey}");
+            if (template && !template.value) {
+                template.value = document.getElementById("slackDefaultTemplate").value;
+            }
+            BS.MultilineProperties.show("${properties.customTemplateKey}", true);
+        },
+
+        togglePlaceholders: function() {
+            $j("#slackTemplatePlaceholders").toggle();
+            return false;
         },
 
         showVerboseOptions: function() {
@@ -163,7 +180,55 @@
                               onchange="BS.SlackNotifierSettings.onMessageFormatChange()">
             <props:option value="simple">Simple</props:option>
             <props:option value="verbose">Verbose</props:option>
+            <props:option value="custom">Custom</props:option>
         </props:selectProperty>
+    </td>
+</tr>
+
+<tr class="messageFormatOption customFormatOption">
+    <th>
+        <label for="${properties.customTemplateKey}">Message template:<l:star/></label>
+    </th>
+    <td>
+        <textarea id="slackDefaultTemplate" style="display: none;"><c:out value="${properties.defaultCustomTemplate}"/></textarea>
+        <props:multilineProperty name="${properties.customTemplateKey}" linkTitle="Edit template" cols="70" rows="6" className="longField"/>
+        <span class="smallNote">
+            Used for all build events (started, finished, failed, failing, hanging) unless a more specific template is set below.
+            Placeholders in curly braces are replaced with build data,
+            TeamCity parameter references like <code>%build.number%</code> or <code>%env.TARGET%</code> are resolved,
+            Slack markup (<code>*bold*</code>, <code>:emoji:</code>, <code>&lt;!here&gt;</code>) is passed through.
+            <a href="#" onclick="return BS.SlackNotifierSettings.togglePlaceholders();">Show available placeholders</a>
+        </span>
+        <div id="slackTemplatePlaceholders" class="smallNote" style="display: none;">
+            <table class="runnerFormTable" style="width: auto;">
+                <c:forEach var="placeholder" items="${properties.templatePlaceholders}">
+                    <tr>
+                        <td style="white-space: nowrap;"><code>{<c:out value="${placeholder.key}"/>}</code></td>
+                        <td><c:out value="${placeholder.description}"/></td>
+                    </tr>
+                </c:forEach>
+            </table>
+        </div>
+    </td>
+</tr>
+
+<tr class="messageFormatOption customFormatOption">
+    <th>
+        <label for="${properties.customTemplateSuccessKey}">Successful build template:</label>
+    </th>
+    <td>
+        <props:multilineProperty name="${properties.customTemplateSuccessKey}" linkTitle="Edit template for successful builds" cols="70" rows="4" className="longField"/>
+        <span class="smallNote">Optional. Overrides the message template for successful builds.</span>
+    </td>
+</tr>
+
+<tr class="messageFormatOption customFormatOption">
+    <th>
+        <label for="${properties.customTemplateFailureKey}">Failed build template:</label>
+    </th>
+    <td>
+        <props:multilineProperty name="${properties.customTemplateFailureKey}" linkTitle="Edit template for failed builds" cols="70" rows="4" className="longField"/>
+        <span class="smallNote">Optional. Overrides the message template for failed builds, builds that failed to start and builds that started to fail.</span>
     </td>
 </tr>
 

@@ -122,6 +122,15 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
                     myFixture.getSingletonService(NotificationBuildStatusProvider::class.java),
                     myServer,
                     myFixture.getSingletonService(ChangesCalculationOptionsFactory::class.java)
+                ),
+                CustomMessageBuilderFactory(
+                    simpleMessageBuilderFactory,
+                    detailsFormatter,
+                    messageFormatter,
+                    myFixture.webLinks,
+                    myFixture.getSingletonService(NotificationBuildStatusProvider::class.java),
+                    myServer,
+                    myFixture.getSingletonService(ChangesCalculationOptionsFactory::class.java)
                 )
             ),
             myAdHocMessageBuilder,
@@ -231,6 +240,34 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         addBuildFeature(*events, additionalParameters = mapOf(
             SlackProperties.messageFormatProperty.key to "verbose"
         ))
+    }
+
+    fun `given build feature with custom template is subscribed to`(
+        template: String,
+        successTemplate: String? = null,
+        failureTemplate: String? = null,
+        vararg events: NotificationRule.Event
+    ) {
+        val templates = mutableMapOf(
+            SlackProperties.messageFormatProperty.key to SlackProperties.customMessageFormat,
+            SlackProperties.customTemplateProperty.key to template
+        )
+        successTemplate?.let { templates[SlackProperties.customTemplateSuccessProperty.key] = it }
+        failureTemplate?.let { templates[SlackProperties.customTemplateFailureProperty.key] = it }
+        addBuildFeature(*events, additionalParameters = templates)
+    }
+
+    fun `given user with custom template is subscribed to`(template: String, vararg events: NotificationRule.Event) {
+        myUser.setUserProperty(SlackProperties.messageFormatProperty, SlackProperties.customMessageFormat)
+        myUser.setUserProperty(SlackProperties.customTemplateProperty, template)
+        storeRules(myUser, myNotifier, newRule(*events))
+    }
+
+    fun `given committer is signed in to Slack`(vcsUserName: String, slackUserId: String): SUser {
+        val committer = createUser("committer_$vcsUserName")
+        (committer as UserEx).setDefaultVcsUsernames(listOf(vcsUserName))
+        committer.setUserProperty(SlackProperties.channelProperty, slackUserId)
+        return committer
     }
 
     fun `given there is connection with enabled service message notifications`() {
@@ -405,6 +442,27 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         return finishBuild(true)
     }
 
+    fun `when build fails with multiline change and failed test`(): SBuild {
+        val vcsRoot = myFixture.addVcsRoot("vcs", "")
+        startBuildWithChanges(
+            myBuildType,
+            ModificationDataForTest.forTests("[Feature]: new deploy pipeline\n* x: add staging target\n* y: wire health checks", "committer1", vcsRoot, "1")
+        )
+        myFixture.logBuildMessages(
+            runningBuild,
+            listOf(
+                DefaultMessagesInfo.createTextMessage("##teamcity[testStarted name='PaymentServiceTest.refundIsIdempotent']"),
+                DefaultMessagesInfo.createTextMessage("##teamcity[testFailed name='PaymentServiceTest.refundIsIdempotent' message='expected 1 refund but got 2']"),
+                DefaultMessagesInfo.createTextMessage("##teamcity[testFinished name='PaymentServiceTest.refundIsIdempotent']")
+            )
+        )
+        runningBuild.addBuildProblem(
+            BuildProblemData.createBuildProblem("deploy", "DEPLOYMENT_ERROR", "Deployment rejected: checksum mismatch")
+        )
+        runningBuild.updateBuild()
+        return finishBuild(true)
+    }
+
     fun `when build fails with changes`(): SBuild {
         val vcsRoot = myFixture.addVcsRoot("vcs", "")
         startBuildWithChanges(myBuildType, ModificationDataForTest.forTests("Commit message", "committer1", vcsRoot, "1"))
@@ -536,6 +594,11 @@ open class BaseSlackTestCase : BaseNotificationRulesTestCase() {
         } else {
             assertContains(message.text, myUser.descriptiveName)
         }
+    }
+
+    fun `then message text should be`(expected: String) {
+        waitForMessage()
+        assertEquals(expected, mySlackApi.messages.last().text)
     }
 
     fun `then message should not contain`(vararg strings: String) {
